@@ -1,17 +1,18 @@
 <idea-plugin version="2">
-  <id>net.roy.codegenerator.orm.actions.testaction</id>
-  <name>Test Action</name>
-  <version>1.0</version>
-  <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+  <id>net.roy.codegenerator.orm</id>
+  <name>ORM Generator</name>
+  <version>0.5.0</version>
+  <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+      A plug-in to generate entity persistor codes.<br/>
+      Use JPA annotation to specify entity mapping information.<br/>
+      Use JdbcTemplate to operate on databases.<br />
+      Not have much time to maintain, so do not accept feature request.
     ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      * 0.5.0 first release.<br>
     ]]>
   </change-notes>
 
@@ -39,10 +40,13 @@
   <actions>
     <!-- Add your actions here -->
     <action
-            id="net.roy.codegenerator.orm.actions.SimpleAction"
-            class="net.roy.codegenerator.orm.actions.SimpleAction"
-            text="Test Action" >
+            id="net.royqh.codegenerator.orm.actions.ORMGenerateAction"
+            class="net.royqh.codegenerator.orm.actions.ORMGenerateAction"
+            text="Generate ORM Code" >
       <add-to-group group-id="ToolsMenu" anchor="first"/>
+      <add-to-group group-id="EditorPopupMenu" />
+      <add-to-group group-id="ProjectViewPopupMenu" />
+      <add-to-group group-id="EditorTabPopupMenu" />
     </action>
   </actions>
 
