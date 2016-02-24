@@ -4,7 +4,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://royqh.net/codegenerator/orm/schema/config/1.0 http://royqh.net/codegenerator/orm/schema/config_1_0.xsd">
     <entities>
-        <annotation-based package="net.roy.domain" />
-        <persistor target-package="net.roy.persistor" />
+        <annotation-based package="net.royqh.domain" />
+        <persistor target-package="net.royqh.persistor" />
     </entities>
 </entity-config>

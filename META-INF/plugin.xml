@@ -40,8 +40,8 @@
   <actions>
     <!-- Add your actions here -->
     <action
-            id="net.royqh.codegenerator.orm.actions.ORMGenerateAction"
-            class="net.royqh.codegenerator.orm.actions.ORMGenerateAction"
+            id="net.royqh.easypersist.actions.ORMGenerateAction"
+            class="net.royqh.easypersist.actions.ORMGenerateAction"
             text="Generate ORM Code" >
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <add-to-group group-id="EditorPopupMenu" />
