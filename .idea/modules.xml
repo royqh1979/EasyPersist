@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/OrmGeneratorPlugin.iml" filepath="$PROJECT_DIR$/OrmGeneratorPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EasyPersist.iml" filepath="$PROJECT_DIR$/EasyPersist.iml" />
     </modules>
   </component>
 </project>

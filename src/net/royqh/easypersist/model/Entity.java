@@ -18,6 +18,8 @@ public class Entity {
     private String name;
     private String idProperty;
     private Map<String,Property> propertyMap =new HashMap<>();
+    private Map<String,String> columnPropertyMap = new HashMap<>();
+    private Set<IndexInfo> indexes =new HashSet<>();
     private AccessType accessType=AccessType.PROPERTY;
     private MappingRepository mappingRepository;
     private boolean autoGenerateId=false;
@@ -68,16 +70,8 @@ public class Entity {
         this.idProperty = propertyName;
     }
 
-    public Optional<Property> getProperty(String propertyName) {
-        return Optional.ofNullable(propertyMap.get(propertyName));
-    }
-
-    public Map<String, Property> getPropertyMap() {
-        return propertyMap;
-    }
-
-    public void setPropertyMap(Map<String, Property> propertyMap) {
-        this.propertyMap = propertyMap;
+    public Property getProperty(String propertyName) {
+        return propertyMap.get(propertyName);
     }
 
     public MappingRepository getMappingRepository() {
@@ -89,11 +83,34 @@ public class Entity {
     }
 
     public void removeProperty(String propertyName) {
+        Property property=propertyMap.get(propertyName);
         propertyMap.remove(propertyName);
+        if (property.getPropertyType() == PropertyType.Column) {
+            SingleProperty singleProperty=(SingleProperty)property;
+            columnPropertyMap.remove(singleProperty.getColumnName());
+        }
+
     }
 
     public void addProperty(Property property) {
         propertyMap.put(property.getName(),property);
+        if (property.getPropertyType() == PropertyType.Column) {
+            SingleProperty singleProperty=(SingleProperty)property;
+            columnPropertyMap.put(singleProperty.getColumnName(),property.getName());
+        }
+    }
+
+    public SingleProperty getPropertyByColumnName(String columnName) {
+        String propertyName=columnPropertyMap.get(columnName);
+        return (SingleProperty)getProperty(propertyName);
+    }
+
+    public void addIndex(IndexInfo indexInfo) {
+        indexes.add(indexInfo);
+    }
+
+    public Set<IndexInfo> getIndexes() {
+        return indexes;
     }
 
     public String getTableName() {
@@ -119,4 +136,5 @@ public class Entity {
     public void setAutoGenerateId(boolean autoGenerateId) {
         this.autoGenerateId = autoGenerateId;
     }
+
 }

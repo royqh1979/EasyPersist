@@ -2,6 +2,7 @@ package net.royqh.easypersist.generator;
 
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Column;
+import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,53 @@ public class SQLGenerator {
         content.append(" where ");
         content.append(idProperty.getColumnName());
         content.append("=?\";");
+        return content;
+    }
+
+    public static StringBuilder generateRetrieveByXXXSQL(Entity entity, List<SingleProperty> indexProperties) {
+        StringBuilder content=new StringBuilder();
+        content.append("select * from ");
+        content.append(entity.getTableName());
+        content.append(" where ");
+        List<String> clauses=new ArrayList<>();
+        for (SingleProperty property:indexProperties) {
+            clauses.add(property.getColumnName()+" = ?");
+        }
+        content.append(String.join(" and ",clauses));
+        return content;
+    }
+
+    public static StringBuilder generateCountByXXXSQL(Entity entity, List<SingleProperty> indexProperties) {
+        StringBuilder content=new StringBuilder();
+        content.append("select count(*) from ");
+        content.append(entity.getTableName());
+        content.append(" where ");
+        List<String> clauses=new ArrayList<>();
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                clauses.add("(" + property.getColumnName() + " between ? and ? )");
+            } else {
+                clauses.add(property.getColumnName() + " = ?");
+            }
+        }
+        content.append(String.join(" and ",clauses));
+        return content;
+    }
+
+    public static StringBuilder generateFindByXXXSQL(Entity entity, List<SingleProperty> indexProperties) {
+        StringBuilder content=new StringBuilder();
+        content.append("select * from ");
+        content.append(entity.getTableName());
+        content.append(" where ");
+        List<String> clauses=new ArrayList<>();
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                clauses.add("(" + property.getColumnName() + " between ? and ? )");
+            } else {
+                clauses.add(property.getColumnName() + " = ?");
+            }
+        }
+        content.append(String.join(" and ",clauses));
         return content;
     }
 }

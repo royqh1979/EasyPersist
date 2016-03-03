@@ -43,11 +43,6 @@ public class MethodParser {
     }
 
     public static void parseGetterInfo(PsiMethod psiMethod, Entity entity) {
-        System.out.println("0:"+psiMethod.getName());
-        System.out.println("1:"+psiMethod.getReturnType().toString());
-        System.out.println("2:"+psiMethod.getReturnType().getCanonicalText());
-        System.out.println("3:"+psiMethod.getReturnType().getClass());
-
         if (TypeUtils.containsAnnotation(psiMethod, Constants.TRANSIENT)) {
             return;
         }
@@ -90,6 +85,7 @@ public class MethodParser {
             }
         }
 
+        /* infer joinTable and joinColumn default names */
         SingleProperty idProperty=entity.getIdProperty();
         for (Property property: entity.getProperties()) {
             if (property.getPropertyType()== PropertyType.ElementCollection) {

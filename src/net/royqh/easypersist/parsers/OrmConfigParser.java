@@ -20,7 +20,7 @@ public class OrmConfigParser extends DefaultHandler {
     private List<EntitiesConfig> entitiesConfigs=new ArrayList<>();
     private EntitiesConfig currentConfig=null;
     private SAXParser parser;
-    public final static String ORM_CONFIG_FILE_NAME= "resources/schemas/orm-config.xml";
+    public final static String ORM_CONFIG_FILE_NAME= "orm-config.xml";
 
     public OrmConfigParser() throws ParserConfigurationException, SAXException {
         SAXParserFactory parserFactory=SAXParserFactory.newInstance();

@@ -5,11 +5,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.easypersist.MappingRepository;
-import net.royqh.easypersist.model.config.EntitiesConfig;
+import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.Property;
-import net.royqh.easypersist.model.PropertyType;
+import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.*;
 
@@ -17,9 +15,9 @@ import java.util.*;
  * Created by Roy on 2016/2/15.
  */
 public class PersistorsGenerator {
-    public static void generate(EntitiesConfig entitiesConfig, Project project, MappingRepository mappingRepository) {
+    public static void generate(String targetPackageName, Project project, MappingRepository mappingRepository) {
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
-        PsiPackage targetPackage = facade.findPackage(entitiesConfig.getOutputPackage());
+        PsiPackage targetPackage = facade.findPackage(targetPackageName);
         generate(targetPackage, mappingRepository);
     }
 
@@ -49,13 +47,16 @@ public class PersistorsGenerator {
 
 
         content.append("public class " + className + "{\n");
-        content.append("    private JdbcTemplate jdbcTemplate;\n");
-        content.append("    public void setDataSource(DataSource dataSource) {\n");
-        content.append("        jdbcTemplate=new JdbcTemplate(dataSource);\n");
-        content.append("    }\n");
+        content.append("    private DataSource dataSource;\n");
+        content.append("private SQLExceptionTranslator exceptionTranslator;\n");
         createSQLs(content, entity);
 
-        createMethods(entity, content);
+        createBasicMethods(entity, content);
+
+        createSearchMethods(entity,content);
+
+        createUtilMethods(content);
+
 
         content.append(RowMapperGenerator.createRowMapper(entity));
 
@@ -67,29 +68,64 @@ public class PersistorsGenerator {
                 content.toString());
     }
 
-    private static void createMethods(Entity entity, StringBuilder content) {
+    private static void createSearchMethods(Entity entity, StringBuilder content) {
+        for (IndexInfo indexInfo:entity.getIndexes()) {
+            if (indexInfo.isUnique()) {
+                MethodGenerator.createRetrieveByXXXMethod(entity, indexInfo, content);
+                if (canGenerateRangeQuery(entity,indexInfo)) {
+                    MethodGenerator.createCountByXXXMethod(entity, indexInfo, content);
+                    MethodGenerator.createFindByXXXMethod(entity, indexInfo, content);
+                }
+            } else {
+                MethodGenerator.createCountByXXXMethod(entity, indexInfo, content);
+                MethodGenerator.createFindByXXXMethod(entity, indexInfo, content);
+            }
+
+        }
+    }
+
+    private static boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
+        List<SingleProperty> indexProperties = MethodGenerator.getIndexProperties(entity, indexInfo);
+        if (indexInfo.isUnique()) {
+            for (SingleProperty singleProperty : indexProperties) {
+                if (!TypeUtils.isRangeType(singleProperty)) {
+                    //unique and not range type, can't retrive many entity by this property
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static void createUtilMethods(StringBuilder content) {
+        MethodGenerator.createExceptionTranslatorGetter(content);
+        MethodGenerator.createDataSourceGetter(content);
+        MethodGenerator.createDataSourceSetter(content);
+    }
+
+    private static void createBasicMethods(Entity entity, StringBuilder content) {
         MethodGenerator.createLoadByIdMethod(content, entity);
         MethodGenerator.createLoadAllMethod(content, entity);
 
         MethodGenerator.createCreateMethod(content, entity);
         MethodGenerator.createUpdateMethod(content, entity);
         MethodGenerator.createDeleteMethod(content,entity);
+
     }
 
-
-
-
     private static void generateImports(Entity entity, StringBuilder content) {
-        content.append("import org.springframework.jdbc.core.JdbcTemplate;\n");
-        content.append("import javax.sql.*;\n");
+        content.append("import javax.sql.DataSource;\n");
         content.append("import java.sql.*;\n");
         content.append("import java.util.*;\n");
 
-        content.append("import org.springframework.jdbc.core.PreparedStatementSetter;\n");
-        content.append("import org.springframework.jdbc.core.PreparedStatementCreator;\n");
+        content.append("import org.springframework.dao.EmptyResultDataAccessException;\n");
+        content.append("import org.springframework.jdbc.core.RowCallbackHandler;\n");
         content.append("import org.springframework.jdbc.core.RowMapper;\n");
-        content.append("import org.springframework.jdbc.support.GeneratedKeyHolder;\n");
-        content.append("import org.springframework.jdbc.support.KeyHolder;\n");
+        content.append("import org.springframework.jdbc.datasource.DataSourceUtils;\n");
+        content.append("import org.springframework.jdbc.support.JdbcUtils;\n");
+        content.append("import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;\n");
+        content.append("import org.springframework.jdbc.support.SQLExceptionTranslator;\n");
+        content.append("import org.springframework.jdbc.support.SQLStateSQLExceptionTranslator;\n");
         content.append("import " + entity.getClassInfo().getQualifiedName() + ";\n");
         Set<String> types = new HashSet<>();
         for (Property property : entity.getProperties()) {
@@ -124,7 +160,6 @@ public class PersistorsGenerator {
         }
         types.removeAll(Constants.PRIMITIVE_TYPES);
         for (String type:types){
-            System.out.println(type);
             content.append("import ");
             content.append(type);
             content.append(";\n");

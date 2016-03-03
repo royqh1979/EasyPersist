@@ -52,10 +52,42 @@ public class AnnotationParser {
             table.setName(AnnotationUtils.getValue(tableAnnotation,"name"));
             table.setCatalog(AnnotationUtils.getValue(tableAnnotation, "catalog"));
             table.setSchema(AnnotationUtils.getValue(tableAnnotation, "schema"));
+            Index[] indexes=parseTableIndexes(tableAnnotation);
+            table.setIndexes(indexes);
+            UniqueConstraint[] uniqueConstraints=parseTableUniqueContraints(tableAnnotation);
+            table.setUniqueConstraints(uniqueConstraints);
             return table;
         } else {
             return new Table();
         }
+    }
+
+    private static UniqueConstraint[] parseTableUniqueContraints(PsiAnnotation tableAnnotation) {
+        PsiAnnotation[] constraintAnnos=AnnotationUtils.getAnnotationArray(tableAnnotation,"uniqueConstraints");
+        UniqueConstraint[] constraints=new UniqueConstraint[constraintAnnos.length];
+        for (int i=0;i<constraintAnnos.length;i++){
+            PsiAnnotation constraintAnno=constraintAnnos[i];
+            UniqueConstraint uniqueConstraint=new UniqueConstraint();
+            uniqueConstraint.setName(AnnotationUtils.getValue(constraintAnno,"name"));
+            uniqueConstraint.setColumnNames(AnnotationUtils.getValues(constraintAnno, "columnNames"));
+            constraints[i]=uniqueConstraint;
+        }
+        return constraints;
+    }
+
+    private static Index[] parseTableIndexes(PsiAnnotation tableAnnotation) {
+        PsiAnnotation[] indexAnnos=AnnotationUtils.getAnnotationArray(tableAnnotation,"indexes");
+        Index[] indexes=new Index[indexAnnos.length];
+        for (int i=0;i<indexAnnos.length;i++){
+            PsiAnnotation indexAnno=indexAnnos[i];
+            System.out.println(indexAnno.getText());
+            Index index=new Index();
+            index.setName(AnnotationUtils.getValue(indexAnno,"name"));
+            index.setUnique(AnnotationUtils.getBooleanValue(indexAnno,"unique"));
+            index.setColumnList(AnnotationUtils.getValue(indexAnno,"columnList"));
+            indexes[i]=index;
+        }
+        return indexes;
     }
 
     public static AccessType parseAccessType(PsiModifierListOwner modifierListOwner) {
@@ -110,7 +142,7 @@ public class AnnotationParser {
             column.setUnique(AnnotationUtils.getBooleanValue(columnAnno,"unique"));
             column.setNullable(AnnotationUtils.getBooleanValue(columnAnno,"nullable"));
             column.setInsertable(AnnotationUtils.getBooleanValue(columnAnno,"insertable"));
-            column.setUnique(AnnotationUtils.getBooleanValue(columnAnno,"updatable"));
+            column.setUpdatable(AnnotationUtils.getBooleanValue(columnAnno, "updatable"));
             column.setColumnDefinition(AnnotationUtils.getValue(columnAnno,"columnDefinition"));
             column.setTable(AnnotationUtils.getValue(columnAnno,"table"));
             column.setLength(AnnotationUtils.getIntValue(columnAnno,"length"));

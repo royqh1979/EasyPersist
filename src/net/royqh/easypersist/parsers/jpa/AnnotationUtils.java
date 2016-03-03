@@ -6,6 +6,8 @@ import net.royqh.easypersist.model.jpa.Constants;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Roy on 2016/2/14.
@@ -14,6 +16,12 @@ public class AnnotationUtils {
     public static String getValue(PsiAnnotation annotation, String attributeName) {
         PsiAnnotationMemberValue value=annotation.findAttributeValue(attributeName);
         return value.getText().replace("\"", "");
+    }
+
+    public static String[] getValues(PsiAnnotation annotation, String attributeName) {
+        String str=getValue(annotation,attributeName);
+        str=str.replaceAll("[\\s\\{\\}]","");
+        return str.split(",");
     }
 
     public static <E extends Enum<E>> E getEnumValue(PsiAnnotation annotation, String attributeName, Class<E> clazz){
@@ -79,18 +87,43 @@ public class AnnotationUtils {
     }
 
     public static PsiAnnotation[] getAnnotationArray(PsiAnnotation annotation, String attributeName){
-        String value=getValue(annotation,attributeName);
-        value=value.replace("{","").replace("}","");
-        if (StringUtils.isEmpty(value)){
-            return new PsiAnnotation[]{};
-        }
-        String[] values=value.split(",");
-        PsiAnnotation[] annotations=new PsiAnnotation[values.length];
-        for (int i=0;i<values.length;i++) {
-            String str=values[i].trim();
+        PsiAnnotationMemberValue pValue=annotation.findAttributeValue(attributeName);
+        String value=pValue.getText();
+        List<String> values=splitAnnotationArrayString(value);
+        PsiAnnotation[] annotations=new PsiAnnotation[values.size()];
+        for (int i=0;i<values.size();i++) {
+            String str=values.get(i).trim();
             PsiJavaParserFacade parserFacade=JavaPsiFacade.getInstance(annotation.getProject()).getParserFacade();
             annotations[i]=parserFacade.createAnnotationFromText(str,annotation);
         }
         return annotations;
+    }
+
+    private static List<String> splitAnnotationArrayString(String value) {
+        List<String> strList=new ArrayList<>();
+        StringBuilder tmp=new StringBuilder();
+        boolean inAnno=false;
+        int level=0;
+        for (char ch : value.toCharArray()) {
+            if (inAnno) {
+                tmp.append(ch);
+                if (ch == '(') {
+                    level++;
+                } else if (ch == ')') {
+                    level--;
+                    if (level == 0) {
+                        inAnno = false;
+                        strList.add(tmp.toString());
+                        tmp = new StringBuilder();
+                    }
+                }
+            } else {
+                if (ch == '@') {
+                    inAnno = true;
+                    tmp.append(ch);
+                }
+            }
+        }
+        return strList;
     }
 }

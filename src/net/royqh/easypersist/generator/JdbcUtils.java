@@ -2,8 +2,10 @@ package net.royqh.easypersist.generator;
 
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.utils.TypeUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,5 +36,13 @@ public class JdbcUtils {
             return "set"+resultSetColumnTypeMap.get(propertyType);
         }
         return "set"+propertyType;
+    }
+
+    public static String generateIndexName(List<SingleProperty> indexProperties) {
+        StringBuilder builder=new StringBuilder();
+        for (SingleProperty singleProperty:indexProperties) {
+            builder.append(StringUtils.capitalize(singleProperty.getName()));
+        }
+        return builder.toString();
     }
 }

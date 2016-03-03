@@ -1,6 +1,7 @@
 package net.royqh.easypersist.utils;
 
 import com.intellij.psi.*;
+import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.parsers.ParseError;
 import org.apache.commons.lang.StringUtils;
@@ -135,5 +136,29 @@ public abstract class TypeUtils {
             return type;
         }
         return InversePrimitiveTypeMapper.get(shortTypeName);
+    }
+
+    public static boolean isRangeType(SingleProperty singleProperty) {
+        if (singleProperty.getTemporalType()!=null) {
+            return true;
+        }
+        String type=singleProperty.getType();
+        if (type.equals("boolean")){
+            return false;
+        }
+        if (PrimitiveTypeMapper.containsKey(type)) {
+            return true;
+        }
+        String shortTypeName= TypeUtils.getShortTypeName(type);
+        if (shortTypeName.equals("Boolean")){
+            return false;
+        }
+        if (InversePrimitiveTypeMapper.containsKey(shortTypeName)){
+            return true;
+        }
+        if (type.equals("java.math.BigDecimal")){
+            return true;
+        }
+        return false;
     }
 }

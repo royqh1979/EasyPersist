@@ -13,10 +13,10 @@ import net.royqh.easypersist.model.jpa.Constants;
  * Created by Roy on 2016/2/11.
  */
 public class PackageScanner {
-    public MappingRepository scan(EntitiesConfig entitiesConfig,Project project){
+    public MappingRepository scan(String entityPackageName,Project project){
         //System.out.println(entitiesConfig);
         JavaPsiFacade facade=JavaPsiFacade.getInstance(project);
-        PsiPackage entityPackage=facade.findPackage(entitiesConfig.getEntityPackage());
+        PsiPackage entityPackage=facade.findPackage(entityPackageName);
         MappingRepository mappingRepository =new MappingRepository();
         scanPackage(entityPackage, mappingRepository);
         return mappingRepository;

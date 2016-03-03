@@ -31,4 +31,5 @@ public class Index {
     public void setColumnList(String columnList) {
         this.columnList = columnList;
     }
+
 }

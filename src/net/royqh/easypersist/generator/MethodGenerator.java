@@ -1,11 +1,15 @@
 package net.royqh.easypersist.generator;
 
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.Property;
-import net.royqh.easypersist.model.PropertyType;
-import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,26 +18,32 @@ import java.util.List;
  */
 public class MethodGenerator {
     public static void createDeleteMethod(StringBuilder content, Entity entity) {
-        SingleProperty idProperty=entity.getIdProperty();
+        SingleProperty idProperty = entity.getIdProperty();
         content.append(SQLGenerator.generateDeleteSQL(entity));
 
         content.append("public void delete(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
         content.append(" id) {\n");
-        content.append("jdbcTemplate.update(DELETE_SQL,id);\n");
+        content.append("String sql=DELETE_SQL;\n");
+        createPreparedStatementStatments(content);
+        content.append("stmt.");
+        content.append(JdbcUtils.getColumnSetter(idProperty));
+        content.append("(1,id);\n");
+        content.append("stmt.executeUpdate();\n");
+        createExceptionHandleStatements(content);
         content.append("}\n");
     }
 
     public static void createUpdateMethod(StringBuilder content, Entity entity) {
-        List<String> updateColumns=new ArrayList<>();
-        List<SingleProperty> updateProperties=new ArrayList<>();
-        SingleProperty idProperty=entity.getIdProperty();
-        for (Property property: entity.getProperties()) {
-            if (idProperty==property)
+        List<String> updateColumns = new ArrayList<>();
+        List<SingleProperty> updateProperties = new ArrayList<>();
+        SingleProperty idProperty = entity.getIdProperty();
+        for (Property property : entity.getProperties()) {
+            if (idProperty == property)
                 continue;
-            if (property.getPropertyType()== PropertyType.Column) {
-                SingleProperty singleProperty=(SingleProperty)property;
-                updateColumns.add(singleProperty.getColumnName()+"=?");
+            if (property.getPropertyType() == PropertyType.Column) {
+                SingleProperty singleProperty = (SingleProperty) property;
+                updateColumns.add(singleProperty.getColumnName() + "=?");
                 updateProperties.add(singleProperty);
             }
         }
@@ -44,26 +54,31 @@ public class MethodGenerator {
         content.append(" ");
         content.append(entity.getName());
         content.append(") {\n");
-        content.append("jdbcTemplate.update(UPDATE_SQL,\n");
-        for(int i=0;i<updateProperties.size();i++) {
-            SingleProperty property=updateProperties.get(i);
-            content.append(String.format("%s.%s(),\n",
-                    entity.getName(),property.getGetter()));
+        content.append("String sql=UPDATE_SQL;\n");
+        createPreparedStatementStatments(content);
+        for (int i = 0; i < updateProperties.size(); i++) {
+            SingleProperty property = updateProperties.get(i);
+            content.append(String.format("stmt.%s(%d,%s.%s());\n",
+                    JdbcUtils.getColumnSetter(property),
+                    i+1,entity.getName(), property.getGetter()));
         }
-        content.append(String.format("%s.%s());\n",
-                entity.getName(), idProperty.getGetter()));
-        content.append("}");
+        content.append(String.format("stmt.%s(%d,%s.%s());\n",
+                JdbcUtils.getColumnSetter(idProperty),
+                updateProperties.size()+1,entity.getName(), idProperty.getGetter()));
+        content.append("stmt.executeUpdate();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
     }
 
     public static void createCreateMethod(StringBuilder content, Entity entity) {
-        List<String> insertFields=new ArrayList<>();
-        List<SingleProperty> insertProperties=new ArrayList<>();
-        SingleProperty idProperty=entity.getIdProperty();
-        for (Property property: entity.getProperties()) {
-            if (entity.isAutoGenerateId() && idProperty==property)
+        List<String> insertFields = new ArrayList<>();
+        List<SingleProperty> insertProperties = new ArrayList<>();
+        SingleProperty idProperty = entity.getIdProperty();
+        for (Property property : entity.getProperties()) {
+            if (entity.isAutoGenerateId() && idProperty == property)
                 continue;
-            if (property.getPropertyType()==PropertyType.Column) {
-                SingleProperty singleProperty=(SingleProperty)property;
+            if (property.getPropertyType() == PropertyType.Column) {
+                SingleProperty singleProperty = (SingleProperty) property;
                 insertFields.add(singleProperty.getColumnName());
                 insertProperties.add(singleProperty);
             }
@@ -72,7 +87,7 @@ public class MethodGenerator {
 
         if (entity.isAutoGenerateId()) {
             createCreateWithAutoGenerateIdMethod(content, entity, insertProperties);
-        }else {
+        } else {
             createCreateWithoutAutoGenerateIdMethod(content, entity, insertProperties);
         }
     }
@@ -86,22 +101,18 @@ public class MethodGenerator {
         content.append(" ");
         content.append(entity.getName());
         content.append(") {\n");
-        content.append("jdbcTemplate.update(INSERT_SQL, new PreparedStatementSetter() {\n");
-        content.append("@Override\n");
-        content.append("public void setValues(PreparedStatement ps) throws SQLException {\n");
-        for(int i=0;i<insertProperties.size();i++) {
-            SingleProperty property=insertProperties.get(i);
-            content.append(String.format("ps.%s(%d,%s.%s());\n",
+        content.append("String sql=INSERT_SQL;");
+        createPreparedStatementStatments(content);
+        for (int i = 0; i < insertProperties.size(); i++) {
+            SingleProperty property = insertProperties.get(i);
+            content.append(String.format("stmt.%s(%d,%s.%s());\n",
                     JdbcUtils.getColumnSetter(property),
-                    i+1,entity.getName(), property.getGetter()));
+                    i + 1, entity.getName(), property.getGetter()));
         }
-        content.append("    }\n");
-        content.append("});\n");
-
-        content.append(String.format("return %s.%s();\n",
-                entity.getName(), idProperty.getGetter()));
+        content.append("stmt.executeUpdate();\n");
+        content.append("return "+entity.getName()+"."+idProperty.getGetter()+"();\n");
+        createExceptionHandleStatements(content);
         content.append("}\n");
-
     }
 
     public static void createCreateWithAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
@@ -113,45 +124,294 @@ public class MethodGenerator {
         content.append(" ");
         content.append(entity.getName());
         content.append(") {\n");
-        content.append("    KeyHolder keyHolder=new GeneratedKeyHolder();\n");
-        content.append("    jdbcTemplate.update(new PreparedStatementCreator() {\n");
-        content.append("    @Override\n");
-        content.append("    public PreparedStatement createPreparedStatement(Connection con) throws SQLException {\n");
-        content.append("        PreparedStatement ps=con.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);\n");
-        for (int i=0;i<insertProperties.size();i++) {
-            SingleProperty property=insertProperties.get(i);
-            content.append(String.format("ps.%s(%d,%s.%s());\n",
+        content.append("String sql=INSERT_SQL;");
+        createPreparedStatementWithGeneratedKeyStatments(content);
+        for (int i = 0; i < insertProperties.size(); i++) {
+            SingleProperty property = insertProperties.get(i);
+            content.append(String.format("stmt.%s(%d,%s.%s());\n",
                     JdbcUtils.getColumnSetter(property),
-                    i+1,entity.getName(), property.getGetter()));
+                    i + 1, entity.getName(), property.getGetter()));
         }
-        content.append("        return ps;\n");
-        content.append("    }\n");
-        content.append("    },keyHolder);\n");
-        content.append(String.format("%s id=keyHolder.getKey().%sValue();\n",
-                TypeUtils.getShortTypeName(idProperty.getType()),
-                TypeUtils.getPrimitiveType(idProperty.getType())));
-        content.append(String.format("%s.%s(id);\n",
-                entity.getName(), idProperty.getSetter()));
-        content.append("return id;\n");
+        content.append("stmt.executeUpdate();\n");
+        content.append("ResultSet resultSet=stmt.getGeneratedKeys();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append(String.format("%s.%s(resultSet.%s(1));\n",
+                entity.getName(),idProperty.getSetter(),JdbcUtils.getColumnGetter(idProperty)));
+        content.append(String.format("return %s.%s();\n",
+                entity.getName(), idProperty.getGetter()));
+        createExceptionHandleStatements(content);
         content.append("}\n");
     }
 
     public static void createLoadByIdMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
-        content.append("public " + entity.getClassInfo().getName()+" retrieve(");
+        content.append("public " + entity.getClassInfo().getName() + " retrieve(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
         content.append(" id) {\n");
-        content.append("return jdbcTemplate.queryForObject(SIMPLE_SELECT_SQL + ");
-        content.append("\" where "+idProperty.getColumnName()+" = ?\",\n");
-        content.append("new Object[]{id},SIMPLE_ROW_MAPPER);\n");
+        content.append("String sql=SIMPLE_SELECT_SQL+");
+        content.append("\" where " + idProperty.getColumnName() + " = ?\";\n");
+        createPreparedStatementStatments(content);
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(idProperty)));
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
+        createExceptionHandleStatements(content);
         content.append("}\n");
     }
 
     public static void createLoadAllMethod(StringBuilder content, Entity entity) {
-        String rowCallbackHandlerClassName= CodeUtils.getRowCallbackHandlerClassName(entity);
-        content.append("public List<" + entity.getClassInfo().getName()+"> retrieveAll() {\n");
-        content.append("return jdbcTemplate.query(SIMPLE_SELECT_SQL,\n");
-        content.append("SIMPLE_ROW_MAPPER);\n");
+//        String rowCallbackHandlerClassName = CodeUtils.getRowCallbackHandlerClassName(entity);
+        content.append("public List<" + entity.getClassInfo().getName() + "> retrieveAll() {\n");
+        content.append("String sql=SIMPLE_SELECT_SQL;");
+        createStatementStatments(content);
+
+        content.append("ResultSet resultSet=stmt.executeQuery(sql);\n");
+        content.append(String.format("List<%s> results=new ArrayList<>();\n",
+                entity.getClassInfo().getName()));
+        content.append("int i=1;\n");
+        content.append("while(resultSet.next()){\n");
+        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("}\n");
+        content.append("return results;\n");
+        createExceptionHandleStatements(content);
         content.append("}\n");
     }
+
+    public static void createRetrieveByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+        List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
+
+        String indexName=JdbcUtils.generateIndexName(indexProperties);
+
+        content.append("public " + entity.getClassInfo().getName() + " retrieveBy"+
+                indexName+"(");
+        List<String> parameterList=new ArrayList<>();
+        for (SingleProperty singleProperty:indexProperties) {
+            parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
+                    +" "+singleProperty.getName());
+        }
+        content.append(String.join(",",parameterList));
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateRetrieveByXXXSQL(entity, indexProperties));
+        content.append("\";\n");
+        createPreparedStatementStatments(content);
+        for (int i=0;i<indexProperties.size();i++){
+            SingleProperty property=indexProperties.get(i);
+            content.append(String.format("stmt.%s(%d,%s);\n",
+                    JdbcUtils.getColumnSetter(property),
+                    i+1,
+                    property.getName()));
+        }
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+
+    }
+
+
+    public static void createCountByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+        List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
+
+        String indexName=JdbcUtils.generateIndexName(indexProperties);
+
+        content.append("public long countBy"+
+                indexName+"(");
+        List<String> parameterList=new ArrayList<>();
+        for (SingleProperty singleProperty:indexProperties) {
+            if (TypeUtils.isRangeType(singleProperty)) {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "min"+StringUtils.capitalize(singleProperty.getName()));
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "max"+ StringUtils.capitalize(singleProperty.getName()));
+            } else {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                        + " " + singleProperty.getName());
+
+            }
+        }
+        content.append(String.join(",",parameterList));
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateCountByXXXSQL(entity, indexProperties));
+        content.append("\";\n");
+        createPreparedStatementStatments(content);
+        int i=1;
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(String.format("stmt.%s(%d,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        i,
+                        "min"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("stmt.%s(%d,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        i+1,
+                        "max"+StringUtils.capitalize(property.getName())));
+                i+=2;
+            } else {
+                content.append(String.format("stmt.%s(%d,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        i,
+                        property.getName()));
+                i++;
+            }
+        }
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append("return resultSet.getLong(1);\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+
+    }
+
+    public static void createFindByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+        List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
+
+        String indexName=JdbcUtils.generateIndexName(indexProperties);
+
+        content.append("public List<"+entity.getClassInfo().getName()+"> findBy"+
+                indexName+"(");
+        List<String> parameterList=new ArrayList<>();
+        for (SingleProperty singleProperty:indexProperties) {
+            if (TypeUtils.isRangeType(singleProperty)) {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "min"+StringUtils.capitalize(singleProperty.getName()));
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "max"+ StringUtils.capitalize(singleProperty.getName()));
+            } else {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                        + " " + singleProperty.getName());
+
+            }
+        }
+        parameterList.add("String orderBy");
+        content.append(String.join(",",parameterList));
+        content.append(") {\n");
+        content.append("String sql;\n");
+        content.append("if (orderBy==null) {\n");
+        content.append("sql=\"");
+        content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
+        content.append("\";\n");
+        content.append("}else{\n");
+        content.append("sql=\"");
+        content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
+        content.append(" order by \"+orderBy;\n");
+        content.append("}\n");
+        createPreparedStatementStatments(content);
+        int i=1;
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(String.format("stmt.%s(%d,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        i,
+                        "min"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("stmt.%s(%d,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        i+1,
+                        "max"+StringUtils.capitalize(property.getName())));
+                i+=2;
+            } else {
+                content.append(String.format("stmt.%s(%d,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        i,
+                        property.getName()));
+            }
+        }
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append(String.format("List<%s> results=new ArrayList<>();\n",
+                entity.getClassInfo().getName()));
+        content.append("int i=1;\n");
+        content.append("while(resultSet.next()){\n");
+        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("}\n");
+        content.append("return results;\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    protected static void createStatementStatments(StringBuilder content) {
+        content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
+        content.append("Statement stmt = null;\n");
+        content.append("try {\n");
+        content.append("stmt = con.createStatement();\n");
+    }
+
+    protected static void createPreparedStatementStatments(StringBuilder content) {
+        content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
+        content.append("PreparedStatement stmt = null;\n");
+        content.append("try {\n");
+        content.append("stmt = con.prepareStatement(sql);\n");
+    }
+
+    protected static void createPreparedStatementWithGeneratedKeyStatments(StringBuilder content) {
+        content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
+        content.append("PreparedStatement stmt = null;\n");
+        content.append("try {\n");
+        content.append("stmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);\n");
+    }
+
+    protected static void createExceptionHandleStatements(StringBuilder content) {
+        content.append("}\n");
+        content.append("catch (SQLException ex) {\n");
+        content.append("JdbcUtils.closeStatement(stmt);\n");
+        content.append("stmt = null;\n");
+        content.append("DataSourceUtils.releaseConnection(con, getDataSource());\n");
+        content.append("con = null;\n");
+        content.append("throw getExceptionTranslator().translate(\"JDBC \", sql, ex);\n");
+        content.append("}\n");
+        content.append("finally {\n");
+        content.append("JdbcUtils.closeStatement(stmt);\n");
+        content.append("DataSourceUtils.releaseConnection(con, getDataSource());\n");
+        content.append("}\n");
+    }
+
+    public static void createExceptionTranslatorGetter(StringBuilder content) {
+        content.append("public synchronized SQLExceptionTranslator getExceptionTranslator() {\n");
+        content.append("if (this.exceptionTranslator == null) {\n");
+        content.append("DataSource dataSource = getDataSource();\n");
+        content.append("if (dataSource != null) {\n");
+        content.append("this.exceptionTranslator = new SQLErrorCodeSQLExceptionTranslator(dataSource);\n");
+        content.append("}\n");
+        content.append("else {\n");
+        content.append("this.exceptionTranslator = new SQLStateSQLExceptionTranslator();\n");
+        content.append("}\n");
+        content.append("}\n");
+        content.append("return this.exceptionTranslator;\n");
+        content.append("}\n");
+    }
+
+    public static void createDataSourceGetter(StringBuilder content) {
+        content.append("public DataSource getDataSource() {\n");
+        content.append("return dataSource;\n");
+        content.append("}\n");
+    }
+
+    public static void createDataSourceSetter(StringBuilder content) {
+        content.append("public void setDataSource(DataSource dataSource) {\n");
+        content.append("this.dataSource=dataSource;\n");
+        content.append("}\n");
+    }
+
+
+    @NotNull
+    public static List<SingleProperty> getIndexProperties(Entity entity, IndexInfo indexInfo) {
+        List<SingleProperty> indexProperties=new ArrayList<>();
+        for (String propertyName:indexInfo.getProperties()) {
+            SingleProperty singleProperty=(SingleProperty)entity.getProperty(propertyName);
+            indexProperties.add(singleProperty);
+        }
+        return indexProperties;
+    }
+
+
 }
