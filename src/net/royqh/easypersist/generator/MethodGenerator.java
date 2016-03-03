@@ -11,7 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Roy on 2016/2/24.
@@ -295,17 +297,21 @@ public class MethodGenerator {
             }
         }
         parameterList.add("String orderBy");
+        parameterList.add("int startPos");
+        parameterList.add("int resultSize");
         content.append(String.join(",",parameterList));
         content.append(") {\n");
         content.append("String sql;\n");
         content.append("if (orderBy==null) {\n");
         content.append("sql=\"");
         content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
-        content.append("\";\n");
+        content.append(" limit \"+startPos+\",\"+resultSize;\n");
+        content.append("");
         content.append("}else{\n");
         content.append("sql=\"");
         content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
-        content.append(" order by \"+orderBy;\n");
+        content.append(" order by \"+orderBy+\"");
+        content.append(" limit \"+startPos+\",\"+resultSize;\n");
         content.append("}\n");
         createPreparedStatementStatments(content);
         int i=1;
@@ -331,6 +337,166 @@ public class MethodGenerator {
         content.append(String.format("List<%s> results=new ArrayList<>();\n",
                 entity.getClassInfo().getName()));
         content.append("int i=1;\n");
+        content.append("while(resultSet.next()){\n");
+        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("}\n");
+        content.append("return results;\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    public static void createCountAllMethod(Entity entity, StringBuilder content) {
+        List<SingleProperty> indexProperties = getAllIndexProperties(entity);
+
+        content.append("public long countAll(");
+        List<String> parameterList=new ArrayList<>();
+        for (SingleProperty singleProperty:indexProperties) {
+            if (TypeUtils.isRangeType(singleProperty)) {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "min"+StringUtils.capitalize(singleProperty.getName()));
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "max"+ StringUtils.capitalize(singleProperty.getName()));
+            } else {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                        + " " + singleProperty.getName());
+
+            }
+        }
+        content.append(String.join(",",parameterList));
+        content.append(") {\n");
+        content.append("List<String> params=new ArrayList<>();\n");
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(String.format("if (%s!=null && %s!=null) {\n",
+                        "min"+StringUtils.capitalize(property.getName()),
+                        "max"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s between ? and ? )\");\n",property.getName()));
+                content.append("}\n");
+            } else {
+                content.append(String.format("if (%s!=null) {\n",property.getName()));
+                content.append(String.format("params.add(\"%s=?\");\n",property.getName()));
+                content.append("}\n");
+            }
+        }
+
+        content.append("String sql;\n");
+        content.append("if (params.size()!=0) {\n");
+        content.append("sql=\"select count(*) from "+entity.getTableName()+" where \"+String.join(\",\",params);\n");
+        content.append("} else {\n");
+        content.append("sql=\"select count(*) from "+entity.getTableName()+"\";\n");
+        content.append("}\n");
+        createPreparedStatementStatments(content);
+        content.append("int i=1;\n");
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(String.format("if (%s!=null && %s!=null) {\n",
+                        "min"+StringUtils.capitalize(property.getName()),
+                        "max"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("stmt.%s(i,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        "min"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("stmt.%s(i+1,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        "max"+StringUtils.capitalize(property.getName())));
+                content.append("i+=2;\n");
+                content.append("}\n");
+            } else {
+                content.append(String.format("if (%s!=null) {\n",property.getName()));
+                content.append(String.format("stmt.%s(i,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        property.getName()));
+                content.append("i++;\n");
+                content.append("}\n");
+            }
+        }
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append("return resultSet.getLong(1);\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+
+    public static void createFindAllMethod(Entity entity, StringBuilder content) {
+        List<SingleProperty> indexProperties = getAllIndexProperties(entity);
+
+        content.append("public List<"+entity.getClassInfo().getName()+"> findAll(");
+        List<String> parameterList=new ArrayList<>();
+        for (SingleProperty singleProperty:indexProperties) {
+            if (TypeUtils.isRangeType(singleProperty)) {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "min"+StringUtils.capitalize(singleProperty.getName()));
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "max"+ StringUtils.capitalize(singleProperty.getName()));
+            } else {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                        + " " + singleProperty.getName());
+
+            }
+        }
+        parameterList.add("String orderBy");
+        parameterList.add("int startPos");
+        parameterList.add("int resultSize");
+        content.append(String.join(",",parameterList));
+        content.append(") {\n");
+
+        content.append("List<String> params=new ArrayList<>();\n");
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(String.format("if (%s!=null && %s!=null) {\n",
+                        "min"+StringUtils.capitalize(property.getName()),
+                        "max"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s between ? and ? )\");\n",property.getName()));
+                content.append("}\n");
+            } else {
+                content.append(String.format("if (%s!=null) {\n",property.getName()));
+                content.append(String.format("params.add(\"%s=?\");\n",property.getName()));
+                content.append("}\n");
+            }
+        }
+
+        content.append("String sql,orderClause;\n");
+        content.append("if (orderBy==null) {\n");
+        content.append("orderClause=\"\";\n");
+        content.append("}else{\n");
+        content.append("orderClause=\" order by \"+orderBy;\n");
+        content.append("}\n");
+        content.append("String limitClause=\" limit \"+startPos+\",\"+resultSize;\n");
+        content.append("if (params.size()!=0) {\n");
+        content.append("sql=\"select * from "+entity.getTableName()+" where \"+String.join(\",\",params)+orderClause+limitClause;\n");
+        content.append("} else {\n");
+        content.append("sql=\"select * from "+entity.getTableName()+"\"+orderClause+limitClause;\n");
+        content.append("}\n");
+        createPreparedStatementStatments(content);
+        content.append("int i=1;\n");
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(String.format("if (%s!=null && %s!=null) {\n",
+                        "min"+StringUtils.capitalize(property.getName()),
+                        "max"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("stmt.%s(i,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        "min"+StringUtils.capitalize(property.getName())));
+                content.append(String.format("stmt.%s(i+1,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        "max"+StringUtils.capitalize(property.getName())));
+                content.append("i+=2;\n");
+                content.append("}\n");
+            } else {
+                content.append(String.format("if (%s!=null) {\n",property.getName()));
+                content.append(String.format("stmt.%s(i,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        property.getName()));
+                content.append("i++;\n");
+                content.append("}\n");
+            }
+        }
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append(String.format("List<%s> results=new ArrayList<>();\n",
+                entity.getClassInfo().getName()));
+        content.append("i=1;\n");
         content.append("while(resultSet.next()){\n");
         content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
         content.append("}\n");
@@ -413,5 +579,19 @@ public class MethodGenerator {
         return indexProperties;
     }
 
+    private static List<SingleProperty> getAllIndexProperties(Entity entity) {
+        Set<String> allIndexPropertieNames=new HashSet<>();
+        for (IndexInfo indexInfo:entity.getIndexes()) {
+            for (String propertyName:indexInfo.getProperties()){
+                SingleProperty singleProperty=(SingleProperty)entity.getProperty(propertyName);
+                allIndexPropertieNames.add(singleProperty.getName());
+            }
+        }
+        List<SingleProperty> allIndexProperties=new ArrayList<>();
+        for (String propertyName:allIndexPropertieNames) {
+            allIndexProperties.add((SingleProperty)entity.getProperty(propertyName));
+        }
+        return allIndexProperties;
+    }
 
 }

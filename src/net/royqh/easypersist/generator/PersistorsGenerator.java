@@ -80,8 +80,10 @@ public class PersistorsGenerator {
                 MethodGenerator.createCountByXXXMethod(entity, indexInfo, content);
                 MethodGenerator.createFindByXXXMethod(entity, indexInfo, content);
             }
-
         }
+
+        MethodGenerator.createCountAllMethod(entity,content);
+        MethodGenerator.createFindAllMethod(entity,content);
     }
 
     private static boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
