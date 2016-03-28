@@ -3,6 +3,7 @@ package net.royqh.easypersist.model;
 import net.royqh.easypersist.model.jpa.Column;
 import org.apache.commons.lang.StringUtils;
 
+import javax.persistence.EnumType;
 import javax.persistence.TemporalType;
 
 /**
@@ -11,6 +12,7 @@ import javax.persistence.TemporalType;
 public class SingleProperty extends Property {
     private Column column;
     private TemporalType temporalType=null;
+    private EnumType enumType=null;
 
     public SingleProperty(String name, String type, Column column) {
         super(name,type);
@@ -33,6 +35,13 @@ public class SingleProperty extends Property {
         this.temporalType = temporalType;
     }
 
+    public EnumType getEnumType() {
+        return enumType;
+    }
+
+    public void setEnumType(EnumType enumType) {
+        this.enumType = enumType;
+    }
 
     public String getColumnName() {
         if (column==null) {

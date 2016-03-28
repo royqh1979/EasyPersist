@@ -48,6 +48,7 @@ public final class Constants {
 	public static final String JOIN_TABLE = "javax.persistence.JoinTable";
 	public static final String COLUMN = "javax.persistence.Column";
 	public static final String TEMPORAL = "javax.persistence.Temporal" ;
+	public static final String ENUMERATED = "javax.persistence.Enumerated" ;
 	public static final String COLLECTION_TABLE = "javax.persistence.CollectionTable";
 	public static final String GENERATED_VALUE = "javax.persistence.GeneratedValue";
 

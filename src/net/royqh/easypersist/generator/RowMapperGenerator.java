@@ -57,11 +57,31 @@ public class RowMapperGenerator {
         content.append(getNewEntityVarStatement(entity));
         for (Property property:entity.getProperties()) {
             if (property.getPropertyType()== PropertyType.Column) {
-                content.append(String.format("%s.%s(rs.%s(\"%s\"));\n",
-                        entity.getName(),
-                        property.getSetter(),
-                        JdbcUtils.getColumnGetter((SingleProperty)property),
-                        ((SingleProperty) property).getColumnName()));
+                SingleProperty singleProperty=(SingleProperty)property;
+                if (singleProperty.getEnumType()!=null) {
+                    switch(singleProperty.getEnumType()) {
+                        case ORDINAL:
+                            content.append(String.format("%s.%s(%s.values()[rs.getInt(\"%s\")]);\n",
+                                    entity.getName(),
+                                    property.getSetter(),
+                                    ((SingleProperty) property).getColumnName()));
+                            break;
+                        case STRING:
+                            content.append(String.format("%s.%s(%s.valueOf(rs.getString(\"%s\")));\n",
+                                    entity.getName(),
+                                    property.getSetter(),
+                                    property.getType(),
+                                    ((SingleProperty) property).getColumnName()));
+                            break;
+                    }
+
+                }  else {
+                    content.append(String.format("%s.%s(rs.%s(\"%s\"));\n",
+                            entity.getName(),
+                            property.getSetter(),
+                            JdbcUtils.getColumnGetter((SingleProperty) property),
+                            ((SingleProperty) property).getColumnName()));
+                }
 
             }
             /*

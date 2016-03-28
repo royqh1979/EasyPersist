@@ -4,15 +4,24 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
 import net.royqh.easypersist.model.jpa.*;
+import net.royqh.easypersist.model.jpa.CollectionTable;
+import net.royqh.easypersist.model.jpa.Column;
+import net.royqh.easypersist.model.jpa.ElementCollection;
+import net.royqh.easypersist.model.jpa.Index;
+import net.royqh.easypersist.model.jpa.JoinColumn;
+import net.royqh.easypersist.model.jpa.JoinTable;
+import net.royqh.easypersist.model.jpa.ManyToMany;
+import net.royqh.easypersist.model.jpa.ManyToOne;
+import net.royqh.easypersist.model.jpa.OneToMany;
+import net.royqh.easypersist.model.jpa.OneToOne;
+import net.royqh.easypersist.model.jpa.Table;
+import net.royqh.easypersist.model.jpa.UniqueConstraint;
 import net.royqh.easypersist.parsers.ParseError;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 /**
  * Created by Roy on 2016/2/14.
@@ -266,5 +275,13 @@ public class AnnotationParser {
             collectionTable.setJoinColumns(parseJoinColumns(annotation,"joinColumns"));
         }
         return collectionTable;
+    }
+
+    public static EnumType parseEnumerated(PsiMethod psiMethod) {
+        PsiAnnotation temporalAnno=AnnotationUtils.findAnnotation(psiMethod,Constants.ENUMERATED);
+        if (temporalAnno==null) {
+            return null;
+        }
+        return AnnotationUtils.getEnumValue(temporalAnno,null,EnumType.class);
     }
 }

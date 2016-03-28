@@ -159,6 +159,18 @@ public abstract class TypeUtils {
         if (type.equals("java.math.BigDecimal")){
             return true;
         }
+        if (type.equals("java.time.Date")) {
+            return true;
+        }
+        if (type.equals("java.sql.Date")) {
+            return true;
+        }
+        if (type.equals("java.sql.Time")) {
+            return true;
+        }
+        if (type.equals("java.sql.Timestamp")) {
+            return true;
+        }
         return false;
     }
 }
