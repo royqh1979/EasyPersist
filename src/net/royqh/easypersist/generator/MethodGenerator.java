@@ -221,12 +221,12 @@ public class MethodGenerator {
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
             if (TypeUtils.isRangeType(singleProperty)) {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
             }
@@ -276,12 +276,12 @@ public class MethodGenerator {
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
             if (TypeUtils.isRangeType(singleProperty)) {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
             }
@@ -328,12 +328,12 @@ public class MethodGenerator {
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
             if (TypeUtils.isRangeType(singleProperty)) {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
             }
@@ -393,7 +393,7 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + singleProperty.getName());
 
             }
@@ -464,7 +464,7 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getShortTypeName(singleProperty.getType()))
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + singleProperty.getName());
 
             }
@@ -518,7 +518,7 @@ public class MethodGenerator {
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
                 content.append(
-                        JdbcUtils.generateStatementParameterSetter("i", property, "min" + StringUtils.capitalize(property.getName())));
+                        JdbcUtils.generateStatementParameterSetter("i", property, property.getName()));
                 content.append("i++;\n");
                 content.append("}\n");
             }
