@@ -304,6 +304,7 @@ public class MethodGenerator {
             } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
+                i++;
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
@@ -367,6 +368,7 @@ public class MethodGenerator {
             } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
+                i++;
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
