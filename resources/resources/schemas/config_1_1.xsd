@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema
-        xmlns="http://royqh.net/codegenerator/orm/schema/config/1.0"
-        targetNamespace="http://royqh.net/codegenerator/orm/schema/config/1.0"
+        xmlns="http://royqh.net/codegenerator/orm/schema/config/1.1"
+        targetNamespace="http://royqh.net/codegenerator/orm/schema/config/1.1"
         elementFormDefault="qualified"
         xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="entity-config" type="entity-configType"/>
@@ -21,7 +21,7 @@
   </xs:complexType>
   <xs:complexType name="entity-configType">
     <xs:sequence>
-      <xs:element type="entitiesType" name="entities" />
+      <xs:element type="entitiesType" name="entities" maxOccurs="unbounded" minOccurs="1" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="entitiesType">

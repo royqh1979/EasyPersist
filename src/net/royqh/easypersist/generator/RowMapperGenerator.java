@@ -64,6 +64,7 @@ public class RowMapperGenerator {
                             content.append(String.format("%s.%s(%s.values()[rs.getInt(\"%s\")]);\n",
                                     entity.getName(),
                                     property.getSetter(),
+                                    property.getType(),
                                     ((SingleProperty) property).getColumnName()));
                             break;
                         case STRING:
