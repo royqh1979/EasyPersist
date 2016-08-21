@@ -7,8 +7,4 @@
         <annotation-based package="net.royqh.domain" />
         <persistor target-package="net.royqh.persistor" />
     </entities>
-    <entities>
-        <annotation-based package="net.royqh.domain1" />
-        <persistor target-package="net.royqh.persistor2" />
-    </entities>
 </entity-config>

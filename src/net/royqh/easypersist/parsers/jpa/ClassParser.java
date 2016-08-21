@@ -26,6 +26,7 @@ public class ClassParser {
         checkClassFields(psiClass, entity);
         parseClassProperties(psiClass, entity);
         processIndexInfo(entity);
+        checkIdExist(psiClass,entity);
 
         //for debug:
         System.out.println("entity "+entity.getName()+" indexed properties:");
@@ -37,6 +38,13 @@ public class ClassParser {
         }
         System.out.println("--------");
         return entity;
+    }
+
+    private static void checkIdExist(PsiClass psiClass, Entity entity) {
+        if (entity.getIdProperty()==null) {
+            throw new ParseError(entity,
+                    "no id property!");
+        }
     }
 
     private static String parseEntityName(PsiClass psiClass) {
