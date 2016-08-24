@@ -21,22 +21,76 @@ public class PersistorsGenerator {
         CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
 
         for (Entity entity : mappingRepository.getAllEntities()) {
-            PsiPackage targetPackage = facade.findPackage(entity.getOutputPackagePath());
-            PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
-            PsiFile psiFile = generatePersistor(entity, targetPackage, psiFileFactory);
-            psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
-
-            PsiFile oldFile = psiDirectory.findFile(psiFile.getName());
-            if (oldFile != null) {
-                oldFile.delete();
-            }
-            psiDirectory.add(psiFile);
+            generatePersistor(psiFileFactory, facade, codeStyleManager, entity);
+            generatePersistorCompositor(psiFileFactory, facade,codeStyleManager,entity);
         }
 
     }
 
+    private static void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
+        String compositorClassName= CodeUtils.getPersistorCompositorName(entity);
+        String fileName=compositorClassName+".java";
+        PsiPackage targetPackage = facade.findPackage(entity.getOutputPackagePath());
+        PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
+        PsiFile oldFile=psiDirectory.findFile(fileName);
+        //We Only Create compositor when it is not existed;
+        if (oldFile != null ) {
+            return ;
+        }
+        PsiFile psiFile = generatePersistorCompositorFile(entity, targetPackage, psiFileFactory);
+        psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
+        psiDirectory.add(psiFile);
+    }
+    private static PsiFile generatePersistorCompositorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+        String className = CodeUtils.getPersistorCompositorName(entity);
+        StringBuilder content = new StringBuilder();
+        content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        //imports
+        content.append("import ");
+        content.append(entity.getClassInfo().getQualifiedName());
+        content.append(";\n");
+        content.append("import org.springframework.beans.factory.annotation.Autowired;\n");
+        content.append("import org.springframework.stereotype.Repository;\n");
+        content.append("import org.springframework.transaction.annotation.Transactional;\n");
+        content.append("import javax.sql.DataSource;\n");
 
-    private static PsiFile generatePersistor(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+
+        content.append("@Repository\n");
+        content.append("@Transactional\n");
+        content.append("public class " + className + "{\n");
+        content.append("    private DataSource dataSource;\n");
+        content.append("    private ");
+        content.append(CodeUtils.getPersistorName(entity));
+        content.append(" persistor;\n\n");
+        content.append("    @Autowired\n");
+        content.append("private void setDataSource(DataSource dataSource) {\n");
+        content.append("this.dataSource=dataSource;\n");
+        content.append("persistor=new ");
+        content.append(CodeUtils.getPersistorName(entity));
+        content.append("();\n");
+        content.append("persistor.setDataSource(dataSource);\n");
+        content.append("}\n");
+        content.append("}\n");
+
+        return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
+                content.toString());
+    }
+
+    private static void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
+        PsiPackage targetPackage = facade.findPackage(entity.getOutputPackagePath());
+        PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
+        PsiFile psiFile = generatePersistorFile(entity, targetPackage, psiFileFactory);
+        psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
+
+        PsiFile oldFile = psiDirectory.findFile(psiFile.getName());
+        if (oldFile != null) {
+            oldFile.delete();
+        }
+        psiDirectory.add(psiFile);
+    }
+
+
+    private static PsiFile generatePersistorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getPersistorName(entity);
         StringBuilder content = new StringBuilder();
         content.append("package " + targetPackage.getQualifiedName() + ";\n");
