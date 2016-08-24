@@ -64,6 +64,9 @@ public class ClassParser {
         /* parse @Access annotation */
         AccessType type=AnnotationParser.parseAccessType(psiClass);
         entity.setAccessType(type);
+
+        /* parse custom @MapRelations annotation */
+        entity.setMapRelationInfos(AnnotationParser.parseMapRelations(psiClass));
     }
 
     private static void processIndexInfo(Entity entity) {

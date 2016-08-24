@@ -33,12 +33,14 @@ public class EasyPersistor {
                 NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
                         NotificationDisplayType.TOOL_WINDOW, true);
                 try {
-                      ormConfigParser.parse(xmlConfigFile);
+                    ormConfigParser.parse(xmlConfigFile);
+                    MappingRepository mappingRepository=new MappingRepository();
                     for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
                         System.out.println(entitiesConfig);
-                        MappingRepository mappingRepository = packageScanner.scan(entitiesConfig.getEntityPackage(), project);
-                        PersistorsGenerator.generate(entitiesConfig.getOutputPackage(), project, mappingRepository);
+                        packageScanner.scan(entitiesConfig, project,mappingRepository);
                     }
+                    PersistorsGenerator.generate(project, mappingRepository);
+                    mappingRepository.clear();
                     Notification notification = notificationGroup.createNotification(
                             "Generation finished",
                             NotificationType.INFORMATION

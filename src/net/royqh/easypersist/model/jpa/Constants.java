@@ -51,8 +51,10 @@ public final class Constants {
 	public static final String ENUMERATED = "javax.persistence.Enumerated" ;
 	public static final String COLLECTION_TABLE = "javax.persistence.CollectionTable";
 	public static final String GENERATED_VALUE = "javax.persistence.GeneratedValue";
+	public static final String MAP_RELATIONS = "net.royqh.easypersist.annotations.MapRelations";
+	public static final String MAP_RELATION = "net.royqh.easypersist.annotations.MapRelation";
 
-	static {
+    static {
 		COLLECTIONS.add(SET);
 		COLLECTIONS.add(LIST);
 		COLLECTIONS.add(COLLECTION);

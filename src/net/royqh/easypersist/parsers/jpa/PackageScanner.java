@@ -13,26 +13,27 @@ import net.royqh.easypersist.model.jpa.Constants;
  * Created by Roy on 2016/2/11.
  */
 public class PackageScanner {
-    public MappingRepository scan(String entityPackageName,Project project){
+    public void scan(EntitiesConfig entitiesConfig, Project project, MappingRepository mappingRepository){
         //System.out.println(entitiesConfig);
         JavaPsiFacade facade=JavaPsiFacade.getInstance(project);
-        PsiPackage entityPackage=facade.findPackage(entityPackageName);
-        MappingRepository mappingRepository =new MappingRepository();
-        scanPackage(entityPackage, mappingRepository);
-        return mappingRepository;
+        PsiPackage entityPackage=facade.findPackage(entitiesConfig.getEntityPackage());
+        scanPackage(entityPackage, mappingRepository,
+                entitiesConfig.getEntityPackage(),
+                entitiesConfig.getOutputPackage());
     }
 
-    private void scanPackage(PsiPackage entityPackage, MappingRepository mappingRepository) {
+    private void scanPackage(PsiPackage entityPackage, MappingRepository mappingRepository, String entitiesPackage, String outputPackage) {
         for (PsiClass psiClass:entityPackage.getClasses()){
-            scanClass(psiClass, mappingRepository);
+            scanClass(psiClass, mappingRepository, entitiesPackage, outputPackage);
         }
         for (PsiPackage subPackage:entityPackage.getSubPackages()){
-            //TODO: how to process target sub package?
-            scanPackage(subPackage, mappingRepository);
+
+            scanPackage(subPackage, mappingRepository, entitiesPackage+"/"+subPackage.getName(),
+                    outputPackage+"/"+subPackage.getName());
         }
     }
 
-    private static void scanClass(PsiClass psiClass, MappingRepository mappingRepository) {
+    private static void scanClass(PsiClass psiClass, MappingRepository mappingRepository, String entitiesPackage, String outputPackage) {
         PsiAnnotation[] annotations=psiClass.getModifierList().getAnnotations();
         if (!TypeUtils.containsAnnotation(psiClass, Constants.ENTITY)){
             return;
@@ -45,6 +46,8 @@ public class PackageScanner {
             throw new ParseError(String.format("Class %s is abstract",psiClass.getQualifiedName()));
         }
         Entity entity=ClassParser.parseEntityClass(psiClass);
+        entity.setPackagePath(entitiesPackage);
+        entity.setOutputPackagePath(outputPackage);
         mappingRepository.addEntity(entity);
     }
 

@@ -14,6 +14,7 @@ public class MappingRepository {
     private Map<String,Entity> entityClassMap=new HashMap<>();
 
     public void addEntity(Entity entity) {
+        System.out.println(entity.getName()+":"+entity.getClassInfo().getQualifiedName()) ;
         entityNameMap.put(entity.getName(),entity);
         entityClassMap.put(entity.getClassInfo().getQualifiedName(),entity);
         entity.setMappingRepository(this);
@@ -24,6 +25,7 @@ public class MappingRepository {
     }
 
     public Entity findEntityByClass(String className) {
+        System.out.println("findEntityByClass:"+className);
         return entityClassMap.get(className);
     }
 

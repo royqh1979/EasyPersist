@@ -153,4 +153,42 @@ public class SQLGenerator {
         content.append(String.join(" and ",clauses));
         return content;
     }
+
+    public static StringBuilder generateCountXXXMappingSQL(Entity entity, MapRelationInfo relationInfo) {
+        StringBuilder content=new StringBuilder();
+        Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("select count(A.*) from ");
+        content.append(mappingEntity.getTableName());
+        content.append(" A, ");
+        content.append(relationInfo.getMapTable());
+        content.append(" B where ");
+        content.append(" A.");
+        content.append(mappingEntity.getIdProperty().getColumnName());
+        content.append(" = B.");
+        content.append(relationInfo.getMappingEntityIdColumn());
+        content.append(" and ");
+        content.append(" B.");
+        content.append(relationInfo.getIdColumn());
+        content.append(" = ?");
+        return content;
+    }
+
+    public static StringBuilder generateFindXXXMappingSQL(Entity entity, MapRelationInfo relationInfo) {
+        StringBuilder content=new StringBuilder();
+        Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("select A.* from ");
+        content.append(mappingEntity.getTableName());
+        content.append(" A, ");
+        content.append(relationInfo.getMapTable());
+        content.append(" B where ");
+        content.append(" A.");
+        content.append(mappingEntity.getIdProperty().getColumnName());
+        content.append(" = B.");
+        content.append(relationInfo.getMappingEntityIdColumn());
+        content.append(" and ");
+        content.append(" B.");
+        content.append(relationInfo.getIdColumn());
+        content.append(" = ?");
+        return content;
+    }
 }

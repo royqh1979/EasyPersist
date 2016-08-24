@@ -2,6 +2,8 @@ package net.royqh.easypersist.parsers.jpa;
 
 import com.intellij.psi.*;
 import com.intellij.psi.impl.PsiImplUtil;
+import com.intellij.psi.impl.PsiManagerEx;
+import com.intellij.psi.search.PsiShortNamesCache;
 import net.royqh.easypersist.model.jpa.Constants;
 import org.apache.commons.lang.StringUtils;
 
@@ -80,10 +82,14 @@ public class AnnotationUtils {
             return value;
         if (value.endsWith(".class")) {
             int len=value.length()-".class".length();
-            value.substring(0,len);
+            value=value.substring(0,len);
         }
+
+        PsiManager psiManager=annotation.getManager();
         PsiType type=PsiImplUtil.buildTypeFromTypeString(value,annotation,annotation.getContainingFile());
-        return type.getCanonicalText();
+        //JavaPsiFacade javaPsiFacade=JavaPsiFacade.getInstance(psiManager.getProject());
+        //PsiType type=javaPsiFacade.getParserFacade().createTypeFromText(value,annotation.getContext());
+        return type.getCanonicalText(true);
     }
 
     public static PsiAnnotation[] getAnnotationArray(PsiAnnotation annotation, String attributeName){

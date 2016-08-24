@@ -626,4 +626,51 @@ public class MethodGenerator {
         return allIndexProperties;
     }
 
+    public static void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("public List<");
+        content.append(relationInfo.getMappingEntityFullClassName());
+        content.append("> find" +
+                StringUtils.capitalize(mappingEntity.getName()) + "(");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id");
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
+        content.append("\";\n");
+        createPreparedStatementStatments(content);
+        JdbcUtils.generateStatementParameterSetter(1+"", entity.getIdProperty(), relationInfo.getMappingEntityIdColumn());
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append(String.format("List<%s> results=new ArrayList<>();\n",
+                entity.getClassInfo().getName()));
+        content.append("int i=1;\n");
+        content.append("while(resultSet.next()){\n");
+        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("}\n");
+        content.append("return results;\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    public static void createCountXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("public long count" +
+                StringUtils.capitalize(mappingEntity.getName()) + "(");
+
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id");
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateCountXXXMappingSQL(entity, relationInfo));
+        content.append("\";\n");
+        createPreparedStatementStatments(content);
+        JdbcUtils.generateStatementParameterSetter(1+"", entity.getIdProperty(), relationInfo.getMappingEntityIdColumn());
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append("return resultSet.getLong(1);\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
 }

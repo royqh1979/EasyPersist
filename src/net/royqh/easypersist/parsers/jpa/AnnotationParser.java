@@ -1,8 +1,11 @@
 package net.royqh.easypersist.parsers.jpa;
 
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
+import net.royqh.easypersist.annotations.MapRelation;
+import net.royqh.easypersist.model.MapRelationInfo;
 import net.royqh.easypersist.model.jpa.*;
 import net.royqh.easypersist.model.jpa.CollectionTable;
 import net.royqh.easypersist.model.jpa.Column;
@@ -22,6 +25,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Roy on 2016/2/14.
@@ -283,5 +289,31 @@ public class AnnotationParser {
             return null;
         }
         return AnnotationUtils.getEnumValue(temporalAnno,null,EnumType.class);
+    }
+
+    public static List<MapRelationInfo> parseMapRelations(PsiClass psiClass) {
+        PsiAnnotation annotation=AnnotationUtils.findAnnotation(psiClass,Constants.MAP_RELATIONS);
+        if (annotation!=null) {
+            List<MapRelationInfo> relationInfos=parseMapRelationsArray(annotation);
+            return relationInfos;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
+    private static List<MapRelationInfo> parseMapRelationsArray(PsiAnnotation annotation) {
+        PsiAnnotation[] relationAnnos=AnnotationUtils.getAnnotationArray(annotation,"relations");
+        List<MapRelationInfo> relationInfos=new ArrayList<>();
+        for (int i=0;i<relationAnnos.length;i++){
+            PsiAnnotation relationAnno=relationAnnos[i];
+            System.out.println(relationAnno.getText());
+            MapRelationInfo relationInfo=new MapRelationInfo();
+            relationInfo.setMapTable(AnnotationUtils.getValue(relationAnno,"table"));
+            relationInfo.setMappingEntityFullClassName(AnnotationUtils.getClassName(relationAnno,"mappingEntityClass"));
+            relationInfo.setMappingEntityIdColumn(AnnotationUtils.getValue(relationAnno,"mappingEntityIdColumn"));
+            relationInfo.setIdColumn(AnnotationUtils.getValue(relationAnno,"idColumn"));
+            relationInfos.add(relationInfo);
+        }
+        return relationInfos;
     }
 }

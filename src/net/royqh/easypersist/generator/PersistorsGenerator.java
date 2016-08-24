@@ -15,17 +15,14 @@ import java.util.*;
  * Created by Roy on 2016/2/15.
  */
 public class PersistorsGenerator {
-    public static void generate(String targetPackageName, Project project, MappingRepository mappingRepository) {
+    public static void generate(Project project, MappingRepository mappingRepository) {
+        PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
-        PsiPackage targetPackage = facade.findPackage(targetPackageName);
-        generate(targetPackage, mappingRepository);
-    }
+        CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
 
-    private static void generate(PsiPackage targetPackage, MappingRepository mappingRepository) {
-        PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(targetPackage.getProject());
-        CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(targetPackage.getProject());
-        PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
         for (Entity entity : mappingRepository.getAllEntities()) {
+            PsiPackage targetPackage = facade.findPackage(entity.getOutputPackagePath());
+            PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
             PsiFile psiFile = generatePersistor(entity, targetPackage, psiFileFactory);
             psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
 
@@ -35,7 +32,9 @@ public class PersistorsGenerator {
             }
             psiDirectory.add(psiFile);
         }
+
     }
+
 
     private static PsiFile generatePersistor(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = "__" + Character.toUpperCase(entity.getName().charAt(0))
@@ -55,6 +54,8 @@ public class PersistorsGenerator {
 
         createSearchMethods(entity,content);
 
+        createMappingListMethods(entity,content);
+
         createUtilMethods(content);
 
 
@@ -66,6 +67,13 @@ public class PersistorsGenerator {
 
         return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
                 content.toString());
+    }
+
+    private static void createMappingListMethods(Entity entity, StringBuilder content) {
+        for (MapRelationInfo relationInfo: entity.getMapRelationInfos()) {
+            MethodGenerator.createCountXXXMappingMethod(entity,relationInfo,content);
+            MethodGenerator.createFindXXXMappingMethod(entity,relationInfo,content);
+        }
     }
 
     private static void createSearchMethods(Entity entity, StringBuilder content) {
