@@ -1,5 +1,6 @@
 package net.royqh.easypersist.generator;
 
+import com.intellij.openapi.util.text.StringUtil;
 import net.royqh.easypersist.model.CollectionProperty;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.Property;
@@ -53,7 +54,12 @@ public class CodeUtils {
 
     @NotNull
     public static String getPersistorName(Entity entity) {
-        return "__" + Character.toUpperCase(entity.getName().charAt(0))
-                    + entity.getName().substring(1) + "Persistor";
+        return "__" + StringUtil.capitalize(entity.getName())
+                    + "Persistor";
+    }
+
+    public static String getPersistorCompositorName(Entity entity) {
+        return  StringUtil.capitalize(entity.getName())
+                + "Persistor";
     }
 }

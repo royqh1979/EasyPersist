@@ -639,7 +639,8 @@ public class MethodGenerator {
         content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         createPreparedStatementStatments(content);
-        JdbcUtils.generateStatementParameterSetter(1+"", entity.getIdProperty(), relationInfo.getMappingEntityIdColumn());
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append(String.format("List<%s> results=new ArrayList<>();\n",
                 mappingEntity.getClassInfo().getName()));
@@ -666,7 +667,8 @@ public class MethodGenerator {
         content.append(SQLGenerator.generateCountXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         createPreparedStatementStatments(content);
-        JdbcUtils.generateStatementParameterSetter(1+"", entity.getIdProperty(), relationInfo.getMappingEntityIdColumn());
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append("if (!resultSet.next()) {\n");
         content.append("throw new EmptyResultDataAccessException(1);\n");
