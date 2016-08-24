@@ -642,10 +642,12 @@ public class MethodGenerator {
         JdbcUtils.generateStatementParameterSetter(1+"", entity.getIdProperty(), relationInfo.getMappingEntityIdColumn());
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                entity.getClassInfo().getName()));
+                mappingEntity.getClassInfo().getName()));
         content.append("int i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("results.add(");
+        content.append(CodeUtils.getPersistorName(mappingEntity));
+        content.append(".SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
         content.append("}\n");
         content.append("return results;\n");
         createExceptionHandleStatements(content);

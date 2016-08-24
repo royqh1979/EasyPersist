@@ -37,8 +37,7 @@ public class PersistorsGenerator {
 
 
     private static PsiFile generatePersistor(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
-        String className = "__" + Character.toUpperCase(entity.getName().charAt(0))
-                + entity.getName().substring(1) + "Persistor";
+        String className = CodeUtils.getPersistorName(entity);
         StringBuilder content = new StringBuilder();
         content.append("package " + targetPackage.getQualifiedName() + ";\n");
 
@@ -168,12 +167,20 @@ public class PersistorsGenerator {
                     */
             }
         }
+        for (MapRelationInfo relationInfo:entity.getMapRelationInfos()) {
+            types.add(relationInfo.getMappingEntityFullClassName());
+            Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+            types.add(mappingEntity.getOutputPackagePath().replaceAll(System.lineSeparator(),".")
+                +"."+CodeUtils.getPersistorName(mappingEntity));
+        }
         types.removeAll(Constants.PRIMITIVE_TYPES);
         for (String type:types){
             content.append("import ");
             content.append(type);
             content.append(";\n");
         }
+
+
     }
 
     /*

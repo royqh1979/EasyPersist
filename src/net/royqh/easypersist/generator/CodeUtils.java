@@ -4,6 +4,7 @@ import net.royqh.easypersist.model.CollectionProperty;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.Property;
 import net.royqh.easypersist.model.SingleProperty;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Roy on 2016/2/18.
@@ -50,4 +51,9 @@ public class CodeUtils {
     }
 
 
+    @NotNull
+    public static String getPersistorName(Entity entity) {
+        return "__" + Character.toUpperCase(entity.getName().charAt(0))
+                    + entity.getName().substring(1) + "Persistor";
+    }
 }
