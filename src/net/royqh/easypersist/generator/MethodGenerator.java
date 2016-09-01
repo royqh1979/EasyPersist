@@ -1,5 +1,6 @@
 package net.royqh.easypersist.generator;
 
+import com.google.common.base.Preconditions;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -225,7 +226,12 @@ public class MethodGenerator {
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
-            } else {
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isString(singleProperty.getType()))  {
+                    parameterList.add("String "+singleProperty.getName());
+                }
+                continue;
+            }  else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -245,7 +251,14 @@ public class MethodGenerator {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
-            } else {
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                    i++;
+                }
+                continue;
+            }  else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -280,7 +293,12 @@ public class MethodGenerator {
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
-            } else {
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isString(singleProperty.getType()))  {
+                    parameterList.add("String "+singleProperty.getName());
+                }
+                continue;
+            }  else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -301,7 +319,14 @@ public class MethodGenerator {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
-            } else {
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                    i++;
+                }
+                continue;
+            }  else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -333,7 +358,12 @@ public class MethodGenerator {
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
-            } else {
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isString(singleProperty.getType()))  {
+                    parameterList.add("String "+singleProperty.getName());
+                }
+                continue;
+            }  else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -344,6 +374,7 @@ public class MethodGenerator {
         parameterList.add("int resultSize");
         content.append(String.join(",", parameterList));
         content.append(") {\n");
+        content.append("Preconditions.checkArgument(SqlTools.isValidColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
         content.append("String sql;\n");
         content.append("if (orderBy==null) {\n");
         content.append("sql=\"");
@@ -365,7 +396,14 @@ public class MethodGenerator {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
-            } else {
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                    i++;
+                }
+                continue;
+            }  else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -394,7 +432,12 @@ public class MethodGenerator {
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
-            } else {
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isString(singleProperty.getType()))  {
+                    parameterList.add("String "+singleProperty.getName());
+                }
+                continue;
+            }  else {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + singleProperty.getName());
 
@@ -410,6 +453,13 @@ public class MethodGenerator {
                         "max" + StringUtils.capitalize(property.getName())));
                 content.append(String.format("params.add(\"(%s between ? and ? )\");\n", property.getName()));
                 content.append("}\n");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(String.format("if (%s!=null) {\n", property.getName()));
+                    content.append(String.format("params.add(\"%s like ?\");\n", property.getName()));
+                    content.append("}\n");
+                }
+                continue;
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
                 content.append(String.format("params.add(\"%s=?\");\n", property.getName()));
@@ -436,6 +486,16 @@ public class MethodGenerator {
                         JdbcUtils.generateStatementParameterSetter("i+1", property, "max" + StringUtils.capitalize(property.getName())));
                 content.append("i+=2;\n");
                 content.append("}\n");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(String.format("if (%s!=null) {\n", property.getName()));
+                    content.append(
+                        JdbcUtils.generateStatementParameterSetter("i", property,
+                                "\"%\"+"+property.getName()+"+\"%\""));
+                    content.append("i++;\n");
+                    content.append("}\n");
+                }
+                continue;
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
                 content.append(
@@ -465,6 +525,11 @@ public class MethodGenerator {
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isString(singleProperty.getType()))  {
+                    parameterList.add("String "+singleProperty.getName());
+                }
+                continue;
             } else {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + singleProperty.getName());
@@ -477,6 +542,7 @@ public class MethodGenerator {
         content.append(String.join(",", parameterList));
         content.append(") {\n");
 
+        content.append("Preconditions.checkArgument(SqlTools.isValidColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
         content.append("List<String> params=new ArrayList<>();\n");
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeType(property)) {
@@ -485,6 +551,13 @@ public class MethodGenerator {
                         "max" + StringUtils.capitalize(property.getName())));
                 content.append(String.format("params.add(\"(%s between ? and ? )\");\n", property.getName()));
                 content.append("}\n");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(String.format("if (%s!=null) {\n", property.getName()));
+                    content.append(String.format("params.add(\"%s like ?\");\n", property.getName()));
+                    content.append("}\n");
+                }
+                continue;
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
                 content.append(String.format("params.add(\"%s=?\");\n", property.getName()));
@@ -517,6 +590,14 @@ public class MethodGenerator {
                         JdbcUtils.generateStatementParameterSetter("i+1", property, "max" + StringUtils.capitalize(property.getName())));
                 content.append("i+=2;\n");
                 content.append("}\n");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(String.format("if (%s!=null) {\n", property.getName()));
+                    content.append(
+                            JdbcUtils.generateStatementParameterSetter("i", property, "\"%\"+"+property.getName()+"+\"%\""));
+                    content.append("i++;\n");content.append("}\n");
+                }
+                continue;
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
                 content.append(

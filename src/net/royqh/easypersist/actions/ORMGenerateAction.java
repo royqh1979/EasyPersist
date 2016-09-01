@@ -3,16 +3,14 @@ package net.royqh.easypersist.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
-import com.yourkit.util.FileUtil;
 import net.royqh.easypersist.EasyPersistor;
 import net.royqh.easypersist.parsers.OrmConfigParser;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 
 /**
  * Created by Roy on 2016/2/10.
@@ -33,13 +31,17 @@ public class ORMGenerateAction extends AnAction {
         if (xmlConfigFile == null) {
             return;
         }
-        easyPersistor.execute(project, xmlConfigFile);
+        ProgressManager progressManager=ProgressManager.getInstance();
+        ORMGenerateTask task=new ORMGenerateTask(project,"Generating ORM Code...",true,
+                easyPersistor,
+                xmlConfigFile);
+        progressManager.run(task);
     }
 
     @Override
     public void update(AnActionEvent e) {
         final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
-        if (file == null | (!file.getName().endsWith(OrmConfigParser.ORM_CONFIG_FILE_NAME))) {
+        if (file == null || (!file.getName().endsWith(OrmConfigParser.ORM_CONFIG_FILE_NAME))) {
             e.getPresentation().setVisible(false);
         } else {
             e.getPresentation().setVisible(true);

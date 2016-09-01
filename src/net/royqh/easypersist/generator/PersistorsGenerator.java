@@ -1,6 +1,8 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
@@ -15,14 +17,19 @@ import java.util.*;
  * Created by Roy on 2016/2/15.
  */
 public class PersistorsGenerator {
-    public static void generate(Project project, MappingRepository mappingRepository) {
+    public static void generate(Project project, MappingRepository mappingRepository, ProgressIndicator indicator) {
         PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
         CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-
+        int i,n;
+        i=1;n=mappingRepository.getAllEntities().size();
         for (Entity entity : mappingRepository.getAllEntities()) {
+            indicator.checkCanceled();
+            indicator.setText("generating persistor for "+entity.getClassInfo().getQualifiedName());
             generatePersistor(psiFileFactory, facade, codeStyleManager, entity);
             generatePersistorCompositor(psiFileFactory, facade,codeStyleManager,entity);
+            indicator.setFraction(0.5 + (i + 0.0) / n / 2);
+            i++;
         }
 
     }
@@ -151,7 +158,7 @@ public class PersistorsGenerator {
         List<SingleProperty> indexProperties = MethodGenerator.getIndexProperties(entity, indexInfo);
         if (indexInfo.isUnique()) {
             for (SingleProperty singleProperty : indexProperties) {
-                if (!TypeUtils.isRangeType(singleProperty)) {
+                if (!TypeUtils.isRangeType(singleProperty) && !TypeUtils.isStringType(singleProperty)) {
                     //unique and not range type, can't retrive many entity by this property
                     return false;
                 }
@@ -180,6 +187,9 @@ public class PersistorsGenerator {
         content.append("import javax.sql.DataSource;\n");
         content.append("import java.sql.*;\n");
         content.append("import java.util.*;\n");
+
+        content.append("import com.google.common.base.Preconditions;\n");
+        content.append("import net.royqh.lang.SqlTools;");
 
         content.append("import org.springframework.dao.EmptyResultDataAccessException;\n");
         content.append("import org.springframework.jdbc.core.RowCallbackHandler;\n");

@@ -129,7 +129,12 @@ public class SQLGenerator {
         for (SingleProperty property:indexProperties) {
             if (TypeUtils.isRangeType(property)) {
                 clauses.add("(" + property.getColumnName() + " between ? and ? )");
-            } else {
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    clauses.add(property.getColumnName() + " like ?");
+                }
+                continue;
+            }  else {
                 clauses.add(property.getColumnName() + " = ?");
             }
         }
@@ -146,7 +151,12 @@ public class SQLGenerator {
         for (SingleProperty property:indexProperties) {
             if (TypeUtils.isRangeType(property)) {
                 clauses.add("(" + property.getColumnName() + " between ? and ? )");
-            } else {
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(property)) {
+                    clauses.add(property.getColumnName() + " like ?");
+                }
+                continue;
+            } else{
                 clauses.add(property.getColumnName() + " = ?");
             }
         }

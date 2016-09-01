@@ -1,5 +1,7 @@
 package net.royqh.easypersist.parsers.jpa;
 
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import net.royqh.easypersist.MappingRepository;
@@ -13,23 +15,29 @@ import net.royqh.easypersist.model.jpa.Constants;
  * Created by Roy on 2016/2/11.
  */
 public class PackageScanner {
-    public void scan(EntitiesConfig entitiesConfig, Project project, MappingRepository mappingRepository){
+    public void scan(EntitiesConfig entitiesConfig, Project project, MappingRepository mappingRepository,
+                     int configNo, int numConfigs, ProgressIndicator indicator){
         //System.out.println(entitiesConfig);
         JavaPsiFacade facade=JavaPsiFacade.getInstance(project);
         PsiPackage entityPackage=facade.findPackage(entitiesConfig.getEntityPackage());
         scanPackage(entityPackage, mappingRepository,
                 entitiesConfig.getEntityPackage(),
-                entitiesConfig.getOutputPackage());
+                entitiesConfig.getOutputPackage(),configNo,numConfigs,indicator);
     }
 
-    private void scanPackage(PsiPackage entityPackage, MappingRepository mappingRepository, String entitiesPackage, String outputPackage) {
+    private void scanPackage(PsiPackage entityPackage, MappingRepository mappingRepository, String entitiesPackage, String outputPackage,
+                             int configNo, int numConfigs, ProgressIndicator indicator) {
+        int i=1;
+        int n=entityPackage.getClasses().length;
         for (PsiClass psiClass:entityPackage.getClasses()){
+            indicator.checkCanceled();
+            indicator.setText("parsing "+psiClass.getQualifiedName());
             scanClass(psiClass, mappingRepository, entitiesPackage, outputPackage);
+            indicator.setFraction((configNo+(0.0+i)/n)/numConfigs);
         }
         for (PsiPackage subPackage:entityPackage.getSubPackages()){
-
-            scanPackage(subPackage, mappingRepository, entitiesPackage+"/"+subPackage.getName(),
-                    outputPackage+"/"+subPackage.getName());
+            scanPackage(subPackage, mappingRepository, entitiesPackage+"."+subPackage.getName(),
+                    outputPackage+"."+subPackage.getName(), configNo,numConfigs, indicator);
         }
     }
 
