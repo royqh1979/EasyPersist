@@ -106,6 +106,7 @@ public class PersistorsGenerator {
 
 
         content.append("public class " + className + "{\n");
+        content.append("private Logger logger= LoggerFactory.getLogger("+className+".class);\n");
         content.append("    private DataSource dataSource;\n");
         content.append("private SQLExceptionTranslator exceptionTranslator;\n");
         createSQLs(content, entity);
@@ -185,6 +186,8 @@ public class PersistorsGenerator {
 
     private static void generateImports(Entity entity, StringBuilder content) {
         content.append("import javax.sql.DataSource;\n");
+        content.append("import org.slf4j.Logger;\n");
+        content.append("import org.slf4j.LoggerFactory;\n");
         content.append("import java.sql.*;\n");
         content.append("import java.util.*;\n");
 
