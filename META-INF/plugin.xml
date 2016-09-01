@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.5.0</version>
+  <version>0.6.0</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -13,6 +13,7 @@
 
   <change-notes><![CDATA[
       * 0.5.0 first release.<br>
+      * 0.6.0 support for like search in unique string columns <br />
     ]]>
   </change-notes>
 
