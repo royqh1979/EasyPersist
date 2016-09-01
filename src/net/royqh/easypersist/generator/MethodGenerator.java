@@ -217,7 +217,7 @@ public class MethodGenerator {
 
         String indexName = JdbcUtils.generateIndexName(indexProperties);
 
-        content.append("public long countBy" +
+        content.append("public int countBy" +
                 indexName + "(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
@@ -268,7 +268,7 @@ public class MethodGenerator {
         content.append("if (!resultSet.next()) {\n");
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
-        content.append("return resultSet.getLong(1);\n");
+        content.append("return resultSet.getInt(1);\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
 
@@ -424,7 +424,7 @@ public class MethodGenerator {
     public static void createCountAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = getAllIndexProperties(entity);
 
-        content.append("public long countAll(");
+        content.append("public int countAll(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
             if (TypeUtils.isRangeType(singleProperty)) {
@@ -508,7 +508,7 @@ public class MethodGenerator {
         content.append("if (!resultSet.next()) {\n");
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
-        content.append("return resultSet.getLong(1);\n");
+        content.append("return resultSet.getInt(1);\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -738,7 +738,7 @@ public class MethodGenerator {
 
     public static void createCountXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-        content.append("public long count" +
+        content.append("public int count" +
                 StringUtils.capitalize(mappingEntity.getName()) + "(");
 
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
@@ -754,7 +754,7 @@ public class MethodGenerator {
         content.append("if (!resultSet.next()) {\n");
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
-        content.append("return resultSet.getLong(1);\n");
+        content.append("return resultSet.getInt(1);\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
