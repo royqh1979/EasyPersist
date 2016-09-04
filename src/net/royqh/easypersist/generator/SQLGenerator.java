@@ -167,7 +167,7 @@ public class SQLGenerator {
     public static StringBuilder generateCountXXXMappingSQL(Entity entity, MapRelationInfo relationInfo) {
         StringBuilder content=new StringBuilder();
         Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-        content.append("select count(A.*) from ");
+        content.append("select count(*) from ");
         content.append(mappingEntity.getTableName());
         content.append(" A, ");
         content.append(relationInfo.getMapTable());
