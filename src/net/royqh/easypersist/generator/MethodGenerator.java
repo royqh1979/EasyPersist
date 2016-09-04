@@ -780,4 +780,48 @@ public class MethodGenerator {
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
+
+    public static void createFindXXXMappingWithSortMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("public List<");
+        content.append(relationInfo.getMappingEntityFullClassName());
+        content.append("> find" +
+                StringUtils.capitalize(mappingEntity.getName()) + "WithSort(");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,String orderBy,String sort,int startPos,int resultSize");
+        content.append(") {\n");
+        content.append("Preconditions.checkArgument(SqlTools.isValidColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
+        content.append("String sql;\n");
+        content.append("if (orderBy==null) {\n");
+        content.append("sql=\"");
+        content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
+        content.append(" limit \"+startPos+\",\"+resultSize;\n");
+        content.append("");
+        content.append("}else{\n");
+        content.append(" String sortSql=\" asc \";\n");
+        content.append(" if (\"desc\".equals(sort)){\n");
+        content.append("sortSql=\" desc \";");
+        content.append("}\n");
+        content.append("sql=\"");
+        content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
+        content.append(" order by A.\"+orderBy+sortSql+\"");
+        content.append(" limit \"+startPos+\",\"+resultSize;\n");
+        content.append("}\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append(String.format("List<%s> results=new ArrayList<>();\n",
+                mappingEntity.getClassInfo().getName()));
+        content.append("int i=1;\n");
+        content.append("while(resultSet.next()){\n");
+        content.append("results.add(");
+        content.append(CodeUtils.getPersistorName(mappingEntity));
+        content.append(".SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("}\n");
+        content.append("return results;\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
 }

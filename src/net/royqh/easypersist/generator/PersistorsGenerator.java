@@ -134,6 +134,7 @@ public class PersistorsGenerator {
         for (MapRelationInfo relationInfo: entity.getMapRelationInfos()) {
             MethodGenerator.createCountXXXMappingMethod(entity,relationInfo,content);
             MethodGenerator.createFindXXXMappingMethod(entity,relationInfo,content);
+            MethodGenerator.createFindXXXMappingWithSortMethod(entity,relationInfo,content);
         }
     }
 
