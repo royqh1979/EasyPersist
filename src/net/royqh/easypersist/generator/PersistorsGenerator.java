@@ -132,6 +132,9 @@ public class PersistorsGenerator {
 
     private static void createMappingListMethods(Entity entity, StringBuilder content) {
         for (MapRelationInfo relationInfo: entity.getMapRelationInfos()) {
+            MethodGenerator.createCreateXXXMappingMethod(entity,relationInfo,content);
+            MethodGenerator.createDeleteXXXMappingMethod(entity,relationInfo,content);
+            MethodGenerator.createBatchDeleteXXXMappingMethod(entity,relationInfo,content);
             MethodGenerator.createCountXXXMappingMethod(entity,relationInfo,content);
             MethodGenerator.createFindXXXMappingMethod(entity,relationInfo,content);
             MethodGenerator.createFindXXXMappingWithSortMethod(entity,relationInfo,content);
