@@ -25,7 +25,6 @@ public class MappingRepository {
     }
 
     public Entity findEntityByClass(String className) {
-        System.out.println("findEntityByClass:"+className);
         return entityClassMap.get(className);
     }
 

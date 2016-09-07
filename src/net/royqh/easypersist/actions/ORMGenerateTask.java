@@ -2,6 +2,7 @@ package net.royqh.easypersist.actions;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -27,13 +28,6 @@ public class ORMGenerateTask extends Task.Backgroundable {
 
     @Override
     public void run(@NotNull ProgressIndicator indicator) {
-        WriteCommandAction.runWriteCommandAction(getProject(), new Runnable() {
-
-            @Override
-            public void run() {
-                easyPersistor.execute(getProject(),xmlConfigFile,indicator);
-            }
-        });
-
+        easyPersistor.execute(getProject(),xmlConfigFile,indicator);
     }
 }

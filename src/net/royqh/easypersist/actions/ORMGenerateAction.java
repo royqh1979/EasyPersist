@@ -3,6 +3,7 @@ package net.royqh.easypersist.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -31,8 +32,8 @@ public class ORMGenerateAction extends AnAction {
         if (xmlConfigFile == null) {
             return;
         }
-        ProgressManager progressManager=ProgressManager.getInstance();
-        ORMGenerateTask task=new ORMGenerateTask(project,"Generating ORM Code...",true,
+        ProgressManager progressManager = ProgressManager.getInstance();
+        ORMGenerateTask task = new ORMGenerateTask(project, "Generating ORM Code...", true,
                 easyPersistor,
                 xmlConfigFile);
         progressManager.run(task);

@@ -2,6 +2,7 @@ package net.royqh.easypersist;
 
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -27,45 +28,38 @@ public class EasyPersistor {
     }
 
     public void execute(Project project, VirtualFile xmlConfigFile, ProgressIndicator indicator) {
-        ApplicationManager.getApplication().saveAll();
-        NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
-                NotificationDisplayType.TOOL_WINDOW, true);
-        Notification notification;
+        WriteCommandAction.runWriteCommandAction(project, new Runnable() {
+            @Override
+            public void run() {
+                //ApplicationManager.getApplication().saveAll();
+                NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
+                        NotificationDisplayType.TOOL_WINDOW, true);
+                Notification notification;
 
-        notification = notificationGroup.createNotification(
-                "Generating ORM Code ...",
-                NotificationType.INFORMATION
-        );
-        Notifications.Bus.notify(notification, project);
-
-        indicator.setText("Parsing Entities...");
-        indicator.setFraction(0.0);
-        try {
-            ormConfigParser.parse(xmlConfigFile);
-            MappingRepository mappingRepository = new MappingRepository();
-            int i=1;
-            int n=ormConfigParser.getEntitiesConfigs().size();
-            for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
-                System.out.println(entitiesConfig);
-                packageScanner.scan(entitiesConfig, project, mappingRepository,i,n,indicator);
-                i++;
+                indicator.setText("Parsing Entities...");
+                indicator.setFraction(0.0);
+                try {
+                    ormConfigParser.parse(xmlConfigFile);
+                    MappingRepository mappingRepository = new MappingRepository();
+                    int i = 1;
+                    int n = ormConfigParser.getEntitiesConfigs().size();
+                    for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
+                        System.out.println(entitiesConfig);
+                        packageScanner.scan(entitiesConfig, project, mappingRepository, i, n, indicator);
+                        i++;
+                    }
+                    indicator.setText("Generating ORM codes ...");
+                    indicator.setFraction(0.5);
+                    PersistorsGenerator.generate(project, mappingRepository, indicator);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    notification = notificationGroup.createNotification(
+                            "Generation failed :" + e.getMessage(),
+                            NotificationType.ERROR
+                    );
+                    Notifications.Bus.notify(notification, project);
+                }
             }
-            indicator.setText("Generating ORM codes ...");
-            indicator.setFraction(0.5);
-            PersistorsGenerator.generate(project, mappingRepository,indicator);
-            mappingRepository.clear();
-            notification = notificationGroup.createNotification(
-                    "Generation finished ",
-                    NotificationType.INFORMATION
-            );
-            Notifications.Bus.notify(notification, project);
-        } catch (Exception e) {
-            e.printStackTrace();
-            notification = notificationGroup.createNotification(
-                    "Generation failed :" + e.getMessage(),
-                    NotificationType.ERROR
-            );
-            Notifications.Bus.notify(notification, project);
-        }
+        });
     }
 }

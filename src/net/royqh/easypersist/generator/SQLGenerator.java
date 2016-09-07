@@ -201,4 +201,32 @@ public class SQLGenerator {
         content.append(" = ?");
         return content;
     }
+
+    public static StringBuilder generateCreateXXXMappingSQL(Entity entity, MapRelationInfo relationInfo) {
+        StringBuilder content=new StringBuilder();
+        Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("insert into ");
+        content.append(relationInfo.getMapTable());
+        content.append("(");
+        content.append(relationInfo.getIdColumn());
+        content.append(",");
+        content.append(relationInfo.getMappingEntityIdColumn());
+        content.append(") values (?,?)");
+
+        return content;
+    }
+
+    public static StringBuilder generateDeleteXXXMappingSQL(Entity entity, MapRelationInfo relationInfo) {
+        StringBuilder content=new StringBuilder();
+        Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        content.append("delete from ");
+        content.append(relationInfo.getMapTable());
+        content.append(" where ");
+        content.append(relationInfo.getIdColumn());
+        content.append("=? and ");
+        content.append(relationInfo.getMappingEntityIdColumn());
+        content.append("=?");
+
+        return content;
+    }
 }

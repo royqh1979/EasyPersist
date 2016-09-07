@@ -824,4 +824,100 @@ public class MethodGenerator {
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
+
+    public static void createCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        String mappingEntityId=mappingEntity.getName()+"Id";
+        content.append("public void add");
+        content.append(StringUtils.capitalize(mappingEntity.getName()));
+        content.append("To");
+        content.append(StringUtils.capitalize(entity.getName())+  "(");
+
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,");
+        content.append(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType()));
+        content.append(" ");
+        content.append(mappingEntityId);
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateCreateXXXMappingSQL(entity, relationInfo));
+        content.append("\";\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
+        content.append(String.format("stmt.%s(2,%s);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty()),
+                mappingEntityId));
+        content.append("stmt.executeUpdate();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    public static void createDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        String mappingEntityId=mappingEntity.getName()+"Id";
+        content.append("public void delete");
+        content.append(StringUtils.capitalize(mappingEntity.getName()));
+        content.append("From");
+        content.append(StringUtils.capitalize(entity.getName())+  "(");
+
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,");
+        content.append(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType()));
+        content.append(" ");
+        content.append(mappingEntityId);
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateDeleteXXXMappingSQL(entity, relationInfo));
+        content.append("\";\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
+        content.append(String.format("stmt.%s(2,%s);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty()),
+                mappingEntityId));
+        content.append("stmt.executeUpdate();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    public static void createBatchDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        String mappingEntityIds=mappingEntity.getName()+"Ids";
+        String mappingEntityId=mappingEntity.getName()+"Id";
+        content.append("public void delete");
+        content.append(StringUtils.capitalize(mappingEntity.getName()));
+        content.append("sFrom");
+        content.append(StringUtils.capitalize(entity.getName())+  "(");
+
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,List<");
+        content.append(TypeUtils.getObjectType(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType())));
+        content.append("> ");
+        content.append(mappingEntityIds);
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateDeleteXXXMappingSQL(entity, relationInfo));
+        content.append("\";\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append("for (");
+        content.append(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType()));
+        content.append(" ");
+        content.append(mappingEntityId);
+        content.append(":");
+        content.append(mappingEntityIds);
+        content.append("){\n");
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
+        content.append(String.format("stmt.%s(2,%s);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty()),
+                mappingEntityId));
+        content.append("stmt.addBatch();\n");
+        content.append("}\n");
+        content.append("stmt.executeBatch();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");    }
 }

@@ -1,9 +1,11 @@
 package net.royqh.easypersist.parsers.jpa;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.codeStyle.AppCodeStyleSettingsManager;
 import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.config.EntitiesConfig;
 import net.royqh.easypersist.parsers.ParseError;
@@ -20,6 +22,7 @@ public class PackageScanner {
         //System.out.println(entitiesConfig);
         JavaPsiFacade facade=JavaPsiFacade.getInstance(project);
         PsiPackage entityPackage=facade.findPackage(entitiesConfig.getEntityPackage());
+
         scanPackage(entityPackage, mappingRepository,
                 entitiesConfig.getEntityPackage(),
                 entitiesConfig.getOutputPackage(),configNo,numConfigs,indicator);
