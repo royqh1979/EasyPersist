@@ -13,6 +13,7 @@ public class SingleProperty extends Property {
     private Column column;
     private TemporalType temporalType=null;
     private EnumType enumType=null;
+    private boolean isLob=false;
 
     public SingleProperty(String name, String type, Column column) {
         super(name,type);
@@ -53,6 +54,13 @@ public class SingleProperty extends Property {
         return getColumn().getName();
     }
 
+    public boolean isLob() {
+        return isLob;
+    }
+
+    public void setLob(boolean lob) {
+        isLob = lob;
+    }
 
     @Override
     public PropertyType getPropertyType() {

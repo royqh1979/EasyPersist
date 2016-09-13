@@ -45,6 +45,20 @@ public class JdbcUtils {
         return "get" + propertyType;
     }
 
+    public static String getLobColumnGetter(SingleProperty property, String propertyVarName) {
+        if (property.getType().equals("java.sql.Clob") || property.getType().equals(String.class.getName())) {
+            return "rs.getClob(\""+propertyVarName+"\")";
+        }
+        if (property.getType().equals("java.sql.Blob")) {
+            return "rs.getBlob(\""+propertyVarName+"\")";
+        }
+        if (property.getType().equals("byte[]") || property.getType().equals("java.lang.Byte[]")) {
+            return "rs.getBytes(\""+propertyVarName+"\")";
+        }
+        return "SerializationUtils.deserialize(rs.getBytes(\""+propertyVarName+"\"))";
+
+    }
+
     public static String getColumnSetter(SingleProperty property) {
         if (property.getType().equals("java.util.Date")) {
             switch (property.getTemporalType()) {
@@ -84,6 +98,12 @@ public class JdbcUtils {
                     JdbcUtils.getColumnSetter(property),
                     paramIndex,
                     JdbcUtils.generateDateParameterVariable(paramVar, property.getTemporalType()));
+        } else if (property.isLob()) {
+            stmtSetter = String.format("stmt.%s(%s,%s);\n",
+                    JdbcUtils.getLobColumnSetter(property),
+                    paramIndex,
+                    JdbcUtils.generateLobParameterVariable(property,paramVar));
+
         } else {
             stmtSetter = String.format("stmt.%s(%s,%s);\n",
                     JdbcUtils.getColumnSetter(property),
@@ -91,6 +111,28 @@ public class JdbcUtils {
                     paramVar);
         }
         return stmtSetter;
+    }
+
+    private static String generateLobParameterVariable(SingleProperty property, String paramVar) {
+        if (property.getType().equals("java.sql.Clob") || property.getType().equals("java.sql.Blob")
+                || property.getType().equals("byte[]") || property.getType().equals("Byte[]")){
+            return paramVar;
+        }
+        if (property.getType().equals(String.class.getName())){
+            return String.format("new SerialClob(%s.toCharArray())",paramVar);
+        }
+        return String.format("SerializationUtils.serialize(%s)",paramVar);
+    }
+
+    private static String getLobColumnSetter(SingleProperty property) {
+        //we don't support using Clob to saving String
+        if (property.getType().equals("java.sql.Clob")) {
+            return "setClob";
+        }
+        if (property.getType().equals("java.sql.Blob") || property.getType().equals("Byte[]")) {
+            return "setBlob";
+        }
+        return "setBytes";
     }
 
     public static String generateStatementParameterSetter(String paramIndex, SingleProperty property, Entity entity) {

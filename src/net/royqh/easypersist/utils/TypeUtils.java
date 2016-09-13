@@ -181,4 +181,9 @@ public abstract class TypeUtils {
     public static boolean isStringType(SingleProperty singleProperty) {
         return isString(singleProperty.getType());
     }
+
+
+    public static String cleanForImport(String type) {
+        return type.replaceAll("<.*>|\\[.*\\]","");
+    }
 }

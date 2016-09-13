@@ -206,13 +206,15 @@ public class PersistorsGenerator {
         content.append("import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;\n");
         content.append("import org.springframework.jdbc.support.SQLExceptionTranslator;\n");
         content.append("import org.springframework.jdbc.support.SQLStateSQLExceptionTranslator;\n");
+        content.append("import javax.sql.rowset.serial.SerialClob;\n");
+        content.append("import org.apache.commons.lang3.SerializationUtils;\n");
         content.append("import " + entity.getClassInfo().getQualifiedName() + ";\n");
         Set<String> types = new HashSet<>();
         for (Property property : entity.getProperties()) {
             PropertyType propertyType = property.getPropertyType();
             switch (propertyType) {
                 case Column:
-                    types.add(property.getType());
+                    types.add(TypeUtils.cleanForImport(property.getType()));
                     break;
                 /*
                 case OneToMany:

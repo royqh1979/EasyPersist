@@ -65,8 +65,6 @@ public class MethodParser {
                 entity.addProperty(property);
                 return;
             }
-        } else if (TypeUtils.isMapProperty(psiMethod)) {
-            //TODO: map not supported yet
         } else {
             if (TypeUtils.containsAnnotation(psiMethod, Constants.MANY_TO_ONE)) {
                 ManyToOneProperty property = parseManyToOneProperty(psiMethod);
@@ -193,6 +191,8 @@ public class MethodParser {
             property.setEnumType(enumType);
         }
         property.setGetter(psiMethod.getName());
+
+        property.setLob(AnnotationParser.parseLob(psiMethod));
         return property;
     }
 

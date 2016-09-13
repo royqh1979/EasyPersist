@@ -53,6 +53,7 @@ public final class Constants {
 	public static final String GENERATED_VALUE = "javax.persistence.GeneratedValue";
 	public static final String MAP_RELATIONS = "net.royqh.easypersist.annotations.MapRelations";
 	public static final String MAP_RELATION = "net.royqh.easypersist.annotations.MapRelation";
+	public static final String LOB = "javax.persistence.Lob";
 
     static {
 		COLLECTIONS.add(SET);
@@ -80,7 +81,7 @@ public final class Constants {
 		BASIC_TYPES.add( java.sql.Date.class.getName() );
 		BASIC_TYPES.add( java.sql.Time.class.getName() );
 		BASIC_TYPES.add( java.sql.Timestamp.class.getName() );
-		BASIC_TYPES.add( java.sql.Blob.class.getName() );
+		//BASIC_TYPES.add( java.sql.Blob.class.getName() );
 	}
 
 	public static final Set<String> PRIMITIVE_TYPES = new HashSet<>();

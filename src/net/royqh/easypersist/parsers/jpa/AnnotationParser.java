@@ -316,4 +316,12 @@ public class AnnotationParser {
         }
         return relationInfos;
     }
+
+    public static boolean parseLob(PsiMethod psiMethod) {
+        PsiAnnotation temporalAnno=AnnotationUtils.findAnnotation(psiMethod,Constants.LOB);
+        if (temporalAnno==null) {
+            return false;
+        }
+        return true;
+    }
 }
