@@ -86,6 +86,8 @@ public class MethodGenerator {
 
         if (entity.isAutoGenerateId()) {
             createCreateWithAutoGenerateIdMethod(content, entity, insertProperties);
+
+
         } else {
             createCreateWithoutAutoGenerateIdMethod(content, entity, insertProperties);
         }
