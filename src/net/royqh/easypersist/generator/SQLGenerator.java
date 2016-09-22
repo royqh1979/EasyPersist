@@ -229,4 +229,26 @@ public class SQLGenerator {
 
         return content;
     }
+
+    public static StringBuilder generateDeleteByXXXSQL(Entity entity, List<SingleProperty> indexProperties) {
+        StringBuilder content=new StringBuilder();
+        content.append("select delete from ");
+        content.append(entity.getTableName());
+        content.append(" where ");
+        List<String> clauses=new ArrayList<>();
+        for (SingleProperty property:indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                clauses.add("(" + property.getColumnName() + " between ? and ? )");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    clauses.add(property.getColumnName() + " like ?");
+                }
+                continue;
+            }  else {
+                clauses.add(property.getColumnName() + " = ?");
+            }
+        }
+        content.append(String.join(" and ",clauses));
+        return content;
+    }
 }

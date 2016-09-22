@@ -86,8 +86,6 @@ public class MethodGenerator {
 
         if (entity.isAutoGenerateId()) {
             createCreateWithAutoGenerateIdMethod(content, entity, insertProperties);
-
-
         } else {
             createCreateWithoutAutoGenerateIdMethod(content, entity, insertProperties);
         }
@@ -922,4 +920,62 @@ public class MethodGenerator {
         content.append("stmt.executeBatch();\n");
         createExceptionHandleStatements(content);
         content.append("}\n");    }
+
+    public static void createDeleteByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+        List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
+
+        String indexName = JdbcUtils.generateIndexName(indexProperties);
+
+        content.append("public void deleteBy" +
+                indexName + "(");
+        List<String> parameterList = new ArrayList<>();
+        for (SingleProperty singleProperty : indexProperties) {
+            if (TypeUtils.isRangeType(singleProperty)) {
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
+                        + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
+                        + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isString(singleProperty.getType()))  {
+                    parameterList.add("String "+singleProperty.getName());
+                }
+                continue;
+            }  else {
+                parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
+                        + " " + singleProperty.getName());
+
+            }
+        }
+        content.append(String.join(",", parameterList));
+        content.append(") {\n");
+        content.append("String sql=\"");
+        content.append(SQLGenerator.generateDeleteByXXXSQL(entity, indexProperties));
+        content.append("\";\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        int i = 1;
+        for (SingleProperty property : indexProperties) {
+            if (TypeUtils.isRangeType(property)) {
+                content.append(
+                        JdbcUtils.generateStatementParameterSetter(i + "", property, "min" + StringUtils.capitalize(property.getName())));
+                content.append(
+                        JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
+                i += 2;
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isString(property.getType()))  {
+                    content.append(
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                    i++;
+                }
+                continue;
+            }  else {
+                content.append(
+                        JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
+                i++;
+            }
+        }
+        content.append("stmt.executeUpdate();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
 }

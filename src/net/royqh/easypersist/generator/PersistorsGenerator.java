@@ -130,6 +130,7 @@ public class PersistorsGenerator {
                 content.toString());
     }
 
+
     private static void createMappingListMethods(Entity entity, StringBuilder content) {
         for (MapRelationInfo relationInfo: entity.getMapRelationInfos()) {
             MethodGenerator.createCreateXXXMappingMethod(entity,relationInfo,content);
@@ -153,6 +154,7 @@ public class PersistorsGenerator {
                 MethodGenerator.createCountByXXXMethod(entity, indexInfo, content);
                 MethodGenerator.createFindByXXXMethod(entity, indexInfo, content);
             }
+            MethodGenerator.createDeleteByXXXMethod(entity,indexInfo,content);
         }
 
         MethodGenerator.createCountAllMethod(entity,content);
