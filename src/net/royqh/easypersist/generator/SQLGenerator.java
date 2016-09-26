@@ -232,7 +232,7 @@ public class SQLGenerator {
 
     public static StringBuilder generateDeleteByXXXSQL(Entity entity, List<SingleProperty> indexProperties) {
         StringBuilder content=new StringBuilder();
-        content.append("select delete from ");
+        content.append("delete from ");
         content.append(entity.getTableName());
         content.append(" where ");
         List<String> clauses=new ArrayList<>();
