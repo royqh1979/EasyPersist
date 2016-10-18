@@ -11,6 +11,7 @@ import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 
+import javax.sql.DataSource;
 import java.util.*;
 
 /**
@@ -69,8 +70,12 @@ public class PersistorsGenerator {
         content.append("    private ");
         content.append(CodeUtils.getPersistorName(entity));
         content.append(" persistor;\n\n");
+        content.append(" public "+className+"() {}\n");
+        content.append(" public "+className+"(DataSource dataSource) {\n");
+        content.append("    setDataSource(dataSource);\n");
+        content.append("}\n");
         content.append("    @Autowired\n");
-        content.append("private void setDataSource(DataSource dataSource) {\n");
+        content.append("public void setDataSource(DataSource dataSource) {\n");
         content.append("this.dataSource=dataSource;\n");
         content.append("persistor=new ");
         content.append(CodeUtils.getPersistorName(entity));
