@@ -1,11 +1,8 @@
 package net.royqh.easypersist.parsers.jpa;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
-import com.intellij.psi.codeStyle.AppCodeStyleSettingsManager;
 import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.config.EntitiesConfig;
 import net.royqh.easypersist.parsers.ParseError;
@@ -44,7 +41,7 @@ public class PackageScanner {
         }
     }
 
-    private static void scanClass(PsiClass psiClass, MappingRepository mappingRepository, String entitiesPackage, String outputPackage) {
+    private static void scanClass(PsiClass psiClass, MappingRepository mappingRepository, String entitiesPackage, String persistorPackage) {
         PsiAnnotation[] annotations=psiClass.getModifierList().getAnnotations();
         if (!TypeUtils.containsAnnotation(psiClass, Constants.ENTITY)){
             return;
@@ -57,8 +54,8 @@ public class PackageScanner {
             throw new ParseError(String.format("Class %s is abstract",psiClass.getQualifiedName()));
         }
         Entity entity=ClassParser.parseEntityClass(psiClass);
-        entity.setPackagePath(entitiesPackage);
-        entity.setOutputPackagePath(outputPackage);
+        entity.setPackageName(entitiesPackage);
+        entity.setPersistorPackageName(persistorPackage);
         mappingRepository.addEntity(entity);
     }
 

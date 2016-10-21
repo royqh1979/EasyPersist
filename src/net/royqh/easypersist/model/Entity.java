@@ -1,7 +1,6 @@
 package net.royqh.easypersist.model;
 
 import net.royqh.easypersist.MappingRepository;
-import net.royqh.easypersist.annotations.MapRelations;
 import net.royqh.easypersist.model.jpa.ModelError;
 import net.royqh.easypersist.model.jpa.Table;
 import org.apache.commons.lang.StringUtils;
@@ -25,8 +24,8 @@ public class Entity {
     private MappingRepository mappingRepository;
     private boolean autoGenerateId=false;
     private List<MapRelationInfo> mapRelationInfos=Collections.EMPTY_LIST;
-    private String packagePath;
-    private String outputPackagePath;
+    private String packageName;
+    private String persistorPackageName;
 
     public Entity(String name, ClassInfo classInfo) {
         this.name=name;
@@ -149,19 +148,19 @@ public class Entity {
         this.mapRelationInfos = mapRelationInfos;
     }
 
-    public String getPackagePath() {
-        return packagePath;
+    public String getPackageName() {
+        return packageName;
     }
 
-    public void setPackagePath(String packagePath) {
-        this.packagePath = packagePath;
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
-    public String getOutputPackagePath() {
-        return outputPackagePath;
+    public String getPersistorPackageName() {
+        return persistorPackageName;
     }
 
-    public void setOutputPackagePath(String outputPackagePath) {
-        this.outputPackagePath = outputPackagePath;
+    public void setPersistorPackageName(String persistorPackageName) {
+        this.persistorPackageName = persistorPackageName;
     }
 }

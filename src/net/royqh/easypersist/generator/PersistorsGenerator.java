@@ -1,9 +1,14 @@
 package net.royqh.easypersist.generator;
 
+import com.github.rjeschke.txtmark.Run;
+import com.intellij.ide.util.PackageUtil;
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.easypersist.MappingRepository;
@@ -11,7 +16,6 @@ import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 
-import javax.sql.DataSource;
 import java.util.*;
 
 /**
@@ -38,7 +42,7 @@ public class PersistorsGenerator {
     private static void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
         String compositorClassName= CodeUtils.getPersistorCompositorName(entity);
         String fileName=compositorClassName+".java";
-        PsiPackage targetPackage = facade.findPackage(entity.getOutputPackagePath());
+        PsiPackage targetPackage = findOrCreatePackage(entity.getPersistorPackageName(),facade,entity);
         PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
         PsiFile oldFile=psiDirectory.findFile(fileName);
         //We Only Create compositor when it is not existed;
@@ -89,7 +93,7 @@ public class PersistorsGenerator {
     }
 
     private static void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
-        PsiPackage targetPackage = facade.findPackage(entity.getOutputPackagePath());
+        PsiPackage targetPackage = findOrCreatePackage(entity.getPersistorPackageName(),facade,entity);
         PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
         PsiFile psiFile = generatePersistorFile(entity, targetPackage, psiFileFactory);
         psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
@@ -99,6 +103,45 @@ public class PersistorsGenerator {
             oldFile.delete();
         }
         psiDirectory.add(psiFile);
+    }
+
+    private static PsiPackage findOrCreatePackage(String packageName, JavaPsiFacade facade, Entity entity) {
+        PsiPackage targetPackage=facade.findPackage(packageName);
+        if (targetPackage==null) {
+            targetPackage=createPackageRecursively(packageName,facade,entity);
+        }
+        return targetPackage;
+    }
+
+    private static PsiPackage createPackageRecursively(String packageName, JavaPsiFacade facade, Entity entity) {
+        int pos=packageName.lastIndexOf('.');
+        if (pos>0) {
+            String parentPackageName=packageName.substring(0,pos);
+            String dirName=packageName.substring(pos+1);
+            PsiPackage parentPackage=findOrCreatePackage(parentPackageName,facade, entity);
+            PsiDirectory parentDir=parentPackage.getDirectories()[0];
+            PsiDirectory packageDir=parentDir.createSubdirectory(dirName);
+            return JavaDirectoryService.getInstance().getPackage(packageDir);
+        } else {
+            PsiPackage entityPackage=facade.findPackage(entity.getPackageName());
+            Module module= ModuleUtil.findModuleForPsiElement(entityPackage);
+            if (module==null) {
+                throw new RuntimeException("can't find containing module for package:"+entity.getPackageName());
+            }
+            SourceFolder[] sourceFolders= ModuleRootManager.getInstance(module).getContentEntries()[0].getSourceFolders();
+            if (sourceFolders.length<=0) {
+                throw new RuntimeException("Can't find Source Folder for project!");
+            }
+            PsiManager manager=PsiManager.getInstance(facade.getProject());
+            PsiDirectory parentDir=manager.findDirectory(sourceFolders[0].getFile());
+            PsiDirectory packageDir=parentDir.createSubdirectory(packageName);
+            return JavaDirectoryService.getInstance().getPackage(packageDir);
+        }
+    }
+
+
+    private static PsiDirectory findDirectory(String outputPackagePath) {
+        return null;
     }
 
 
@@ -250,7 +293,7 @@ public class PersistorsGenerator {
         for (MapRelationInfo relationInfo:entity.getMapRelationInfos()) {
             types.add(relationInfo.getMappingEntityFullClassName());
             Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-            types.add(mappingEntity.getOutputPackagePath().replaceAll(System.lineSeparator(),".")
+            types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(),".")
                 +"."+CodeUtils.getPersistorName(mappingEntity));
         }
         types.removeAll(Constants.PRIMITIVE_TYPES);
