@@ -42,7 +42,7 @@ public class MethodGenerator {
                 continue;
             if (property.getPropertyType() == PropertyType.Column) {
                 SingleProperty singleProperty = (SingleProperty) property;
-                updateColumns.add(singleProperty.getColumnName() + "=?");
+                updateColumns.add("`"+singleProperty.getColumnName() + "`=?");
                 updateProperties.add(singleProperty);
             }
         }

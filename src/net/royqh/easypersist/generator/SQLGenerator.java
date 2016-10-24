@@ -37,7 +37,7 @@ public class SQLGenerator {
                         content.append(",");
                     }
                     SingleProperty singleProperty = (SingleProperty) property;
-                    content.append(String.format(" %s.%s as %s",
+                    content.append(String.format(" %s.`%s` as %s",
                             tableAbbrev, singleProperty.getColumnName(),
                             CodeUtils.getPropertyVarName(entity, singleProperty)));
             } else if (propertyType == PropertyType.ElementCollection) {
@@ -50,7 +50,7 @@ public class SQLGenerator {
             ElementCollectionProperty property=elementCollections.get(i);
             Column column=property.getColumn();
             content.append(",");
-            content.append(String.format(" %s.%s as %s ",
+            content.append(String.format(" %s.`%s` as %s ",
                     elementTableAbbrev,column.getName(),CodeUtils.getPropertyVarName(entity,property)));
         }
         content.append(" from " + tableName + " " + tableAbbrev);
@@ -59,7 +59,7 @@ public class SQLGenerator {
             String elementTableAbbrev=tablePrefix+i;
             String elementTableName=property.getCollectionTable().getName();
             String joinColumnName=property.getCollectionTable().getJoinColumns()[0].getName();
-            content.append(String.format(" left join %s %s on %s.%s=%s.%s ",
+            content.append(String.format(" left join %s %s on %s.`%s`=%s.`%s` ",
                     elementTableName, elementTableAbbrev,
                     tableAbbrev, idProperty.getColumnName(),
                     elementTableAbbrev, joinColumnName));
@@ -72,9 +72,9 @@ public class SQLGenerator {
         StringBuilder content=new StringBuilder();
         content.append("public final static String INSERT_SQL=\"insert into ");
         content.append(tableName);
-        content.append("(");
-        content.append(String.join(",",insertFields));
-        content.append(") values (?");
+        content.append("(`");
+        content.append(String.join("`,`",insertFields));
+        content.append("`) values (?");
         for (int i=1;i<insertFields.size();i++) {
             content.append(",?");
         }
@@ -101,9 +101,9 @@ public class SQLGenerator {
         SingleProperty idProperty=entity.getIdProperty();
         content.append("public final static String DELETE_SQL=\"delete from ");
         content.append(entity.getTableName());
-        content.append(" where ");
+        content.append(" where `");
         content.append(idProperty.getColumnName());
-        content.append("=?\";");
+        content.append("`=?\";");
         return content;
     }
 
@@ -114,7 +114,7 @@ public class SQLGenerator {
         content.append(" where ");
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
-            clauses.add(property.getColumnName()+" = ?");
+            clauses.add("`"+property.getColumnName()+"` = ?");
         }
         content.append(String.join(" and ",clauses));
         return content;
@@ -128,10 +128,10 @@ public class SQLGenerator {
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
             if (TypeUtils.isRangeType(property)) {
-                clauses.add("(" + property.getColumnName() + " between ? and ? )");
+                clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
-                    clauses.add(property.getColumnName() + " like ?");
+                    clauses.add("`"+property.getColumnName() + "` like ?");
                 }
                 continue;
             }  else {
@@ -150,14 +150,14 @@ public class SQLGenerator {
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
             if (TypeUtils.isRangeType(property)) {
-                clauses.add("(" + property.getColumnName() + " between ? and ? )");
+                clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property)) {
-                    clauses.add(property.getColumnName() + " like ?");
+                    clauses.add("`"+property.getColumnName() + "` like ?");
                 }
                 continue;
             } else{
-                clauses.add(property.getColumnName() + " = ?");
+                clauses.add("`"+property.getColumnName() + "` = ?");
             }
         }
         content.append(String.join(" and ",clauses));
@@ -177,9 +177,9 @@ public class SQLGenerator {
         content.append(" = B.");
         content.append(relationInfo.getMappingEntityIdColumn());
         content.append(" and ");
-        content.append(" B.");
+        content.append(" B.`");
         content.append(relationInfo.getIdColumn());
-        content.append(" = ?");
+        content.append("` = ?");
         return content;
     }
 
@@ -191,14 +191,14 @@ public class SQLGenerator {
         content.append(" A, ");
         content.append(relationInfo.getMapTable());
         content.append(" B where ");
-        content.append(" A.");
+        content.append(" A.`");
         content.append(mappingEntity.getIdProperty().getColumnName());
-        content.append(" = B.");
+        content.append("` = B.`");
         content.append(relationInfo.getMappingEntityIdColumn());
-        content.append(" and ");
-        content.append(" B.");
+        content.append("` and ");
+        content.append(" B.`");
         content.append(relationInfo.getIdColumn());
-        content.append(" = ?");
+        content.append("` = ?");
         return content;
     }
 
@@ -207,11 +207,11 @@ public class SQLGenerator {
         Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("insert into ");
         content.append(relationInfo.getMapTable());
-        content.append("(");
+        content.append("(`");
         content.append(relationInfo.getIdColumn());
-        content.append(",");
+        content.append("`,`");
         content.append(relationInfo.getMappingEntityIdColumn());
-        content.append(") values (?,?)");
+        content.append("`) values (?,?)");
 
         return content;
     }
@@ -221,11 +221,11 @@ public class SQLGenerator {
         Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("delete from ");
         content.append(relationInfo.getMapTable());
-        content.append(" where ");
+        content.append(" where `");
         content.append(relationInfo.getIdColumn());
-        content.append("=? and ");
+        content.append("`=? and `");
         content.append(relationInfo.getMappingEntityIdColumn());
-        content.append("=?");
+        content.append("`=?");
 
         return content;
     }
@@ -238,14 +238,14 @@ public class SQLGenerator {
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
             if (TypeUtils.isRangeType(property)) {
-                clauses.add("(" + property.getColumnName() + " between ? and ? )");
+                clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
-                    clauses.add(property.getColumnName() + " like ?");
+                    clauses.add("`"+property.getColumnName() + "` like ?");
                 }
                 continue;
             }  else {
-                clauses.add(property.getColumnName() + " = ?");
+                clauses.add("`"+property.getColumnName() + "` = ?");
             }
         }
         content.append(String.join(" and ",clauses));
