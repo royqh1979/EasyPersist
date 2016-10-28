@@ -150,7 +150,7 @@ public class MethodGenerator {
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
         content.append(" id) {\n");
         content.append("String sql=SIMPLE_SELECT_SQL+");
-        content.append("\" where " + idProperty.getColumnName() + " = ?\";\n");
+        content.append("\" where `" + idProperty.getColumnName() + "` = ?\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
         content.append(String.format("stmt.%s(1,id);\n",

@@ -182,6 +182,13 @@ public class MethodParser {
             property.setTemporalType(temporalType);
         }
 
+        if (type.equals("java.sql.Blob") || type.equals("byte[]"))   {
+            if (!AnnotationParser.parseLob(psiMethod)){
+                throw new RuntimeException("Blob or byte[] property should be annotated with @Lob!");
+            }
+            property.setLob(true);
+        }
+
         PsiClass retunTypeClass= PsiTypesUtil.getPsiClass( psiMethod.getReturnType());
         if (retunTypeClass!=null && retunTypeClass.isEnum()) {
             EnumType enumType=AnnotationParser.parseEnumerated(psiMethod) ;
@@ -192,7 +199,9 @@ public class MethodParser {
         }
         property.setGetter(psiMethod.getName());
 
-        property.setLob(AnnotationParser.parseLob(psiMethod));
+        if (!property.isLob()) {
+            property.setLob(AnnotationParser.parseLob(psiMethod));
+        }
         return property;
     }
 
