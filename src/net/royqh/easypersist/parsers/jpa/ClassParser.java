@@ -86,6 +86,9 @@ public class ClassParser {
                     String columnName=s.trim();
                     System.out.println("++"+columnName);
                     SingleProperty singleProperty=entity.getPropertyByColumnName(columnName);
+                    if (singleProperty==null) {
+                        throw new RuntimeException("There's no property corresponding to column \""+columnName+"\" in entity "+entity.getName());
+                    }
                     properties.add(singleProperty.getName());
                 }
                 indexInfo.setProperties(properties);
@@ -102,6 +105,9 @@ public class ClassParser {
                 Set<String> properties=new HashSet<>();
                 for (String columnName:uniqueConstraint.getColumnNames()) {
                     SingleProperty singleProperty=entity.getPropertyByColumnName(columnName);
+                    if (singleProperty==null) {
+                        throw new RuntimeException("There's no property corresponding to column \""+columnName+"\" in entity "+entity.getName());
+                    }
                     properties.add(singleProperty.getName());
                 }
                 indexInfo.setProperties(properties);
