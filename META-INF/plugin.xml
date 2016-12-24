@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.6.2</version>
+  <version>0.7.0</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -16,7 +16,8 @@
       * 0.6.0 support for like search in unique string columns <br />
       * 0.6.1 change return type of all count methods to int <br />
       * 0.6.2 add sql debug log <br />
-              add sort orientation support in findXXX methods
+              add sort orientation support in findXXX methods   <br />
+      * 0.7.0 add support to multi-module projects <br />
     ]]>
   </change-notes>
 

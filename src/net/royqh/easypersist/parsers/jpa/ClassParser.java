@@ -21,7 +21,7 @@ public class ClassParser {
     public static Entity parseEntityClass(PsiClass psiClass) {
         String entityName=parseEntityName(psiClass);
         ClassInfo classInfo=new ClassInfo(psiClass.getName(),psiClass.getQualifiedName());
-        Entity entity=new Entity(entityName,classInfo);
+        Entity entity=new Entity(entityName,classInfo,psiClass);
         parseClassAnnotations(psiClass, entity);
         checkClassFields(psiClass, entity);
         parseClassProperties(psiClass, entity);

@@ -1,10 +1,10 @@
 package net.royqh.easypersist;
 
 import com.intellij.notification.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.royqh.easypersist.generator.PersistorsGenerator;
@@ -39,13 +39,15 @@ public class EasyPersistor {
                 indicator.setText("Parsing Entities...");
                 indicator.setFraction(0.0);
                 try {
+                    //Module module= ModuleUtil.findModuleForFile(xmlConfigFile,project);
                     ormConfigParser.parse(xmlConfigFile);
                     MappingRepository mappingRepository = new MappingRepository();
                     int i = 1;
                     int n = ormConfigParser.getEntitiesConfigs().size();
                     for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
                         System.out.println(entitiesConfig);
-                        packageScanner.scan(entitiesConfig, project, mappingRepository, i, n, indicator);
+                        //packageScanner.scanInModule(entitiesConfig, module, mappingRepository, i, n, indicator);
+                        packageScanner.scanInProject(entitiesConfig, project, mappingRepository, i, n, indicator);
                         i++;
                     }
                     indicator.setText("Generating ORM codes ...");

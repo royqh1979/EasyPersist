@@ -1,5 +1,6 @@
 package net.royqh.easypersist.model;
 
+import com.intellij.psi.PsiClass;
 import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.jpa.ModelError;
 import net.royqh.easypersist.model.jpa.Table;
@@ -15,6 +16,7 @@ import java.util.*;
 public class Entity {
     private Table table;
     private ClassInfo classInfo;
+    private PsiClass psiClass;
     private String name;
     private String idProperty;
     private Map<String,Property> propertyMap =new HashMap<>();
@@ -27,9 +29,14 @@ public class Entity {
     private String packageName;
     private String persistorPackageName;
 
-    public Entity(String name, ClassInfo classInfo) {
+    public Entity(String name, ClassInfo classInfo, PsiClass psiClass) {
         this.name=name;
         this.classInfo=classInfo;
+        this.psiClass=psiClass;
+    }
+
+    public PsiClass getPsiClass() {
+        return psiClass;
     }
 
     public String getName() {
