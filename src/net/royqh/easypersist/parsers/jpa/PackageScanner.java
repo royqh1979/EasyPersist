@@ -23,7 +23,9 @@ public class PackageScanner {
         //System.out.println(entitiesConfig);
         JavaPsiFacade facade=JavaPsiFacade.getInstance(project);
         PsiPackage entityPackage=facade.findPackage(entitiesConfig.getEntityPackage());
-
+        if (entityPackage==null) {
+            throw new RuntimeException("Can't find Package:"+entitiesConfig.getEntityPackage());
+        }
         scanPackage(entityPackage, mappingRepository,
                 entitiesConfig.getEntityPackage(),
                 entitiesConfig.getOutputPackage(),configNo,numConfigs,indicator);

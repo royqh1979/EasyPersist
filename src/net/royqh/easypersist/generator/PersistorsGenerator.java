@@ -292,6 +292,7 @@ public class PersistorsGenerator {
                 +"."+CodeUtils.getPersistorName(mappingEntity));
         }
         types.removeAll(Constants.PRIMITIVE_TYPES);
+        types.removeAll(Constants.BASIC_TYPES);
         for (String type:types){
             content.append("import ");
             content.append(type);

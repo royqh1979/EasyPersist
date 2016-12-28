@@ -11,7 +11,12 @@ import org.jetbrains.annotations.NotNull;
  * Created by Roy on 2016/2/18.
  */
 public class CodeUtils {
-
+    /**
+     * 获取(生成)实体关系(映射)方法名
+     * <p>该方法名用于在生成的Persitor中</p>
+     * @param entity
+     * @return
+     */
     public static String getEntityMapName(Entity entity) {
         return entity.getName()+"Map";
     }

@@ -1,5 +1,6 @@
 package net.royqh.easypersist.generator;
 
+import com.sun.deploy.security.ValidationState;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -16,6 +17,7 @@ import java.util.Map;
  */
 public class JdbcUtils {
     private final static Map<String, String> resultSetColumnTypeMap = new HashMap<>();
+    private final static Map<String,String> WrapperTypeMap=new HashMap<>();
 
     static {
         resultSetColumnTypeMap.put("boolean", "Boolean");
@@ -25,6 +27,17 @@ public class JdbcUtils {
         resultSetColumnTypeMap.put("int", "Int");
         resultSetColumnTypeMap.put("long", "Long");
         resultSetColumnTypeMap.put("short", "Short");
+    }
+
+    static {
+        WrapperTypeMap.put(Boolean.class.getName(),"Types.BOOLEAN");
+        WrapperTypeMap.put(Byte.class.getName(),"Types.INTEGER");
+        WrapperTypeMap.put(Short.class.getName(),"Types.INTEGER");
+        WrapperTypeMap.put(Integer.class.getName(),"Types.INTEGER");
+        WrapperTypeMap.put(Long.class.getName(),"Types.INTEGER");
+        WrapperTypeMap.put(Float.class.getName(),"Types.FLOAT");
+        WrapperTypeMap.put(Double.class.getName(),"Types.DOUBLE");
+
     }
 
     public static String getColumnGetter(SingleProperty property) {
@@ -47,15 +60,15 @@ public class JdbcUtils {
 
     public static String getLobColumnGetter(SingleProperty property, String propertyVarName) {
         if (property.getType().equals("java.sql.Clob") || property.getType().equals(String.class.getName())) {
-            return "rs.getClob(\""+propertyVarName+"\")";
+            return "rs.getClob(\"" + propertyVarName + "\")";
         }
         if (property.getType().equals("java.sql.Blob")) {
-            return "rs.getBlob(\""+propertyVarName+"\")";
+            return "rs.getBlob(\"" + propertyVarName + "\")";
         }
         if (property.getType().equals("byte[]") || property.getType().equals("java.lang.Byte[]")) {
-            return "rs.getBytes(\""+propertyVarName+"\")";
+            return "rs.getBytes(\"" + propertyVarName + "\")";
         }
-        return "SerializationUtils.deserialize(rs.getBytes(\""+propertyVarName+"\"))";
+        return "SerializationUtils.deserialize(rs.getBytes(\"" + propertyVarName + "\"))";
 
     }
 
@@ -78,50 +91,87 @@ public class JdbcUtils {
     }
 
     public static String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar) {
-        String stmtSetter = "";
+        StringBuilder builder=new StringBuilder();
         if (property.getEnumType() != null) {
-            String setter="";
-            switch(property.getEnumType()) {
+            String setter = "";
+            switch (property.getEnumType()) {
                 case ORDINAL:
-                    setter="setInt";
+                    builder.append(String.format("if (null != %s) {\n",
+                            paramVar));
+                    builder.append(String.format("stmt.setInt(%s,%s);\n",
+                            paramIndex,
+                            generateEnumParameterVariable(paramVar, property.getEnumType())));
+                    builder.append("} else {\n");
+                    builder.append(String.format("stmt.setNull(%s,java.sql.Types.INTEGER);\n", setter,paramIndex));
+                    builder.append("}\n");
                     break;
                 case STRING:
-                    setter="setString";
+                    builder.append(String.format("if (null != %s) {\n",
+                            paramVar));
+                    builder.append(String.format("stmt.setString(%s,%s);\n",
+                            paramIndex,
+                            generateEnumParameterVariable(paramVar, property.getEnumType())));
+                    builder.append("} else {\n");
+                    builder.append(String.format("stmt.setString(%s,null);\n", paramIndex));
+                    builder.append("}\n");
                     break;
             }
-            stmtSetter = String.format("stmt.%s(%s,%s);\n",
-                    setter,
-                    paramIndex,
-                    generateEnumParameterVariable( paramVar , property.getEnumType()));
+            return builder.toString();
         } else if (property.getTemporalType() != null) {
-            stmtSetter = String.format("stmt.%s(%s,%s);\n",
+            builder.append(String.format("if (null != %s) {\n",
+                    paramVar));
+            builder.append(String.format("stmt.%s(%s,%s);\n",
                     JdbcUtils.getColumnSetter(property),
                     paramIndex,
-                    JdbcUtils.generateDateParameterVariable(paramVar, property.getTemporalType()));
+                    JdbcUtils.generateDateParameterVariable(paramVar, property.getTemporalType())));
+            builder.append("} else {\n");
+            builder.append(String.format("stmt.%s(%s,null);\n", JdbcUtils.getColumnSetter(property),paramIndex));
+            builder.append("}\n");
+            return builder.toString();
         } else if (property.isLob()) {
-            stmtSetter = String.format("stmt.%s(%s,%s);\n",
+            builder.append(String.format("if (null != %s) {\n",
+                    paramVar));
+            builder.append(String.format("stmt.%s(%s,%s);\n",
                     JdbcUtils.getLobColumnSetter(property),
                     paramIndex,
-                    JdbcUtils.generateLobParameterVariable(property,paramVar));
-
+                    JdbcUtils.generateLobParameterVariable(property, paramVar)));
+            builder.append("} else {\n");
+            builder.append(String.format("stmt.%s(%s,null);\n", JdbcUtils.getLobColumnSetter(property),paramIndex));
+            builder.append("}\n");
+            return builder.toString();
         } else {
-            stmtSetter = String.format("stmt.%s(%s,%s);\n",
+            if (TypeUtils.isWrapperType(property.getType())){
+                builder.append(String.format("if (null != %s) {\n",
+                        paramVar));
+                builder.append(String.format("stmt.%s(%s,%s);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        paramIndex,
+                        paramVar));
+                builder.append("} else {\n");
+                builder.append(String.format("stmt.setNull(%s,%s);\n", paramIndex, JdbcUtils.getWrapperType(property.getType())));
+                builder.append("}\n");
+                return builder.toString();
+            }
+            return String.format("stmt.%s(%s,%s);\n",
                     JdbcUtils.getColumnSetter(property),
                     paramIndex,
                     paramVar);
         }
-        return stmtSetter;
+    }
+
+    private static String getWrapperType(String type) {
+        return WrapperTypeMap.get(type);
     }
 
     private static String generateLobParameterVariable(SingleProperty property, String paramVar) {
         if (property.getType().equals("java.sql.Clob") || property.getType().equals("java.sql.Blob")
-                || property.getType().equals("byte[]") || property.getType().equals("Byte[]")){
+                || property.getType().equals("byte[]") || property.getType().equals("Byte[]")) {
             return paramVar;
         }
-        if (property.getType().equals(String.class.getName())){
-            return String.format("new SerialClob(%s.toCharArray())",paramVar);
+        if (property.getType().equals(String.class.getName())) {
+            return String.format("new SerialClob(%s.toCharArray())", paramVar);
         }
-        return String.format("SerializationUtils.serialize(%s)",paramVar);
+        return String.format("SerializationUtils.serialize(%s)", paramVar);
     }
 
     private static String getLobColumnSetter(SingleProperty property) {
@@ -136,8 +186,8 @@ public class JdbcUtils {
     }
 
     public static String generateStatementParameterSetter(String paramIndex, SingleProperty property, Entity entity) {
-        String paramVar= entity.getName() + "." + property.getGetter() + "()";
-        return generateStatementParameterSetter(paramIndex,property,paramVar);
+        String paramVar = entity.getName() + "." + property.getGetter() + "()";
+        return generateStatementParameterSetter(paramIndex, property, paramVar);
     }
 
     public static String generateEnumParameterVariable(String varName, EnumType enumType) {

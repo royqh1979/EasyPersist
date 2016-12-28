@@ -4,6 +4,7 @@ import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.Property;
 import net.royqh.easypersist.model.PropertyType;
 import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.utils.TypeUtils;
 
 /**
  * Created by Roy on 2016/2/18.
@@ -29,18 +30,33 @@ public class RowMapperGenerator {
                 if (singleProperty.getEnumType()!=null) {
                     switch(singleProperty.getEnumType()) {
                         case ORDINAL:
-                            content.append(String.format("%s.%s(%s.values()[rs.getInt(\"%s\")]);\n",
+                            content.append("{\n");
+                            content.append(String.format("int val=rs.getInt(\"%s\");\n",
+                                    singleProperty.getColumnName()));
+                            content.append("if (rs.wasNull()) {\n");
+                            content.append(String.format("%s.%s(null);\n",entity.getName(),
+                                    singleProperty.getSetter()));
+                            content.append("} else {\n");
+                            content.append(String.format("%s.%s(%s.values()[val]);\n",
                                     entity.getName(),
                                     singleProperty.getSetter(),
-                                    singleProperty.getType(),
-                                    singleProperty.getColumnName()));
+                                    singleProperty.getType()));
+                            content.append("}\n}\n");
                             break;
                         case STRING:
-                            content.append(String.format("%s.%s(%s.valueOf(rs.getString(\"%s\")));\n",
+                            content.append("{\n");
+                            content.append(String.format("String val=rs.getString(\"%s\");\n",
+                                    singleProperty.getColumnName()));
+                            content.append("if (val==null) {\n");
+                            content.append(String.format("%s.%s(null);\n",entity.getName(),
+                                    singleProperty.getSetter()));
+                            content.append("} else {\n");
+                            content.append(String.format("%s.%s(%s.valueOf(rs.getString(val)));\n",
                                     entity.getName(),
                                     singleProperty.getSetter(),
-                                    singleProperty.getType(),
-                                    singleProperty.getColumnName()));
+                                    singleProperty.getType()));
+                            content.append("}\n}\n");
+
                             break;
                     }
 
@@ -51,11 +67,25 @@ public class RowMapperGenerator {
                             JdbcUtils.getLobColumnGetter(singleProperty,singleProperty.getColumnName())
                     ));
                 }  else {
-                    content.append(String.format("%s.%s(rs.%s(\"%s\"));\n",
-                            entity.getName(),
-                            singleProperty.getSetter(),
-                            JdbcUtils.getColumnGetter(singleProperty),
-                            singleProperty.getColumnName()));
+                    if (TypeUtils.isWrapperType(singleProperty.getType())) {
+                        content.append("{\n");
+                        content.append(String.format("%s val=rs.%s(\"%s\");\n",singleProperty.getType(),
+                                JdbcUtils.getColumnGetter(singleProperty),
+                                singleProperty.getColumnName()));
+                        content.append("if (rs.wasNull()) {\n");
+                        content.append(String.format("%s.%s(null);\n",entity.getName(),
+                                singleProperty.getSetter()));
+                        content.append("} else {\n");
+                        content.append(String.format("%s.%s(val);\n",entity.getName(),
+                                singleProperty.getSetter()));
+                        content.append("}\n}\n");
+                    } else {
+                        content.append(String.format("%s.%s(rs.%s(\"%s\"));\n",
+                                entity.getName(),
+                                singleProperty.getSetter(),
+                                JdbcUtils.getColumnGetter(singleProperty),
+                                singleProperty.getColumnName()));
+                    }
                 }
 
             }

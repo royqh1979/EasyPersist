@@ -186,4 +186,8 @@ public abstract class TypeUtils {
     public static String cleanForImport(String type) {
         return type.replaceAll("<.*>|\\[.*\\]","");
     }
+
+    public static boolean isWrapperType(String type) {
+        return Constants.WRAPER_TYPES.contains(type);
+    }
 }

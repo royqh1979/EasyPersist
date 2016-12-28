@@ -63,6 +63,16 @@ public final class Constants {
 	public static final String MAP = java.util.Map.class.getCanonicalName();
 
 	public static final Set<String> BASIC_TYPES = new HashSet<>();
+	public static final Set<String> WRAPER_TYPES = new HashSet<>();
+
+	static {
+		WRAPER_TYPES.add(Byte.class.getName());
+		WRAPER_TYPES.add(Short.class.getName());
+		WRAPER_TYPES.add(Integer.class.getName());
+		WRAPER_TYPES.add(Long.class.getName());
+		WRAPER_TYPES.add(Float.class.getName());
+		WRAPER_TYPES.add(Double.class.getName());
+	}
 
 	static {
 		BASIC_TYPES.add( String.class.getName() );
@@ -74,8 +84,8 @@ public final class Constants {
 		BASIC_TYPES.add( Long.class.getName() );
 		BASIC_TYPES.add( Float.class.getName() );
 		BASIC_TYPES.add( Double.class.getName() );
-		BASIC_TYPES.add( java.math.BigInteger.class.getName() );
-		BASIC_TYPES.add( java.math.BigDecimal.class.getName() );
+		//BASIC_TYPES.add( java.math.BigInteger.class.getName() );
+		//BASIC_TYPES.add( java.math.BigDecimal.class.getName() );
 		BASIC_TYPES.add( java.util.Date.class.getName() );
 		BASIC_TYPES.add( java.util.Calendar.class.getName() );
 		BASIC_TYPES.add( java.sql.Date.class.getName() );

@@ -8,6 +8,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.royqh.easypersist.generator.PersistorsGenerator;
+import net.royqh.easypersist.generator.SQLGenerator;
 import net.royqh.easypersist.model.config.EntitiesConfig;
 import net.royqh.easypersist.parsers.OrmConfigParser;
 import net.royqh.easypersist.parsers.jpa.PackageScanner;

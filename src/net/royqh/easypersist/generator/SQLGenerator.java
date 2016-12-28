@@ -1,5 +1,12 @@
 package net.royqh.easypersist.generator;
 
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.sql.psi.SqlPsiFacade;
+import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Column;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -11,6 +18,11 @@ import java.util.List;
  * Created by Roy on 2016/2/17.
  */
 public class SQLGenerator {
+    /**
+     * 生成最基本的(无Join)Selete语句
+     * @param entity
+     * @return
+     */
     public static StringBuilder generateSimpleSelectSQL(Entity entity) {
         String tableName = entity.getTableName();
         SingleProperty idProperty = entity.getIdProperty();
@@ -20,6 +32,12 @@ public class SQLGenerator {
         return content;
     }
 
+    /**
+     * 生成包含Join关系的Selete语句
+     * <p>用于对JPA @ElementCollection的支持</p>
+     * @param entity
+     * @return
+     */
     public static StringBuilder  generateFullJoinSelectSQL(Entity entity) {
         String tablePrefix="t";
         String tableName = entity.getTableName();
@@ -37,7 +55,7 @@ public class SQLGenerator {
                         content.append(",");
                     }
                     SingleProperty singleProperty = (SingleProperty) property;
-                    content.append(String.format(" %s.`%s` as %s",
+                    content.append(String.format(" %s.`%s` as `%s`",
                             tableAbbrev, singleProperty.getColumnName(),
                             CodeUtils.getPropertyVarName(entity, singleProperty)));
             } else if (propertyType == PropertyType.ElementCollection) {
@@ -50,7 +68,7 @@ public class SQLGenerator {
             ElementCollectionProperty property=elementCollections.get(i);
             Column column=property.getColumn();
             content.append(",");
-            content.append(String.format(" %s.`%s` as %s ",
+            content.append(String.format(" %s.`%s` as `%s` ",
                     elementTableAbbrev,column.getName(),CodeUtils.getPropertyVarName(entity,property)));
         }
         content.append(" from " + tableName + " " + tableAbbrev);
@@ -59,7 +77,7 @@ public class SQLGenerator {
             String elementTableAbbrev=tablePrefix+i;
             String elementTableName=property.getCollectionTable().getName();
             String joinColumnName=property.getCollectionTable().getJoinColumns()[0].getName();
-            content.append(String.format(" left join %s %s on %s.`%s`=%s.`%s` ",
+            content.append(String.format(" left join `%s` `%s` on `%s`.`%s`=`%s`.`%s` ",
                     elementTableName, elementTableAbbrev,
                     tableAbbrev, idProperty.getColumnName(),
                     elementTableAbbrev, joinColumnName));
@@ -68,6 +86,12 @@ public class SQLGenerator {
         return content;
     }
 
+    /**
+     * 生成Insert语句
+     * @param tableName
+     * @param insertFields
+     * @return
+     */
     public static StringBuilder generateInsertSQL(String tableName, List<String> insertFields) {
         StringBuilder content=new StringBuilder();
         content.append("public final static String INSERT_SQL=\"insert into ");
@@ -83,6 +107,13 @@ public class SQLGenerator {
 
     }
 
+    /**
+     * 生成Update语句
+     * @param tableName
+     * @param updateColumns
+     * @param idColumnName
+     * @return
+     */
     public static StringBuilder generateUpdateSQL(String tableName, List<String> updateColumns, String idColumnName) {
         StringBuilder content=new StringBuilder();
         content.append("public final static String UPDATE_SQL=\"update ");
@@ -96,6 +127,11 @@ public class SQLGenerator {
         return content;
     }
 
+    /**
+     * 生成Delete语句
+     * @param entity
+     * @return
+     */
     public static StringBuilder generateDeleteSQL(Entity entity) {
         StringBuilder content=new StringBuilder();
         SingleProperty idProperty=entity.getIdProperty();
