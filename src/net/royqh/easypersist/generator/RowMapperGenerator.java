@@ -51,7 +51,7 @@ public class RowMapperGenerator {
                             content.append(String.format("%s.%s(null);\n",entity.getName(),
                                     singleProperty.getSetter()));
                             content.append("} else {\n");
-                            content.append(String.format("%s.%s(%s.valueOf(rs.getString(val)));\n",
+                            content.append(String.format("%s.%s(%s.valueOf(val));\n",
                                     entity.getName(),
                                     singleProperty.getSetter(),
                                     singleProperty.getType()));

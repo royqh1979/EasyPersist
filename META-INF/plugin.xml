@@ -21,6 +21,7 @@
       * 0.7.1 add support for nullable properties/columns
       * 0.7.2 only generate persistors for current module(not whole project) <br />
               fixes wrong persistor code when property type is Integer <br />
+              set default enum type to String <br />
     ]]>
   </change-notes>
 
