@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.7.1</version>
+  <version>0.7.2</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -19,6 +19,8 @@
               add sort orientation support in findXXX methods   <br />
       * 0.7.0 add support to multi-module projects <br />
       * 0.7.1 add support for nullable properties/columns
+      * 0.7.2 only generate persistors for current module(not whole project) <br />
+              fixes wrong persistor code when property type is Integer <br />
     ]]>
   </change-notes>
 

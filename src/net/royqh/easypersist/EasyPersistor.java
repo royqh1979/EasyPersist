@@ -40,15 +40,15 @@ public class EasyPersistor {
                 indicator.setText("Parsing Entities...");
                 indicator.setFraction(0.0);
                 try {
-                    //Module module= ModuleUtil.findModuleForFile(xmlConfigFile,project);
+                    Module module= ModuleUtil.findModuleForFile(xmlConfigFile,project);
                     ormConfigParser.parse(xmlConfigFile);
                     MappingRepository mappingRepository = new MappingRepository();
                     int i = 1;
                     int n = ormConfigParser.getEntitiesConfigs().size();
                     for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
                         System.out.println(entitiesConfig);
-                        //packageScanner.scanInModule(entitiesConfig, module, mappingRepository, i, n, indicator);
-                        packageScanner.scanInProject(entitiesConfig, project, mappingRepository, i, n, indicator);
+                        packageScanner.scanInModule(entitiesConfig, module, mappingRepository, i, n, indicator);
+                        //packageScanner.scanInProject(entitiesConfig, project, mappingRepository, i, n, indicator);
                         i++;
                     }
                     indicator.setText("Generating ORM codes ...");

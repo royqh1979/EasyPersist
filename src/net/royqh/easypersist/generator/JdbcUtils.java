@@ -26,6 +26,7 @@ public class JdbcUtils {
         resultSetColumnTypeMap.put("float", "Float");
         resultSetColumnTypeMap.put("int", "Int");
         resultSetColumnTypeMap.put("long", "Long");
+        resultSetColumnTypeMap.put("Integer","Int");
         resultSetColumnTypeMap.put("short", "Short");
     }
 
@@ -93,7 +94,6 @@ public class JdbcUtils {
     public static String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar) {
         StringBuilder builder=new StringBuilder();
         if (property.getEnumType() != null) {
-            String setter = "";
             switch (property.getEnumType()) {
                 case ORDINAL:
                     builder.append(String.format("if (null != %s) {\n",
@@ -102,7 +102,7 @@ public class JdbcUtils {
                             paramIndex,
                             generateEnumParameterVariable(paramVar, property.getEnumType())));
                     builder.append("} else {\n");
-                    builder.append(String.format("stmt.setNull(%s,java.sql.Types.INTEGER);\n", setter,paramIndex));
+                    builder.append(String.format("stmt.setNull(%s,java.sql.Types.INTEGER);\n", paramIndex));
                     builder.append("}\n");
                     break;
                 case STRING:
