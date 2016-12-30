@@ -193,7 +193,7 @@ public class MethodParser {
         if (retunTypeClass!=null && retunTypeClass.isEnum()) {
             EnumType enumType=AnnotationParser.parseEnumerated(psiMethod) ;
             if (enumType==null) {
-                enumType=enumType.ORDINAL;
+                enumType=enumType.STRING;
             }
             property.setEnumType(enumType);
         }
