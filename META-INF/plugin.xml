@@ -22,6 +22,7 @@
       * 0.7.2 only generate persistors for current module(not whole project) <br />
               fixes wrong persistor code when property type is Integer <br />
               set default enum type to String <br />
+      * 0.8.0 add convert MySQL code to PostgreSQL code function <br />
     ]]>
   </change-notes>
 
@@ -57,6 +58,16 @@
       <add-to-group group-id="ProjectViewPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
     </action>
+    <action
+            id="net.royqh.easypersist.actions.MySQL2PostgreSQLAction"
+            class="net.royqh.easypersist.actions.MySQL2PostgreSQLAction"
+            text="Convert MySQL code to PostgreSQL" >
+      <add-to-group group-id="ToolsMenu" anchor="first"/>
+      <add-to-group group-id="EditorPopupMenu" />
+      <add-to-group group-id="ProjectViewPopupMenu" />
+      <add-to-group group-id="EditorTabPopupMenu" />
+    </action>
   </actions>
+  <depends>com.intellij.modules.database</depends>
 
 </idea-plugin>
