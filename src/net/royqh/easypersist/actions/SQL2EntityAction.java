@@ -9,39 +9,46 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.sql.dialects.SqlLanguageDialect;
 import net.royqh.parser.mysql.MySQLLexer;
-import net.royqh.parser.mysql.MySQLParser;
-import net.royqh.tools.mysql2postgresql.Mysql2PostgresqlVisitor;
+import net.royqh.parser.postgresql.PostgreSQLLexer;
+import net.royqh.parser.postgresql.PostgreSQLParser;
+import net.royqh.parser.postgresql.model.Model;
+import net.royqh.tools.sql2entity.EntitiesGenerator;
+import net.royqh.tools.sql2entity.Sql2ModelVisitor;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Convert MySQL Table define codes to PostgreSQL
  * Created by Roy on 2017/2/12.
  */
-public class MySQL2PostgreSQLAction extends AnAction {
+public class SQL2EntityAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        final VirtualFile mysqlFile = anActionEvent.getData(CommonDataKeys.VIRTUAL_FILE);
+        final VirtualFile sqlFile = anActionEvent.getData(CommonDataKeys.VIRTUAL_FILE);
         final Project project = anActionEvent.getProject();
-        if (mysqlFile == null) {
+        if (sqlFile == null) {
             return;
         }
         ProgressManager progressManager = ProgressManager.getInstance();
-        MySQL2PostgreSQLTask task = new MySQL2PostgreSQLTask(project,mysqlFile);
+        SQL2EntityTask task = new SQL2EntityTask(project,sqlFile);
         progressManager.run(task);
     }
 
@@ -55,11 +62,12 @@ public class MySQL2PostgreSQLAction extends AnAction {
         }
     }
 
-    public class MySQL2PostgreSQLTask extends Task.Backgroundable{
-        private VirtualFile mysqlFile;
-        public MySQL2PostgreSQLTask(Project project, VirtualFile mysqlFile) {
-            super(project,"Convert MySQL to PostgreSQL");
-            this.mysqlFile=mysqlFile;
+    public class SQL2EntityTask extends Task.Backgroundable {
+        private VirtualFile sqlFile;
+
+        public SQL2EntityTask(@Nullable Project project, VirtualFile sqlFile) {
+            super(project, "Generate Entites");
+            this.sqlFile=sqlFile;
         }
 
         @Override
@@ -72,33 +80,40 @@ public class MySQL2PostgreSQLAction extends AnAction {
                     Notification notification;
                     try {
                         indicator.setFraction(0);
-                        
-                        InputStream is=mysqlFile.getInputStream();
-                        InputStreamReader reader=new InputStreamReader(is, mysqlFile.getCharset());
+                        InputStream is=sqlFile.getInputStream();
+                        InputStreamReader reader=new InputStreamReader(is, sqlFile.getCharset());
                         ANTLRInputStream input = new ANTLRInputStream(reader);
-                        MySQLLexer lexer = new MySQLLexer(input);
-// create a buffer of tokens pulled from the lexer
-                        CommonTokenStream tokens = new CommonTokenStream(lexer);
-// create a parser that feeds off the tokens buffer
-                        MySQLParser parser = new MySQLParser(tokens);
-                        ParseTree tree = parser.prog(); // begin parsing at init rule
-                        Mysql2PostgresqlVisitor visitor=new Mysql2PostgresqlVisitor(tokens);
+                        PostgreSQLLexer lexer=new PostgreSQLLexer(input);
+                        CommonTokenStream tokenStream=new CommonTokenStream(lexer);
+                        PostgreSQLParser parser=new PostgreSQLParser(tokenStream);
+                        ParseTree tree=parser.prog();
+                        Model model=new Model();
+                        Sql2ModelVisitor visitor=new Sql2ModelVisitor(tokenStream,model);
                         tree.accept(visitor);
-                        StringBuilder convertedSql=visitor.getConvertedSQL();
 
-                        PsiFileFactory fileFactory=PsiFileFactory.getInstance(getProject());
-                        PsiFile psiFile=fileFactory.createFileFromText(mysqlFile.getNameWithoutExtension()+".postgre.sql",SqlLanguageDialect.findLanguageByID("PostgreSQL"),convertedSql);
+                        VirtualFile root= ProjectRootManager.getInstance(getProject())
+                                .getFileIndex().getContentRootForFile(sqlFile);
 
-                        CodeStyleManager codeStyleManager=CodeStyleManager.getInstance(getProject());
-                        psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
+                        File rootDir = new File(root.getPath());
 
-                        PsiDirectory psiDirectory= PsiManager.getInstance(getProject()).findDirectory(mysqlFile.getParent());
-                        PsiFile oldFile = psiDirectory.findFile(psiFile.getName());
-                        if (oldFile != null) {
-                            oldFile.delete();
+                        File outputDir=new File(root.getPath()+File.separator+"gen");
+
+                        if (!outputDir.exists()) {
+                            outputDir.mkdir();
                         }
-                        psiDirectory.add(psiFile);
+
+                        if (!outputDir.isDirectory()) {
+                            throw new RuntimeException("Can't create directory "+outputDir.getPath());
+                        }
+                        
+                        EntitiesGenerator.generate(outputDir.getPath(),model);
+
+                        List<File> files=new ArrayList<>();
+                        files.add(outputDir);
+                        LocalFileSystem.getInstance().refreshIoFiles(files);
+
                         indicator.setFraction(1);
+
                     } catch (IOException e) {
                         e.printStackTrace();
                         notification = notificationGroup.createNotification(
@@ -107,7 +122,6 @@ public class MySQL2PostgreSQLAction extends AnAction {
                         );
                         Notifications.Bus.notify(notification, getProject());
                     }
-
                 }
             });
         }
