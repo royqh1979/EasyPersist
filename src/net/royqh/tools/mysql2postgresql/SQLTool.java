@@ -174,7 +174,7 @@ public class SQLTool {
                     || index.getType()== Index.Type.PrimaryKey) {
                 break;
             }
-            builder.append("CREATE INDEX ");
+            builder.append("\nCREATE INDEX ");
             if (index.getName()!=null) {
                 builder.append("\"");
                 builder.append(index.getName());
@@ -184,7 +184,7 @@ public class SQLTool {
             builder.append(table.getName());
             builder.append("\" (\"");
             builder.append(String.join("\",\"",index.getColumns()));
-            builder.append("\" );\n");
+            builder.append("\" );");
         }
     }
 }

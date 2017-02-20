@@ -114,7 +114,7 @@ public class SQL2EntityAction extends AnAction {
 
                         indicator.setFraction(1);
 
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                         notification = notificationGroup.createNotification(
                                 "Generation failed :" + e.getMessage(),

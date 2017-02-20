@@ -152,9 +152,11 @@ class TableDefinitionVisitor extends MySQLBaseVisitor<Void> {
     }
 
     public Table getTable() {
+        /*
         if (!foundPrimaryKey) {
             throw new RuntimeException("No Primary Key for Table:"+table.getName());
         }
+        */
         return table;
     }
 }

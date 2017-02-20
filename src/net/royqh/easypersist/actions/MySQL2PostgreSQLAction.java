@@ -93,13 +93,14 @@ public class MySQL2PostgreSQLAction extends AnAction {
                         psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
 
                         PsiDirectory psiDirectory= PsiManager.getInstance(getProject()).findDirectory(mysqlFile.getParent());
+
                         PsiFile oldFile = psiDirectory.findFile(psiFile.getName());
                         if (oldFile != null) {
                             oldFile.delete();
                         }
                         psiDirectory.add(psiFile);
                         indicator.setFraction(1);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                         notification = notificationGroup.createNotification(
                                 "Generation failed :" + e.getMessage(),

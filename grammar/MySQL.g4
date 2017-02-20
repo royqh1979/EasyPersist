@@ -133,7 +133,7 @@ create_table_stmt
          '(' create_definition (',' create_definition)* ')'
          (table_options)? (partition_options)?
           ( K_IGNORE | K_REPLACE)? (K_AS)?
-         select_stmt                              # CreateTableSelectStmt
+         select_query                              # CreateTableSelectStmt
    | K_CREATE ( K_TEMPORARY )? K_TABLE ( K_IF K_NOT K_EXISTS )?
         table_name
        ( (K_LIKE table_name) | ('('K_LIKE table_name ')') )              # CreateTableLikeStmt
@@ -203,7 +203,7 @@ create_view_stmt
      (K_DEFINER '=' ( user | K_CURRENT_USER ))?
      (K_SQL K_SECURITY ( K_DEFINER | K_INVOKER ))?
      K_VIEW view_name ('(' column_list ')')?
-     K_AS select_stmt
+     K_AS select_query
      ( K_WITH (K_CASCADED | K_LOCAL)? K_CHECK K_OPTION)?
      ;
 
@@ -218,7 +218,7 @@ insert_stmt:
         ( K_VALUES | K_VALUE)? insert_value_list (',' insert_value_list)*
         insert_dup_key_update_part?
     | insert_first_part
-        select_stmt
+        select_query
         insert_dup_key_update_part?
     | insert_first_part
         K_SET column_name '=' (expr | K_DEFAULT) (',' column_name '=' (expr | K_DEFAULT) )*
@@ -249,8 +249,11 @@ update_stmt:
   ;
 
 select_stmt:
-      select_stmt ( K_UNION ( K_ALL | K_DISTINCT)? select_stmt)+      #SelectUnion
-    | '(' select_stmt ')' ( K_UNION ( K_ALL | K_DISTINCT)? '(' select_stmt ')' )+
+  select_query;
+
+select_query:
+      select_query ( K_UNION ( K_ALL | K_DISTINCT)? select_query)+      #SelectUnion
+    | '(' select_query ')' ( K_UNION ( K_ALL | K_DISTINCT)? '(' select_query ')' )+
              order_by_clause? #EnclosedSelect
     |  K_SELECT (select_option)*
           select_expr (',' select_expr )*
@@ -329,8 +332,8 @@ table_reference:
 table_factor:
     table_name  (K_PARTITION '('partition_names')' )?
         (K_AS? alias_name)? (index_hint_list)?
-  | select_stmt K_AS? alias_name
-  | '(' select_stmt ')' K_AS? alias_name
+  | select_query K_AS? alias_name
+  | '(' select_query ')' K_AS? alias_name
   | '(' table_references ')'
   ;
 
@@ -572,10 +575,10 @@ between_expr:
 
 comparison_expr:
    bit_expr comparison_operator bit_expr
-   | bit_expr comparison_operator (K_ALL | K_ANY) '('select_stmt')' ;
+   | bit_expr comparison_operator (K_ALL | K_ANY) '('select_query')' ;
 
 in_expr:
-    bit_expr (K_NOT)? K_IN '('select_stmt')'
+    bit_expr (K_NOT)? K_IN '('select_query')'
   | bit_expr (K_NOT)? K_IN '('expr (',' expr)? ')'
      ;
 
@@ -616,14 +619,14 @@ simple_expr:
   | (table_name '.')? column_name
   | '?'
   | '(' expr (',' expr)? ')'
-  | '(' select_stmt ')'
+  | '(' select_query ')'
   | interval_expr
   | (K_BINARY simple_expr)
   | simple_expr K_COLLATE collation_name
   | '!' simple_expr
   | ( '~'| '-' | '+') simple_expr
   | K_ROW '(' expr (',' expr)? ')'
-  | K_EXISTS '('select_stmt')'
+  | K_EXISTS '('select_query')'
   | '{' identifier expr '}'
   ;
   /*| match_expr */

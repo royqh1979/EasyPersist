@@ -1,4 +1,4 @@
-package net.royqh.parser.mysql;// Generated from E:/Workspaces/Tools/antlr.mysql/src/main/resources\MySQL.g4 by ANTLR 4.6
+package net.royqh.parser.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -223,22 +223,28 @@ public interface MySQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitUpdate_stmt(MySQLParser.Update_stmtContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MySQLParser#select_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSelect_stmt(MySQLParser.Select_stmtContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code SelectUnion}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSelectUnion(MySQLParser.SelectUnionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code EnclosedSelect}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitEnclosedSelect(MySQLParser.EnclosedSelectContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code Select}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */

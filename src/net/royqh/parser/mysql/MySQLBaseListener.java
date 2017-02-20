@@ -1,4 +1,4 @@
-package net.royqh.parser.mysql;// Generated from E:/Workspaces/Tools/antlr.mysql/src/main/resources\MySQL.g4 by ANTLR 4.6
+package net.royqh.parser.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -430,6 +430,18 @@ public class MySQLBaseListener implements MySQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitUpdate_stmt(MySQLParser.Update_stmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSelect_stmt(MySQLParser.Select_stmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSelect_stmt(MySQLParser.Select_stmtContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

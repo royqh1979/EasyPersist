@@ -23,7 +23,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
         for (MySQLParser.Sql_stmtContext sqlStmtContext : ctx.sql_stmt()) {
             ParseTool.getHiddenTextBeforeThisNode(tokenStream, sqlStmtContext, convertedSQL);
             sqlStmtContext.accept(this);
-            convertedSQL.append(";");
+            //convertedSQL.append(";");
         }
         return null;
     }
@@ -44,6 +44,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
     public Void visitCreate_index_stmt(MySQLParser.Create_index_stmtContext ctx) {
         MySQLParseTool.getConvertedText(tokenStream, ctx,
                 convertedSQL);
+        convertedSQL.append(";");
         return null;
     }
 
@@ -53,6 +54,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
         MySQLParser.Index_nameContext indexNameContext = ctx.index_name();
         convertedSQL.append(MySQLParseTool.parseIdentifier(indexNameContext));
         convertedSQL.append("\" CASCADE");
+        convertedSQL.append(";");
         return null;
     }
 
@@ -62,6 +64,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
         MySQLParser.Table_nameContext tableNameContext = ctx.table_name(0);
         convertedSQL.append(MySQLParseTool.parseIdentifier(tableNameContext));
         convertedSQL.append("\" CASCADE");
+        convertedSQL.append(";");
         return null;
     }
 
@@ -76,6 +79,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
             convertedSQL.append(MySQLParseTool.parseIdentifier(viewNameContext));
         }
         convertedSQL.append("\" CASCADE");
+        convertedSQL.append(";");
         return null;
     }
 
@@ -106,7 +110,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
         SQLTool.generateTableConstrains(table,convertedSQL);
         SQLTool.generateTableForeignKeys(table,convertedSQL);
         SQLTool.generateTableChecks(table,convertedSQL);
-        convertedSQL.append("\n);\n");
+        convertedSQL.append("\n);");
         SQLTool.generateTableIndexes(table,convertedSQL);
         return null;
     }
@@ -141,6 +145,7 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
     public Void visitInsert_stmt(MySQLParser.Insert_stmtContext ctx) {
         MySQLParseTool.getConvertedText(tokenStream, ctx,
                 convertedSQL);
+        convertedSQL.append(";");
         return null;
     }
 
@@ -148,6 +153,14 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
     public Void visitUpdate_stmt(MySQLParser.Update_stmtContext ctx) {
         MySQLParseTool.getConvertedText(tokenStream, ctx,
                 convertedSQL);
+        convertedSQL.append(";");
+        return null;
+    }
+
+    @Override
+    public Void visitSelect_stmt(MySQLParser.Select_stmtContext ctx) {
+        super.visitSelect_stmt(ctx);
+        convertedSQL.append(";");
         return null;
     }
 

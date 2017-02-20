@@ -1,4 +1,4 @@
-package net.royqh.parser.mysql;// Generated from E:/Workspaces/Tools/antlr.mysql/src/main/resources\MySQL.g4 by ANTLR 4.6
+package net.royqh.parser.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -363,38 +363,48 @@ public interface MySQLListener extends ParseTreeListener {
 	 */
 	void exitUpdate_stmt(MySQLParser.Update_stmtContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link MySQLParser#select_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterSelect_stmt(MySQLParser.Select_stmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MySQLParser#select_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitSelect_stmt(MySQLParser.Select_stmtContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code SelectUnion}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 */
 	void enterSelectUnion(MySQLParser.SelectUnionContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code SelectUnion}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 */
 	void exitSelectUnion(MySQLParser.SelectUnionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code EnclosedSelect}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 */
 	void enterEnclosedSelect(MySQLParser.EnclosedSelectContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code EnclosedSelect}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 */
 	void exitEnclosedSelect(MySQLParser.EnclosedSelectContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code Select}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 */
 	void enterSelect(MySQLParser.SelectContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code Select}
-	 * labeled alternative in {@link MySQLParser#select_stmt}.
+	 * labeled alternative in {@link MySQLParser#select_query}.
 	 * @param ctx the parse tree
 	 */
 	void exitSelect(MySQLParser.SelectContext ctx);
