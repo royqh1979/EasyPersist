@@ -24,6 +24,7 @@
               set default enum type to String <br />
       * 0.8.0 add convert MySQL code to PostgreSQL code function <br />
       * 0.8.1 add generate entity class function <br />
+      * 0.8.2 minor fixes <br />
     ]]>
   </change-notes>
 
