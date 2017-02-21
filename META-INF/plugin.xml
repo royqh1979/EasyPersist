@@ -81,5 +81,5 @@
     </action>
   </actions>
   <depends>com.intellij.modules.database</depends>
-
+  <depends>com.intellij.javaee</depends>
 </idea-plugin>
