@@ -1,5 +1,6 @@
 package net.royqh.easypersist.actions;
 
+import com.github.rjeschke.txtmark.Run;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -91,26 +92,19 @@ public class SQL2EntityAction extends AnAction {
                         Sql2ModelVisitor visitor=new Sql2ModelVisitor(tokenStream,model);
                         tree.accept(visitor);
 
-                        VirtualFile root= ProjectRootManager.getInstance(getProject())
+                        VirtualFile root=  ProjectRootManager.getInstance(getProject())
                                 .getFileIndex().getContentRootForFile(sqlFile);
 
-                        File rootDir = new File(root.getPath());
 
-                        File outputDir=new File(root.getPath()+File.separator+"gen");
-
-                        if (!outputDir.exists()) {
-                            outputDir.mkdir();
+                        VirtualFile genDir=root.findChild("gen");
+                        if (genDir==null) {
+                            genDir=root.createChildDirectory(getProject(),"gen");
                         }
-
-                        if (!outputDir.isDirectory()) {
-                            throw new RuntimeException("Can't create directory "+outputDir.getPath());
+                        if (genDir==null) {
+                            throw new RuntimeException("Can't create folder gen!");
                         }
-                        
-                        EntitiesGenerator.generate(outputDir.getPath(),model);
-
-                        List<File> files=new ArrayList<>();
-                        files.add(outputDir);
-                        LocalFileSystem.getInstance().refreshIoFiles(files);
+                        PsiDirectory psiOutputDir=PsiManager.getInstance(getProject()).findDirectory(genDir);
+                        EntitiesGenerator.generate(psiOutputDir,model,getProject());
 
                         indicator.setFraction(1);
 
@@ -121,6 +115,7 @@ public class SQL2EntityAction extends AnAction {
                                 NotificationType.ERROR
                         );
                         Notifications.Bus.notify(notification, getProject());
+                        throw new RuntimeException(e);
                     }
                 }
             });

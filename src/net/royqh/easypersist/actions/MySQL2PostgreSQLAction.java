@@ -107,6 +107,7 @@ public class MySQL2PostgreSQLAction extends AnAction {
                                 NotificationType.ERROR
                         );
                         Notifications.Bus.notify(notification, getProject());
+                        throw new RuntimeException(e);
                     }
 
                 }

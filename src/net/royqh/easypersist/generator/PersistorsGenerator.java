@@ -20,7 +20,13 @@ import java.util.*;
  * Created by Roy on 2016/2/15.
  */
 public class PersistorsGenerator {
-    public static void generate(Project project, MappingRepository mappingRepository, ProgressIndicator indicator) {
+    MethodGenerator methodGenerator;
+
+    public PersistorsGenerator(MethodGenerator methodGenerator) {
+        this.methodGenerator = methodGenerator;
+    }
+
+    public  void generate(Project project, MappingRepository mappingRepository, ProgressIndicator indicator) {
         PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
         CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
@@ -37,7 +43,7 @@ public class PersistorsGenerator {
 
     }
 
-    private static void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
+    private  void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
         String compositorClassName= CodeUtils.getPersistorCompositorName(entity);
         String fileName=compositorClassName+".java";
 
@@ -53,7 +59,7 @@ public class PersistorsGenerator {
         psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
         psiDirectory.add(psiFile);
     }
-    private static PsiFile generatePersistorCompositorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+    private  PsiFile generatePersistorCompositorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getPersistorCompositorName(entity);
         StringBuilder content = new StringBuilder();
         content.append("package " + targetPackage.getQualifiedName() + ";\n");
@@ -92,7 +98,7 @@ public class PersistorsGenerator {
                 content.toString());
     }
 
-    private static void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
+    private  void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
         /*
         PsiPackage targetPackage = findOrCreatePackageDirectory(entity.getPersistorPackageName(),facade,entity);
         PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
@@ -110,7 +116,7 @@ public class PersistorsGenerator {
         psiDirectory.add(psiFile);
     }
 
-    private static PsiDirectory findOrCreatePackageDirectory(String packageName, JavaPsiFacade facade, Entity entity) {
+    private  PsiDirectory findOrCreatePackageDirectory(String packageName, JavaPsiFacade facade, Entity entity) {
         int pos=packageName.lastIndexOf('.');
         if (pos>0) {
             String parentPackageName=packageName.substring(0,pos);
@@ -132,7 +138,7 @@ public class PersistorsGenerator {
         }
     }
 
-    private static PsiDirectory findOrCreateSubDirectory(PsiDirectory parentDir, String dirName) {
+    private  PsiDirectory findOrCreateSubDirectory(PsiDirectory parentDir, String dirName) {
         PsiDirectory subDirectory=parentDir.findSubdirectory(dirName);
         if (subDirectory==null) {
             subDirectory=parentDir.createSubdirectory(dirName);
@@ -140,7 +146,7 @@ public class PersistorsGenerator {
         return subDirectory;
     }
 
-    private static PsiFile generatePersistorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+    private  PsiFile generatePersistorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getPersistorName(entity);
         StringBuilder content = new StringBuilder();
         content.append("package " + targetPackage.getQualifiedName() + ";\n");
@@ -174,38 +180,38 @@ public class PersistorsGenerator {
     }
 
 
-    private static void createMappingListMethods(Entity entity, StringBuilder content) {
+    private  void createMappingListMethods(Entity entity, StringBuilder content) {
         for (MapRelationInfo relationInfo: entity.getMapRelationInfos()) {
-            MethodGenerator.createCreateXXXMappingMethod(entity,relationInfo,content);
-            MethodGenerator.createDeleteXXXMappingMethod(entity,relationInfo,content);
-            MethodGenerator.createBatchDeleteXXXMappingMethod(entity,relationInfo,content);
-            MethodGenerator.createCountXXXMappingMethod(entity,relationInfo,content);
-            MethodGenerator.createFindXXXMappingMethod(entity,relationInfo,content);
-            MethodGenerator.createFindXXXMappingWithSortMethod(entity,relationInfo,content);
+            methodGenerator.createCreateXXXMappingMethod(entity,relationInfo,content);
+            methodGenerator.createDeleteXXXMappingMethod(entity,relationInfo,content);
+            methodGenerator.createBatchDeleteXXXMappingMethod(entity,relationInfo,content);
+            methodGenerator.createCountXXXMappingMethod(entity,relationInfo,content);
+            methodGenerator.createFindXXXMappingMethod(entity,relationInfo,content);
+            methodGenerator.createFindXXXMappingWithSortMethod(entity,relationInfo,content);
         }
     }
 
-    private static void createSearchMethods(Entity entity, StringBuilder content) {
+    private  void createSearchMethods(Entity entity, StringBuilder content) {
         for (IndexInfo indexInfo:entity.getIndexes()) {
             if (indexInfo.isUnique()) {
-                MethodGenerator.createRetrieveByXXXMethod(entity, indexInfo, content);
+                methodGenerator.createRetrieveByXXXMethod(entity, indexInfo, content);
                 if (canGenerateRangeQuery(entity,indexInfo)) {
-                    MethodGenerator.createCountByXXXMethod(entity, indexInfo, content);
-                    MethodGenerator.createFindByXXXMethod(entity, indexInfo, content);
+                    methodGenerator.createCountByXXXMethod(entity, indexInfo, content);
+                    methodGenerator.createFindByXXXMethod(entity, indexInfo, content);
                 }
             } else {
-                MethodGenerator.createCountByXXXMethod(entity, indexInfo, content);
-                MethodGenerator.createFindByXXXMethod(entity, indexInfo, content);
+                methodGenerator.createCountByXXXMethod(entity, indexInfo, content);
+                methodGenerator.createFindByXXXMethod(entity, indexInfo, content);
             }
-            MethodGenerator.createDeleteByXXXMethod(entity,indexInfo,content);
+            methodGenerator.createDeleteByXXXMethod(entity,indexInfo,content);
         }
 
-        MethodGenerator.createCountAllMethod(entity,content);
-        MethodGenerator.createFindAllMethod(entity,content);
+        methodGenerator.createCountAllMethod(entity,content);
+        methodGenerator.createFindAllMethod(entity,content);
     }
 
-    private static boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
-        List<SingleProperty> indexProperties = MethodGenerator.getIndexProperties(entity, indexInfo);
+    private  boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
+        List<SingleProperty> indexProperties = methodGenerator.getIndexProperties(entity, indexInfo);
         if (indexInfo.isUnique()) {
             for (SingleProperty singleProperty : indexProperties) {
                 if (!TypeUtils.isRangeType(singleProperty) && !TypeUtils.isStringType(singleProperty)) {
@@ -217,23 +223,23 @@ public class PersistorsGenerator {
         return true;
     }
 
-    private static void createUtilMethods(StringBuilder content) {
-        MethodGenerator.createExceptionTranslatorGetter(content);
-        MethodGenerator.createDataSourceGetter(content);
-        MethodGenerator.createDataSourceSetter(content);
+    private  void createUtilMethods(StringBuilder content) {
+        methodGenerator.createExceptionTranslatorGetter(content);
+        methodGenerator.createDataSourceGetter(content);
+        methodGenerator.createDataSourceSetter(content);
     }
 
-    private static void createBasicMethods(Entity entity, StringBuilder content) {
-        MethodGenerator.createLoadByIdMethod(content, entity);
-        MethodGenerator.createLoadAllMethod(content, entity);
+    private  void createBasicMethods(Entity entity, StringBuilder content) {
+        methodGenerator.createLoadByIdMethod(content, entity);
+        methodGenerator.createLoadAllMethod(content, entity);
 
-        MethodGenerator.createCreateMethod(content, entity);
-        MethodGenerator.createUpdateMethod(content, entity);
-        MethodGenerator.createDeleteMethod(content,entity);
+        methodGenerator.createCreateMethod(content, entity);
+        methodGenerator.createUpdateMethod(content, entity);
+        methodGenerator.createDeleteMethod(content,entity);
 
     }
 
-    private static void generateImports(Entity entity, StringBuilder content) {
+    private  void generateImports(Entity entity, StringBuilder content) {
         content.append("import javax.sql.DataSource;\n");
         content.append("import org.slf4j.Logger;\n");
         content.append("import org.slf4j.LoggerFactory;\n");
@@ -303,7 +309,7 @@ public class PersistorsGenerator {
     }
 
     /*
-    private static void createLoadByIdMethod(StringBuilder content, Entity entity) {
+    private  void createLoadByIdMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public " + entity.getClassInfo().getName()+" retrieve(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -319,7 +325,7 @@ public class PersistorsGenerator {
         content.append("}\n");
     }
 
-    private static void createLoadAllMethod(StringBuilder content, Entity entity) {
+    private  void createLoadAllMethod(StringBuilder content, Entity entity) {
         String rowCallbackHandlerClassName= CodeUtils.getRowCallbackHandlerClassName(entity);
         content.append("public List<" + entity.getClassInfo().getName()+"> retrieveAll() {\n");
         content.append(rowCallbackHandlerClassName+" rowCallbackHandler = new ");
@@ -334,8 +340,8 @@ public class PersistorsGenerator {
     }
     */
 
-    private static void createSQLs(StringBuilder content, Entity entity) {
-        content.append(SQLGenerator.generateSimpleSelectSQL(entity));
+    private  void createSQLs(StringBuilder content, Entity entity) {
+        content.append(methodGenerator.getSqlGenerator().generateSimpleSelectSQL(entity));
        // content.append(SQLGenerator.generateFullJoinSelectSQL(entity));
         /*
         content.append(SQLGenerator.generateInsertSQL(entity));

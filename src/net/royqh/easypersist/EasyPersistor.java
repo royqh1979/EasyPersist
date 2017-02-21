@@ -7,8 +7,7 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import net.royqh.easypersist.generator.PersistorsGenerator;
-import net.royqh.easypersist.generator.SQLGenerator;
+import net.royqh.easypersist.generator.*;
 import net.royqh.easypersist.model.config.EntitiesConfig;
 import net.royqh.easypersist.parsers.OrmConfigParser;
 import net.royqh.easypersist.parsers.jpa.PackageScanner;
@@ -53,7 +52,21 @@ public class EasyPersistor {
                     }
                     indicator.setText("Generating ORM codes ...");
                     indicator.setFraction(0.5);
-                    PersistorsGenerator.generate(project, mappingRepository, indicator);
+
+                    SQLGenerator sqlGenerator;
+                    switch(ormConfigParser.getDialect()) {
+                        case "MySQL":
+                            sqlGenerator=new MySQLGenerator();
+                            break;
+                        case "PostgreSQL":
+                            sqlGenerator=new PostgreSQLGenerator();
+                            break;
+                        default:
+                            throw new RuntimeException("Wrong dialect in orm-config.xml. Should be MySQL or PostgreSQL!");
+                    }
+                    MethodGenerator methodGenerator=new MethodGenerator(sqlGenerator);
+                    PersistorsGenerator persistorsGenerator=new PersistorsGenerator(methodGenerator);
+                    persistorsGenerator.generate(project, mappingRepository, indicator);
                 } catch (Exception e) {
                     e.printStackTrace();
                     notification = notificationGroup.createNotification(

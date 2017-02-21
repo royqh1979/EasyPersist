@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <entity-config
-           xmlns="http://royqh.net/codegenerator/orm/schema/config/1.1"
+           xmlns="http://royqh.net/codegenerator/orm/schema/config/1.2"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://royqh.net/codegenerator/orm/schema/config/1.1 http://royqh.net/codegenerator/orm/schema/config_1_1.xsd">
+           xsi:schemaLocation="http://royqh.net/codegenerator/orm/schema/config/1.2 http://royqh.net/codegenerator/orm/schema/config_1_2.xsd">
     <entities>
         <annotation-based package="net.royqh.domain" />
         <persistor target-package="net.royqh.persistor" />
+        <dialect>MySQL</dialect>
     </entities>
 </entity-config>

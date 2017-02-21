@@ -3,12 +3,16 @@ package net.royqh.easypersist.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.royqh.easypersist.EasyPersistor;
 import net.royqh.easypersist.parsers.OrmConfigParser;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -16,14 +20,13 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * Created by Roy on 2016/2/10.
  */
-public class ORMGenerateAction extends AnAction {
+public class GenerateORMCodeAction extends AnAction {
     private EasyPersistor easyPersistor;
 
 
-    public ORMGenerateAction() throws ParserConfigurationException, SAXException {
+    public GenerateORMCodeAction() throws ParserConfigurationException, SAXException {
         easyPersistor = new EasyPersistor();
     }
-
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -33,7 +36,7 @@ public class ORMGenerateAction extends AnAction {
             return;
         }
         ProgressManager progressManager = ProgressManager.getInstance();
-        ORMGenerateTask task = new ORMGenerateTask(project, "Generating ORM Code...", true,
+        GenerateORMCodeTask task = new GenerateORMCodeTask(project, "Generating ORM Code...", true,
                 easyPersistor,
                 xmlConfigFile);
         progressManager.run(task);
@@ -46,6 +49,26 @@ public class ORMGenerateAction extends AnAction {
             e.getPresentation().setVisible(false);
         } else {
             e.getPresentation().setVisible(true);
+        }
+    }
+
+    /**
+     * Created by Roy on 2016/8/31.
+     */
+    public class GenerateORMCodeTask extends Task.Backgroundable {
+        private EasyPersistor easyPersistor;
+        private VirtualFile xmlConfigFile;
+
+        public GenerateORMCodeTask(@Nullable Project project, @Nls(capitalization = Nls.Capitalization.Title) @NotNull String title, boolean canBeCancelled, EasyPersistor easyPersistor,
+                                   VirtualFile xmlConfigFile) {
+            super(project, title, canBeCancelled);
+            this.easyPersistor=easyPersistor;
+            this.xmlConfigFile=xmlConfigFile;
+        }
+
+        @Override
+        public void run(@NotNull ProgressIndicator indicator) {
+            easyPersistor.execute(getProject(),xmlConfigFile,indicator);
         }
     }
 }

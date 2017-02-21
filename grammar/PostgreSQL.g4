@@ -253,8 +253,14 @@ locking_clause:
                 ( K_OF table_name (',' table_name)* )? ( K_NOWAIT | K_SKIP K_LOCKED )?
    ;
 
-start: INTEGER_VALUE;
-count: INTEGER_VALUE;
+start:
+    INTEGER_VALUE
+    | '(' expr ')'
+    ;
+count:
+    INTEGER_VALUE
+    | '(' expr ')'
+    ;
 
 where_condition: expr ;
 

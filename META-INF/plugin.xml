@@ -25,6 +25,7 @@
       * 0.8.0 add convert MySQL code to PostgreSQL code function <br />
       * 0.8.1 add generate entity class function <br />
       * 0.8.2 minor fixes <br />
+      * 0.9.0 add  PostgreSQL ORM code generation <br />
     ]]>
   </change-notes>
 
@@ -52,8 +53,8 @@
   <actions>
     <!-- Add your actions here -->
     <action
-            id="net.royqh.easypersist.actions.ORMGenerateAction"
-            class="net.royqh.easypersist.actions.ORMGenerateAction"
+            id="net.royqh.easypersist.actions.GenerateORMCodeAction"
+            class="net.royqh.easypersist.actions.GenerateORMCodeAction"
             text="Generate ORM Code" >
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <add-to-group group-id="EditorPopupMenu" />

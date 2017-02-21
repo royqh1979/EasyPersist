@@ -21,6 +21,8 @@ public class OrmConfigParser extends DefaultHandler {
     private EntitiesConfig currentConfig=null;
     private SAXParser parser;
     public final static String ORM_CONFIG_FILE_NAME= "orm-config.xml";
+    private String currentTag=null;
+    private String dialect="PostgreSQL";
 
     public OrmConfigParser() throws ParserConfigurationException, SAXException {
         SAXParserFactory parserFactory=SAXParserFactory.newInstance();
@@ -39,6 +41,7 @@ public class OrmConfigParser extends DefaultHandler {
                 entitiesConfigs.add(currentConfig);
                 break;
         }
+        currentTag=null;
     }
 
     @Override
@@ -66,10 +69,24 @@ public class OrmConfigParser extends DefaultHandler {
         if (qName.equals("entities")) {
             currentConfig=new EntitiesConfig();
         }
+        currentTag=qName;
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (currentTag!=null) {
+            if (currentTag.equals("dialect")){
+                dialect=new String(ch,start,length);
+            }
+        }
     }
 
     public List<EntitiesConfig> getEntitiesConfigs() {
         return entitiesConfigs;
+    }
+
+    public String getDialect() {
+        return dialect;
     }
 
     public void parse(VirtualFile file) throws SAXException, IOException {

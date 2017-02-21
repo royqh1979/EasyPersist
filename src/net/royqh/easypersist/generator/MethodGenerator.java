@@ -1,6 +1,5 @@
 package net.royqh.easypersist.generator;
 
-import com.google.common.base.Preconditions;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -15,9 +14,19 @@ import java.util.Set;
  * Created by Roy on 2016/2/24.
  */
 public class MethodGenerator {
-    public static void createDeleteMethod(StringBuilder content, Entity entity) {
+    private SQLGenerator sqlGenerator;
+
+    public MethodGenerator(SQLGenerator sqlGenerator) {
+        this.sqlGenerator = sqlGenerator;
+    }
+
+    public SQLGenerator getSqlGenerator() {
+        return sqlGenerator;
+    }
+
+    public  void createDeleteMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
-        content.append(SQLGenerator.generateDeleteSQL(entity));
+        content.append(sqlGenerator.generateDeleteSQL(entity));
 
         content.append("public void delete(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -33,7 +42,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createUpdateMethod(StringBuilder content, Entity entity) {
+    public  void createUpdateMethod(StringBuilder content, Entity entity) {
         List<String> updateColumns = new ArrayList<>();
         List<SingleProperty> updateProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
@@ -42,11 +51,12 @@ public class MethodGenerator {
                 continue;
             if (property.getPropertyType() == PropertyType.Column) {
                 SingleProperty singleProperty = (SingleProperty) property;
-                updateColumns.add("`"+singleProperty.getColumnName() + "`=?");
+                updateColumns.add(sqlGenerator.getQuote()+singleProperty.getColumnName() +
+                        sqlGenerator.getQuote()+"=?");
                 updateProperties.add(singleProperty);
             }
         }
-        content.append(SQLGenerator.generateUpdateSQL(entity.getTableName(), updateColumns, idProperty.getColumnName()));
+        content.append(sqlGenerator.generateUpdateSQL(entity.getTableName(), updateColumns, idProperty.getColumnName()));
 
         content.append("public void update(");
         content.append(entity.getClassInfo().getName());
@@ -69,7 +79,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createCreateMethod(StringBuilder content, Entity entity) {
+    public  void createCreateMethod(StringBuilder content, Entity entity) {
         List<String> insertFields = new ArrayList<>();
         List<SingleProperty> insertProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
@@ -82,7 +92,7 @@ public class MethodGenerator {
                 insertProperties.add(singleProperty);
             }
         }
-        content.append(SQLGenerator.generateInsertSQL(entity.getTableName(), insertFields));
+        content.append(sqlGenerator.generateInsertSQL(entity.getTableName(), insertFields));
 
         if (entity.isAutoGenerateId()) {
             createCreateWithAutoGenerateIdMethod(content, entity, insertProperties);
@@ -91,7 +101,7 @@ public class MethodGenerator {
         }
     }
 
-    public static void createCreateWithoutAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
+    public  void createCreateWithoutAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public ");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -114,7 +124,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createCreateWithAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
+    public  void createCreateWithAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public ");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -144,13 +154,17 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createLoadByIdMethod(StringBuilder content, Entity entity) {
+    public  void createLoadByIdMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public " + entity.getClassInfo().getName() + " retrieve(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
         content.append(" id) {\n");
         content.append("String sql=SIMPLE_SELECT_SQL+");
-        content.append("\" where `" + idProperty.getColumnName() + "` = ?\";\n");
+        content.append("\" where ");
+        content.append(sqlGenerator.getQuote());
+        content.append(idProperty.getColumnName());
+        content.append(sqlGenerator.getQuote());
+        content.append(" = ?\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
         content.append(String.format("stmt.%s(1,id);\n",
@@ -164,7 +178,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createLoadAllMethod(StringBuilder content, Entity entity) {
+    public  void createLoadAllMethod(StringBuilder content, Entity entity) {
 //        String rowCallbackHandlerClassName = CodeUtils.getRowCallbackHandlerClassName(entity);
         content.append("public List<" + entity.getClassInfo().getName() + "> retrieveAll() {\n");
         content.append("String sql=SIMPLE_SELECT_SQL;");
@@ -182,7 +196,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createRetrieveByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public  void createRetrieveByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         String indexName = JdbcUtils.generateIndexName(indexProperties);
@@ -197,7 +211,7 @@ public class MethodGenerator {
         content.append(String.join(",", parameterList));
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateRetrieveByXXXSQL(entity, indexProperties));
+        content.append(sqlGenerator.generateRetrieveByXXXSQL(entity, indexProperties));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -217,7 +231,7 @@ public class MethodGenerator {
     }
 
 
-    public static void createCountByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public  void createCountByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         String indexName = JdbcUtils.generateIndexName(indexProperties);
@@ -245,7 +259,7 @@ public class MethodGenerator {
         content.append(String.join(",", parameterList));
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateCountByXXXSQL(entity, indexProperties));
+        content.append(sqlGenerator.generateCountByXXXSQL(entity, indexProperties));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -280,12 +294,12 @@ public class MethodGenerator {
 
     }
 
-    public static void createFindByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public  void createFindByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         createFindByXXXMethodWithoutSort(entity, indexInfo, content);
         createFindByXXXMethodWithSort(entity, indexInfo, content);
     }
 
-    private static void createFindByXXXMethodWithoutSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    private  void createFindByXXXMethodWithoutSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         String indexName = JdbcUtils.generateIndexName(indexProperties);
@@ -314,7 +328,7 @@ public class MethodGenerator {
         content.append(") {\n");
         content.append("String sql;\n");
         content.append("sql=\"");
-        content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
+        content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -351,7 +365,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    private static void createFindByXXXMethodWithSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    private  void createFindByXXXMethodWithSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         String indexName = JdbcUtils.generateIndexName(indexProperties);
@@ -386,18 +400,19 @@ public class MethodGenerator {
         content.append("String sql;\n");
         content.append("if (orderBy==null) {\n");
         content.append("sql=\"");
-        content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
-        content.append(" limit \"+startPos+\",\"+resultSize;\n");
-        content.append("");
+        content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
+        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(";\n");
         content.append("}else{\n");
         content.append(" String sortSql=\" asc \";\n");
         content.append(" if (\"desc\".equals(sort)){\n");
         content.append("sortSql=\" desc \";");
         content.append("}\n");
         content.append("sql=\"");
-        content.append(SQLGenerator.generateFindByXXXSQL(entity, indexProperties));
+        content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
         content.append(" order by \"+orderBy+sortSql+\"");
-        content.append(" limit \"+startPos+\",\"+resultSize;\n");
+        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -434,7 +449,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createCountAllMethod(Entity entity, StringBuilder content) {
+    public  void createCountAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = getAllIndexProperties(entity);
 
         content.append("public int countAll(");
@@ -528,7 +543,7 @@ public class MethodGenerator {
     }
 
 
-    public static void createFindAllMethod(Entity entity, StringBuilder content) {
+    public  void createFindAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = getAllIndexProperties(entity);
 
         content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
@@ -590,7 +605,9 @@ public class MethodGenerator {
         content.append("}\n");
         content.append("orderClause=\" order by \"+orderBy+sortSql;\n");
         content.append("}\n");
-        content.append("String limitClause=\" limit \"+startPos+\",\"+resultSize;\n");
+        content.append("String limitClause=\" ");
+        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(";\n");
         content.append("if (params.size()!=0) {\n");
         content.append("sql=\"select * from " + entity.getTableName() + " where \"+String.join(\",\",params)+orderClause+limitClause;\n");
         content.append("} else {\n");
@@ -638,28 +655,28 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    protected static void createStatementStatments(StringBuilder content) {
+    protected  void createStatementStatments(StringBuilder content) {
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("Statement stmt = null;\n");
         content.append("try {\n");
         content.append("stmt = con.createStatement();\n");
     }
 
-    protected static void createPreparedStatementStatments(StringBuilder content) {
+    protected  void createPreparedStatementStatments(StringBuilder content) {
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("PreparedStatement stmt = null;\n");
         content.append("try {\n");
         content.append("stmt = con.prepareStatement(sql);\n");
     }
 
-    protected static void createPreparedStatementWithGeneratedKeyStatments(StringBuilder content) {
+    protected  void createPreparedStatementWithGeneratedKeyStatments(StringBuilder content) {
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("PreparedStatement stmt = null;\n");
         content.append("try {\n");
         content.append("stmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);\n");
     }
 
-    protected static void createExceptionHandleStatements(StringBuilder content) {
+    protected  void createExceptionHandleStatements(StringBuilder content) {
         content.append("}\n");
         content.append("catch (SQLException ex) {\n");
         content.append("JdbcUtils.closeStatement(stmt);\n");
@@ -674,7 +691,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createExceptionTranslatorGetter(StringBuilder content) {
+    public  void createExceptionTranslatorGetter(StringBuilder content) {
         content.append("public synchronized SQLExceptionTranslator getExceptionTranslator() {\n");
         content.append("if (this.exceptionTranslator == null) {\n");
         content.append("DataSource dataSource = getDataSource();\n");
@@ -689,13 +706,13 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createDataSourceGetter(StringBuilder content) {
+    public  void createDataSourceGetter(StringBuilder content) {
         content.append("public DataSource getDataSource() {\n");
         content.append("return dataSource;\n");
         content.append("}\n");
     }
 
-    public static void createDataSourceSetter(StringBuilder content) {
+    public  void createDataSourceSetter(StringBuilder content) {
         content.append("public void setDataSource(DataSource dataSource) {\n");
         content.append("this.dataSource=dataSource;\n");
         content.append("}\n");
@@ -703,7 +720,7 @@ public class MethodGenerator {
 
 
     @NotNull
-    public static List<SingleProperty> getIndexProperties(Entity entity, IndexInfo indexInfo) {
+    public  List<SingleProperty> getIndexProperties(Entity entity, IndexInfo indexInfo) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         for (String propertyName : indexInfo.getProperties()) {
             SingleProperty singleProperty = (SingleProperty) entity.getProperty(propertyName);
@@ -712,7 +729,7 @@ public class MethodGenerator {
         return indexProperties;
     }
 
-    private static List<SingleProperty> getAllIndexProperties(Entity entity) {
+    private  List<SingleProperty> getAllIndexProperties(Entity entity) {
         Set<String> allIndexPropertieNames = new HashSet<>();
         for (IndexInfo indexInfo : entity.getIndexes()) {
             for (String propertyName : indexInfo.getProperties()) {
@@ -727,7 +744,7 @@ public class MethodGenerator {
         return allIndexProperties;
     }
 
-    public static void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public  void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("public List<");
         content.append(relationInfo.getMappingEntityFullClassName());
@@ -737,7 +754,7 @@ public class MethodGenerator {
         content.append(" id");
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -757,7 +774,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createCountXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public  void createCountXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("public int count" +
                 StringUtils.capitalize(mappingEntity.getName()) + "(");
@@ -766,7 +783,7 @@ public class MethodGenerator {
         content.append(" id");
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateCountXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateCountXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -781,7 +798,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createFindXXXMappingWithSortMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public  void createFindXXXMappingWithSortMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("public List<");
         content.append(relationInfo.getMappingEntityFullClassName());
@@ -794,18 +811,19 @@ public class MethodGenerator {
         content.append("String sql;\n");
         content.append("if (orderBy==null) {\n");
         content.append("sql=\"");
-        content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
-        content.append(" limit \"+startPos+\",\"+resultSize;\n");
-        content.append("");
+        content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(";\n");
         content.append("}else{\n");
         content.append(" String sortSql=\" asc \";\n");
         content.append(" if (\"desc\".equals(sort)){\n");
         content.append("sortSql=\" desc \";");
         content.append("}\n");
         content.append("sql=\"");
-        content.append(SQLGenerator.generateFindXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
         content.append(" order by A.\"+orderBy+sortSql+\"");
-        content.append(" limit \"+startPos+\",\"+resultSize;\n");
+        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -825,7 +843,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public  void createCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         String mappingEntityId=mappingEntity.getName()+"Id";
         content.append("public void add");
@@ -840,7 +858,7 @@ public class MethodGenerator {
         content.append(mappingEntityId);
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateCreateXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateCreateXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -854,7 +872,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public  void createDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         String mappingEntityId=mappingEntity.getName()+"Id";
         content.append("public void delete");
@@ -869,7 +887,7 @@ public class MethodGenerator {
         content.append(mappingEntityId);
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateDeleteXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateDeleteXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -883,7 +901,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public static void createBatchDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public  void createBatchDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         String mappingEntityIds=mappingEntity.getName()+"Ids";
         String mappingEntityId=mappingEntity.getName()+"Id";
@@ -899,7 +917,7 @@ public class MethodGenerator {
         content.append(mappingEntityIds);
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateDeleteXXXMappingSQL(entity, relationInfo));
+        content.append(sqlGenerator.generateDeleteXXXMappingSQL(entity, relationInfo));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -921,7 +939,7 @@ public class MethodGenerator {
         createExceptionHandleStatements(content);
         content.append("}\n");    }
 
-    public static void createDeleteByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public  void createDeleteByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         String indexName = JdbcUtils.generateIndexName(indexProperties);
@@ -949,7 +967,7 @@ public class MethodGenerator {
         content.append(String.join(",", parameterList));
         content.append(") {\n");
         content.append("String sql=\"");
-        content.append(SQLGenerator.generateDeleteByXXXSQL(entity, indexProperties));
+        content.append(sqlGenerator.generateDeleteByXXXSQL(entity, indexProperties));
         content.append("\";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);

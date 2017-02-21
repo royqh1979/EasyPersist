@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+        xmlns="http://royqh.net/codegenerator/orm/schema/config/1.2"
+        targetNamespace="http://royqh.net/codegenerator/orm/schema/config/1.2"
+        elementFormDefault="qualified"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="entity-config" type="entity-configType"/>
+  <xs:complexType name="annotation-basedType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="package"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="persistorType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="target-package"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:simpleType name="dialectType">
+    <xs:restriction base="xs:string" >
+      <xs:enumeration value="MySQL" />
+      <xs:enumeration value="PostgreSQL" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="entity-configType">
+    <xs:sequence>
+      <xs:element type="entitiesType" name="entities" maxOccurs="unbounded" minOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="entitiesType">
+    <xs:sequence>
+      <xs:element type="annotation-basedType" name="annotation-based"/>
+      <xs:element type="persistorType" name="persistor"/>
+      <xs:element type="dialectType" name="dialect" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

@@ -1,5 +1,12 @@
 package net.royqh.tools.sql2entity;
 
+import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.parser.postgresql.model.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,7 +21,7 @@ import java.util.List;
  * Created by Roy on 2017/2/10.
  */
 public class EntitiesGenerator {
-    public static void generate(String outputDirPath, Model model) throws IOException {
+    public static void generate(PsiDirectory directory, Model model, Project project) throws IOException {
         EntityModel entityModel = new EntityModel();
 
         /* 生成实体模型信息 */
@@ -158,9 +165,18 @@ public class EntitiesGenerator {
             }
             entityBuilder.append("}\n");
 
-            FileWriter fileWriter = new FileWriter(outputDirPath + File.separator + entity.getName() + ".java");
-            fileWriter.append(entityBuilder.toString());
-            fileWriter.close();
+            PsiFileFactory psiFileFactory=PsiFileFactory.getInstance(project);
+
+            PsiFile file=psiFileFactory.createFileFromText(entity.getName() + ".java", JavaLanguage.INSTANCE,entityBuilder);
+
+            PsiFile oldFile=directory.findFile(file.getName());
+            if (oldFile!=null) {
+                oldFile.delete();
+            }
+            CodeStyleManager codeStyleManager=CodeStyleManager.getInstance(project);
+            codeStyleManager.reformat(file);
+
+            directory.add(file);
         }
     }
 
@@ -172,7 +188,18 @@ public class EntitiesGenerator {
         builder.append(mapping.getMappingTableName());
         builder.append("\",\n");
         builder.append("            mappingEntityClass = ");
-        builder.append(model.getEntityByTableName(refMappingColumn.getRefTable()).getName());
+        Entity mappingEntity=model.getEntityByTableName(refMappingColumn.getRefTable());
+        if (mappingEntity==null) {
+            throw new RuntimeException(
+                    String.format("Can't find reference table \"%s\" in %s: \"FOREIGN KEY (%s) REFERENCES %s (%s)\"",
+                            refMappingColumn.getRefTable(),
+                            mapping.getMappingTableName(),
+                            refMappingColumn.getColumnName(),
+                            refMappingColumn.getRefTable(),
+                            refMappingColumn.getRefColumn()
+                    ));
+        }
+        builder.append(mappingEntity.getName());
         builder.append(".class,\n");
         builder.append("            mappingEntityIdColumn = \"");
         builder.append(refMappingColumn.getColumnName());
