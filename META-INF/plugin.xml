@@ -40,6 +40,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+    <standardResourceProvider implementation="net.royqh.easypersist.EasyPersistResourceProvider" />
   </extensions>
 
   <application-components>
@@ -81,5 +82,4 @@
     </action>
   </actions>
   <depends>com.intellij.modules.database</depends>
-  <depends>com.intellij.javaee</depends>
 </idea-plugin>
