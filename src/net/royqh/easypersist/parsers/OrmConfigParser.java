@@ -22,7 +22,7 @@ public class OrmConfigParser extends DefaultHandler {
     private SAXParser parser;
     public final static String ORM_CONFIG_FILE_NAME= "orm-config.xml";
     private String currentTag=null;
-    private String dialect="PostgreSQL";
+    private String dialect="MySQL";
 
     public OrmConfigParser() throws ParserConfigurationException, SAXException {
         SAXParserFactory parserFactory=SAXParserFactory.newInstance();
