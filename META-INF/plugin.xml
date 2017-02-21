@@ -26,6 +26,7 @@
       * 0.8.1 add generate entity class function <br />
       * 0.8.2 minor fixes <br />
       * 0.9.0 add  PostgreSQL ORM code generation <br />
+      * 0.9.1 fix: name error in countAll() <br />
     ]]>
   </change-notes>
 

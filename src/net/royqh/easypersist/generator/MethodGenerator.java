@@ -479,27 +479,38 @@ public class MethodGenerator {
                 content.append(String.format("if (%s!=null && %s!=null) {\n",
                         "min" + StringUtils.capitalize(property.getName()),
                         "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s between ? and ? )\");\n", property.getName()));
+                content.append(String.format("params.add(\"(%s%s%s between ? and ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
                     content.append(String.format("if (%s!=null) {\n", property.getName()));
-                    content.append(String.format("params.add(\"%s like ?\");\n", property.getName()));
+                    content.append(String.format("params.add(\"%s%s%s like ?\");\n",
+                            sqlGenerator.getQuote(),
+                            property.getColumnName(),
+                            sqlGenerator.getQuote()));
                     content.append("}\n");
                 }
                 continue;
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
-                content.append(String.format("params.add(\"%s=?\");\n", property.getName()));
+                content.append(String.format("params.add(\"%s%s%s=?\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
                 content.append("}\n");
             }
         }
 
         content.append("String sql;\n");
         content.append("if (params.size()!=0) {\n");
-        content.append("sql=\"select count(*) from " + entity.getTableName() + " where \"+String.join(\",\",params);\n");
+        content.append("sql=\"select count(*) from " +sqlGenerator.getQuote()
+                +entity.getTableName() + sqlGenerator.getQuote() + " where \"+String.join(\",\",params);\n");
         content.append("} else {\n");
-        content.append("sql=\"select count(*) from " + entity.getTableName() + "\";\n");
+        content.append("sql=\"select count(*) from "  +sqlGenerator.getQuote()
+                + entity.getTableName() +sqlGenerator.getQuote() + "\";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -579,18 +590,27 @@ public class MethodGenerator {
                 content.append(String.format("if (%s!=null && %s!=null) {\n",
                         "min" + StringUtils.capitalize(property.getName()),
                         "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s between ? and ? )\");\n", property.getName()));
+                content.append(String.format("params.add(\"(%s%s%s between ? and ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
                     content.append(String.format("if (%s!=null) {\n", property.getName()));
-                    content.append(String.format("params.add(\"%s like ?\");\n", property.getName()));
+                    content.append(String.format("params.add(\"%s%s%s like ?\");\n",
+                            sqlGenerator.getQuote(),
+                            property.getColumnName(),
+                            sqlGenerator.getQuote()));
                     content.append("}\n");
                 }
                 continue;
             } else {
                 content.append(String.format("if (%s!=null) {\n", property.getName()));
-                content.append(String.format("params.add(\"%s=?\");\n", property.getName()));
+                content.append(String.format("params.add(\"%s%s%s=?\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
                 content.append("}\n");
             }
         }
@@ -609,9 +629,12 @@ public class MethodGenerator {
         content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
         content.append(";\n");
         content.append("if (params.size()!=0) {\n");
-        content.append("sql=\"select * from " + entity.getTableName() + " where \"+String.join(\",\",params)+orderClause+limitClause;\n");
+        content.append("sql=\"select * from "  +sqlGenerator.getQuote()
+                + entity.getTableName()
+                +sqlGenerator.getQuote()+ " where \"+String.join(\",\",params)+orderClause+limitClause;\n");
         content.append("} else {\n");
-        content.append("sql=\"select * from " + entity.getTableName() + "\"+orderClause+limitClause;\n");
+        content.append("sql=\"select * from " +sqlGenerator.getQuote()
+                + entity.getTableName()  +sqlGenerator.getQuote()+ "\"+orderClause+limitClause;\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
