@@ -83,7 +83,7 @@ public class Sql2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
                 column.setUnique(true);
             }
             if (columnConstraintCtx.K_PRIMARY()!=null && columnConstraintCtx.K_KEY()!=null) {
-                column.setUnique(true);
+                column.setPrimaryKey(true);
             }
             if (columnConstraintCtx.K_REFERENCES()!=null) {
                 ColumnReference columnReference=new ColumnReference();

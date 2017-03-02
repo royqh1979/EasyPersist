@@ -267,13 +267,14 @@ public class EntitiesGenerator {
     }
 
     private static boolean isSerialType(String type) {
-        if (type.equals("serial")) {
+        String t=type.trim().toLowerCase();
+        if (t.equals("serial")) {
             return true;
         }
-        if (type.equals("serial8")) {
+        if (t.equals("serial8")) {
             return true;
         }
-        if (type.equals("serial2")) {
+        if (t.equals("serial2")) {
             return true;
         }
         return false;
@@ -400,6 +401,9 @@ public class EntitiesGenerator {
         if (name.equalsIgnoreCase("fk")) {
             return true;
         }
+        if (name.equalsIgnoreCase("bo")) {
+            return true;
+        }
         if (name.equalsIgnoreCase("sys")) {
             return true;
         }
@@ -432,6 +436,9 @@ public class EntitiesGenerator {
             return true;
         }
         if (name.equalsIgnoreCase("cod")) {
+            return true;
+        }
+        if (name.equalsIgnoreCase("bo")) {
             return true;
         }
         return false;
