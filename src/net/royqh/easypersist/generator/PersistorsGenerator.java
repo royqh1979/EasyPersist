@@ -243,6 +243,7 @@ public class PersistorsGenerator {
         content.append("import javax.sql.DataSource;\n");
         content.append("import org.slf4j.Logger;\n");
         content.append("import org.slf4j.LoggerFactory;\n");
+        content.append("import java.util.Date;\n");
         content.append("import java.sql.*;\n");
         content.append("import java.util.*;\n");
 

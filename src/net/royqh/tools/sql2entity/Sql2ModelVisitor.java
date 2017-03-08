@@ -25,6 +25,9 @@ public class Sql2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
         if (ctx.create_table_stmt()!=null) {
             ctx.create_table_stmt().accept(this);
         }
+        if (ctx.create_index_stmt()!=null) {
+            ctx.create_index_stmt().accept(this);
+        }
         return null;
     }
 
@@ -57,6 +60,7 @@ public class Sql2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
             }
             index.addColumn(PostgreSQLParseTool.parseIdentifier(indexItemCtx.column_name()));
         }
+        System.out.println(table.getName()+":"+String.join(",",index.getColumns()));
         table.addIndex(index);
         return null;
     }
