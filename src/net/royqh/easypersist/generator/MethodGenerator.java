@@ -507,7 +507,7 @@ public class MethodGenerator {
         content.append("String sql;\n");
         content.append("if (params.size()!=0) {\n");
         content.append("sql=\"select count(*) from " +sqlGenerator.getQuote()
-                +entity.getTableName() + sqlGenerator.getQuote() + " where \"+String.join(\",\",params);\n");
+                +entity.getTableName() + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params);\n");
         content.append("} else {\n");
         content.append("sql=\"select count(*) from "  +sqlGenerator.getQuote()
                 + entity.getTableName() +sqlGenerator.getQuote() + "\";\n");
@@ -631,7 +631,7 @@ public class MethodGenerator {
         content.append("if (params.size()!=0) {\n");
         content.append("sql=\"select * from "  +sqlGenerator.getQuote()
                 + entity.getTableName()
-                +sqlGenerator.getQuote()+ " where \"+String.join(\",\",params)+orderClause+limitClause;\n");
+                +sqlGenerator.getQuote()+ " where \"+String.join(\" and \",params)+orderClause+limitClause;\n");
         content.append("} else {\n");
         content.append("sql=\"select * from " +sqlGenerator.getQuote()
                 + entity.getTableName()  +sqlGenerator.getQuote()+ "\"+orderClause+limitClause;\n");
