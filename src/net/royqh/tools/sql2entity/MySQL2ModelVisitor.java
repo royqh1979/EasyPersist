@@ -77,6 +77,11 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
                     }
                 }
                 column.setReference(columnReference);
+                ForeignKey foreignKey=new ForeignKey();
+                foreignKey.setRefTable(columnReference.getTable());
+                foreignKey.addColumn(column.getName());
+                foreignKey.addRefColumn(columnReference.getColumn());
+                table.addForeignKey(foreignKey);
             }
         }
         table.addColumn(column);

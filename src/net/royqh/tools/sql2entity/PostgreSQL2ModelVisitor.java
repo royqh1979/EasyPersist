@@ -107,6 +107,12 @@ public class PostgreSQL2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
                     columnReference.setOnUpdate(PostgreSQLParseTool.parseAction(columnConstraintCtx.on_update_action().action()));
                 }
                 column.setReference(columnReference);
+                column.setReference(columnReference);
+                ForeignKey foreignKey=new ForeignKey();
+                foreignKey.setRefTable(columnReference.getTable());
+                foreignKey.addColumn(column.getName());
+                foreignKey.addRefColumn(columnReference.getColumn());
+                table.addForeignKey(foreignKey);
             }
         }
         table.addColumn(column);
