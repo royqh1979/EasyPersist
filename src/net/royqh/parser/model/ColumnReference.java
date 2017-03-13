@@ -1,4 +1,4 @@
-package net.royqh.parser.mysql.model;
+package net.royqh.parser.model;
 
 /**
  * Created by Roy on 2017/2/4.

@@ -1,4 +1,4 @@
-package net.royqh.parser.postgresql.model;
+package net.royqh.parser.model;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by Roy on 2017/2/9.
  */
 public class Model {
-    Map<String,Table> tableMap=new HashMap<>();
+    Map<String, Table> tableMap=new HashMap<>();
 
     public void clear() {
         tableMap.clear();

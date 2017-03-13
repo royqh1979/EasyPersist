@@ -765,16 +765,6 @@ public interface MySQLListener extends ParseTreeListener {
 	 */
 	void exitColumn_definition(MySQLParser.Column_definitionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MySQLParser#column_reference_definition}.
-	 * @param ctx the parse tree
-	 */
-	void enterColumn_reference_definition(MySQLParser.Column_reference_definitionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link MySQLParser#column_reference_definition}.
-	 * @param ctx the parse tree
-	 */
-	void exitColumn_reference_definition(MySQLParser.Column_reference_definitionContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link MySQLParser#column_attribute}.
 	 * @param ctx the parse tree
 	 */

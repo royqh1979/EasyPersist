@@ -400,13 +400,8 @@ create_definition
   ;
 
 column_definition
- : data_type column_attribute* column_reference_definition?
+ : data_type column_attribute*
  ;
-
-column_reference_definition:
-   K_REFERENCES table_name '(' index_col_name ')'
-     reference_option*
-   ;
 
 column_attribute:
      K_NOT? K_NULL
@@ -419,6 +414,8 @@ column_attribute:
    | K_STORAGE (K_DISK | K_MEMORY | K_DEFAULT)
    | K_COLLATE collation_name
    | K_ON K_UPDATE date_literal
+   | K_REFERENCES table_name '(' index_col_name ')'
+        reference_option*
   ;
 
 

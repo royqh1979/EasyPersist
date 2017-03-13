@@ -5,13 +5,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.parser.postgresql.model.*;
+import net.royqh.parser.model.*;
+import net.royqh.tools.sql2entity.model.Entity;
+import net.royqh.tools.sql2entity.model.EntityModel;
+import net.royqh.tools.sql2entity.model.ManyToManyMapping;
+import net.royqh.tools.sql2entity.model.MappingColumn;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

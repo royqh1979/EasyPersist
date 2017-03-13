@@ -1,4 +1,4 @@
-package net.royqh.parser.postgresql.model;
+package net.royqh.parser.model;
 
 /**
  * Created by Roy on 2017/2/4.
@@ -7,12 +7,22 @@ public class Column {
     private String name;
     private String type;
     private boolean notNull=false;
+    private boolean autoIncrement=false;
     private boolean unique=false;
     private boolean primaryKey=false;
     private String defaultValue;
-    private String check;
+    private String comment;
     private String collate;
     private ColumnReference reference;
+    private String check;
+
+    public String getCheck() {
+        return check;
+    }
+
+    public void setCheck(String check) {
+        this.check = check;
+    }
 
     public Column(String name) {
         this.name = name;
@@ -24,6 +34,10 @@ public class Column {
 
     public void setNotNull(boolean notNull) {
         this.notNull = notNull;
+    }
+
+    public void setAutoIncrement(boolean autoIncrement) {
+        this.autoIncrement = autoIncrement;
     }
 
     public void setUnique(boolean unique) {
@@ -38,8 +52,8 @@ public class Column {
         this.defaultValue = defaultValue;
     }
 
-    public void setCheck(String check) {
-        this.check = check;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getName() {
@@ -54,6 +68,10 @@ public class Column {
         return notNull;
     }
 
+    public boolean isAutoIncrement() {
+        return autoIncrement;
+    }
+
     public boolean isUnique() {
         return unique;
     }
@@ -66,8 +84,8 @@ public class Column {
         return defaultValue;
     }
 
-    public String getCheck() {
-        return check;
+    public String getComment() {
+        return comment;
     }
 
     public String getCollate() {

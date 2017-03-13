@@ -1,4 +1,4 @@
-package net.royqh.parser.postgresql.model;
+package net.royqh.parser.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,9 @@ public class Index {
     public enum Type{
         PrimaryKey,
         Unique,
-        Exclude,
-        Index
+        Index,
+        FullText,
+        Exclude,  
+        Spatial
     }
 }

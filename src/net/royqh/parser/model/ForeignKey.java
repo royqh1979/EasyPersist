@@ -1,4 +1,4 @@
-package net.royqh.parser.mysql.model;
+package net.royqh.parser.model;
 
 import java.util.ArrayList;
 import java.util.List;

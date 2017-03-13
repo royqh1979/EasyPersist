@@ -3,7 +3,8 @@ package net.royqh.tools.mysql2postgresql;
 import net.royqh.parser.ParseTool;
 import net.royqh.parser.mysql.MySQLBaseVisitor;
 import net.royqh.parser.mysql.MySQLParser;
-import net.royqh.parser.mysql.model.Table;
+import net.royqh.parser.model.Table;
+import net.royqh.parser.mysql.utils.MySQLParseTool;
 import org.antlr.v4.runtime.BufferedTokenStream;
 
 /**

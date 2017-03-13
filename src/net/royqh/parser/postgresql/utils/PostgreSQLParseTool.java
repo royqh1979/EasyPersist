@@ -1,7 +1,7 @@
 package net.royqh.parser.postgresql.utils;
 
 import net.royqh.parser.postgresql.PostgreSQLParser;
-import net.royqh.parser.postgresql.model.ColumnReference;
+import net.royqh.parser.model.ColumnReference;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;

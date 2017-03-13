@@ -1,4 +1,4 @@
-package net.royqh.parser.postgresql.model;
+package net.royqh.parser.model;
 
 import java.util.*;
 
@@ -7,7 +7,7 @@ import java.util.*;
  */
 public class Table {
     private String name;
-    private Map<String,Column> columnMap=new HashMap<>();
+    private Map<String,Column> columns=new HashMap<>();
     private List<Index> indexs=new ArrayList<>();
     private List<ForeignKey> foreignKeys=new ArrayList<>();
     private List<Check> checks=new ArrayList<>();
@@ -16,12 +16,13 @@ public class Table {
         this.name = name;
     }
 
+
     public Collection<Column> getColumns() {
-        return columnMap.values();
+        return columns.values();
     }
 
-    public Column getColumn(String columnName) {
-        return columnMap.get(columnName);
+    public Column getColumn(String name) {
+        return columns.get(name);
     }
 
     public String getName() {
@@ -41,7 +42,7 @@ public class Table {
     }
 
     public void addColumn(Column column) {
-        columnMap.put(column.getName(),column);
+        columns.put(column.getName(),column);
     }
 
     public void addIndex(Index index) {

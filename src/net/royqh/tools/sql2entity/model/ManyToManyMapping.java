@@ -1,4 +1,4 @@
-package net.royqh.tools.sql2entity;
+package net.royqh.tools.sql2entity.model;
 
 /**
  * Created by Roy on 2017/2/11.

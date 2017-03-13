@@ -3,7 +3,7 @@ package net.royqh.tools.sql2entity;
 import net.royqh.parser.ParseTool;
 import net.royqh.parser.postgresql.PostgreSQLBaseVisitor;
 import net.royqh.parser.postgresql.PostgreSQLParser;
-import net.royqh.parser.postgresql.model.*;
+import net.royqh.parser.model.*;
 import net.royqh.parser.postgresql.utils.PostgreSQLParseTool;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.Token;
@@ -11,11 +11,11 @@ import org.antlr.v4.runtime.Token;
 /**
  * Created by Roy on 2017/2/9.
  */
-public class Sql2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
+public class PostgreSQL2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
     BufferedTokenStream tokenStream;
     Model model;
 
-    public Sql2ModelVisitor(BufferedTokenStream tokenStream,Model model) {
+    public PostgreSQL2ModelVisitor(BufferedTokenStream tokenStream, Model model) {
         this.tokenStream = tokenStream;
         this.model=model;
     }
@@ -136,7 +136,17 @@ public class Sql2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
                 throw new RuntimeException(String.format("Empty Unique Column List in table %s at %d:%d",
                         table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
             }
-            table.addIndex(index);
+            if (index.getColumns().size()==1) {
+                Column column=table.getColumn(index.getColumns().get(0));
+                if (column==null) {
+                    Token startToken=ctx.getStart();
+                    throw new RuntimeException(String.format("No this Column %s in table %s at %d:%d",
+                            index.getColumns().get(0),table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+                }
+                column.setUnique(true);
+            } else {
+                table.addIndex(index);
+            }
             return null;
         }
         if (tcCtx.K_PRIMARY()!=null) {
@@ -152,9 +162,15 @@ public class Sql2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
             }
             if (index.getColumns().size()==1) {
                 Column column=table.getColumn(index.getColumns().get(0));
+                if (column==null) {
+                    Token startToken=ctx.getStart();
+                    throw new RuntimeException(String.format("No this Column %s in table %s at %d:%d",
+                            index.getColumns().get(0),table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+                }
                 column.setPrimaryKey(true);
+            } else {
+                table.addIndex(index);
             }
-            table.addIndex(index);
             return null;
         }
         if (tcCtx.K_EXCLUDE()!=null) {

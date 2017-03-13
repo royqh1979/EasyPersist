@@ -1,6 +1,6 @@
-package net.royqh.tools.sql2entity;
+package net.royqh.tools.sql2entity.model;
 
-import net.royqh.parser.postgresql.model.Table;
+import net.royqh.parser.model.Table;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 

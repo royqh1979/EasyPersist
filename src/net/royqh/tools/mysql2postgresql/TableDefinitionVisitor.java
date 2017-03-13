@@ -2,7 +2,8 @@ package net.royqh.tools.mysql2postgresql;
 
 import net.royqh.parser.mysql.MySQLBaseVisitor;
 import net.royqh.parser.mysql.MySQLParser;
-import net.royqh.parser.mysql.model.*;
+import net.royqh.parser.model.*;
+import net.royqh.parser.mysql.utils.MySQLParseTool;
 import org.antlr.v4.runtime.BufferedTokenStream;
 
 /**
@@ -46,9 +47,33 @@ class TableDefinitionVisitor extends MySQLBaseVisitor<Void> {
             if (columnAttributeContext.K_COLLATE()!=null) {
                 column.setCollate(MySQLParseTool.parseIdentifier(columnAttributeContext.collation_name()));
             }
+            if (columnAttributeContext.K_REFERENCES()!=null) {
+                ColumnReference columnReference = new ColumnReference();
+                columnReference.setTable(MySQLParseTool.parseIdentifier(columnAttributeContext.table_name()));
+                columnReference.setColumn(MySQLParseTool.parseIdentifier(columnAttributeContext.index_col_name()));
+                for (MySQLParser.Reference_optionContext roCtx : columnAttributeContext.reference_option()) {
+                    if (roCtx.K_FULL() != null) {
+                        columnReference.setMatchType(ColumnReference.MatchType.MATCH_FULL);
+                    } else if (roCtx.K_PARTIAL() != null) {
+                        columnReference.setMatchType(ColumnReference.MatchType.MATCH_PARTIAL);
+                    } else if (roCtx.K_SIMPLE() != null) {
+                        columnReference.setMatchType(ColumnReference.MatchType.MATCH_SIMPLE);
+                    } else if (roCtx.K_DELETE() != null) {
+                        ColumnReference.Action action = MySQLParseTool.parseAction(
+                                roCtx.on_delete_action().action()
+                        );
+                        columnReference.setOnDelete(action);
+                    } else if (roCtx.K_UPDATE() != null) {
+                        ColumnReference.Action action = MySQLParseTool.parseAction(
+                                roCtx.on_update_action().action()
+                        );
+                        columnReference.setOnUpdate(action);
+                    }
+                }
+                column.setReference(columnReference);
+            }
         }
-        ColumnReference reference=MySQLParseTool.parseColumnReference(ctx.column_definition().column_reference_definition());
-        column.setReference(reference);
+
         table.addColumn(column);
         return null;
     }

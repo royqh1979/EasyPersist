@@ -1,6 +1,6 @@
 package net.royqh.tools.mysql2postgresql;
 
-import net.royqh.parser.mysql.model.*;
+import net.royqh.parser.model.*;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 public class SQLTool {
     public static void generateTableColumnDefinitions(Table table, StringBuilder builder) {
         String comment = "";
-        for (int i = 0; i < table.getColumns().size(); i++) {
-            Column column = table.getColumns().get(i);
+        int i=0;
+        for (Column column:table.getColumns()) {
             if (i != 0) {
                 builder.append(",");
                 if (!StringUtils.isEmpty(comment)) {
@@ -21,6 +21,7 @@ public class SQLTool {
                 builder.append("\n");
                 comment = "";
             }
+            i++;
             builder.append("\"");
             builder.append(column.getName());
             builder.append("\"");

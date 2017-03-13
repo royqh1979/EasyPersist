@@ -1,6 +1,5 @@
 package net.royqh.easypersist.actions;
 
-import com.github.rjeschke.txtmark.Run;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -10,32 +9,16 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
-import net.royqh.parser.mysql.MySQLLexer;
-import net.royqh.parser.postgresql.PostgreSQLLexer;
-import net.royqh.parser.postgresql.PostgreSQLParser;
-import net.royqh.parser.postgresql.model.Model;
+import net.royqh.parser.model.Model;
 import net.royqh.tools.sql2entity.EntitiesGenerator;
-import net.royqh.tools.sql2entity.Sql2ModelVisitor;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.jetbrains.annotations.Nls;
+import net.royqh.tools.sql2entity.ModelParser;
+import net.royqh.tools.sql2entity.MySQLModelParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Roy on 2017/2/12.
@@ -81,16 +64,8 @@ public class SQL2EntityAction extends AnAction {
                     Notification notification;
                     try {
                         indicator.setFraction(0);
-                        InputStream is=sqlFile.getInputStream();
-                        InputStreamReader reader=new InputStreamReader(is, sqlFile.getCharset());
-                        ANTLRInputStream input = new ANTLRInputStream(reader);
-                        PostgreSQLLexer lexer=new PostgreSQLLexer(input);
-                        CommonTokenStream tokenStream=new CommonTokenStream(lexer);
-                        PostgreSQLParser parser=new PostgreSQLParser(tokenStream);
-                        ParseTree tree=parser.prog();
-                        Model model=new Model();
-                        Sql2ModelVisitor visitor=new Sql2ModelVisitor(tokenStream,model);
-                        tree.accept(visitor);
+                        ModelParser modelParser=new MySQLModelParser();
+                        Model model=modelParser.parse(sqlFile);
 
                         VirtualFile root=  ProjectRootManager.getInstance(getProject())
                                 .getFileIndex().getContentRootForFile(sqlFile);

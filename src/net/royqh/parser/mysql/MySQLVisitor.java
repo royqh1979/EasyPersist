@@ -462,12 +462,6 @@ public interface MySQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitColumn_definition(MySQLParser.Column_definitionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link MySQLParser#column_reference_definition}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitColumn_reference_definition(MySQLParser.Column_reference_definitionContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link MySQLParser#column_attribute}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

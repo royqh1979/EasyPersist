@@ -28,6 +28,7 @@
       * 0.9.0 add  PostgreSQL ORM code generation <br />
       * 0.9.1 fix: name error in countAll() <br />
       * 0.9.2 fix : no @Id annotation in Entity Class <br />
+      * 0.10.0 remove PostgreSQL support <br />
     ]]>
   </change-notes>
 
@@ -64,6 +65,7 @@
       <add-to-group group-id="ProjectViewPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
     </action>
+    <!--   we don't use it now
     <action
           id="net.royqh.easypersist.actions.MySQL2PostgreSQLAction"
           class="net.royqh.easypersist.actions.MySQL2PostgreSQLAction"
@@ -73,6 +75,7 @@
     <add-to-group group-id="ProjectViewPopupMenu" />
     <add-to-group group-id="EditorTabPopupMenu" />
   </action>
+  -->
     <action
             id="net.royqh.easypersist.actions.SQL2EntityAction"
             class="net.royqh.easypersist.actions.SQL2EntityAction"

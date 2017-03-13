@@ -1,7 +1,7 @@
-package net.royqh.tools.mysql2postgresql;
+package net.royqh.parser.mysql.utils;
 
 import net.royqh.parser.mysql.MySQLParser;
-import net.royqh.parser.mysql.model.ColumnReference;
+import net.royqh.parser.model.ColumnReference;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -21,35 +21,6 @@ public abstract class MySQLParseTool {
             }
         }
         return false;
-    }
-
-    public static ColumnReference parseColumnReference(MySQLParser.Column_reference_definitionContext crdCtx) {
-        if (crdCtx == null) {
-            return null;
-        }
-        ColumnReference columnReference = new ColumnReference();
-        columnReference.setTable(MySQLParseTool.parseIdentifier(crdCtx.table_name()));
-        columnReference.setColumn(MySQLParseTool.parseIdentifier(crdCtx.index_col_name()));
-        for (MySQLParser.Reference_optionContext roCtx : crdCtx.reference_option()) {
-            if (roCtx.K_FULL() != null) {
-                columnReference.setMatchType(ColumnReference.MatchType.MATCH_FULL);
-            } else if (roCtx.K_PARTIAL() != null) {
-                columnReference.setMatchType(ColumnReference.MatchType.MATCH_PARTIAL);
-            } else if (roCtx.K_SIMPLE() != null) {
-                columnReference.setMatchType(ColumnReference.MatchType.MATCH_SIMPLE);
-            } else if (roCtx.K_DELETE() != null) {
-                ColumnReference.Action action = MySQLParseTool.parseAction(
-                        roCtx.on_delete_action().action()
-                );
-                columnReference.setOnDelete(action);
-            } else if (roCtx.K_UPDATE() != null) {
-                ColumnReference.Action action = MySQLParseTool.parseAction(
-                        roCtx.on_update_action().action()
-                );
-                columnReference.setOnUpdate(action);
-            }
-        }
-        return columnReference;
     }
 
     public static ColumnReference.Action parseAction(MySQLParser.ActionContext actCtx) {
@@ -81,6 +52,8 @@ public abstract class MySQLParseTool {
     }
 
     public static String parseIdentifier(ParseTree ctx) {
+        if (ctx==null)
+            return null;
         if (ctx instanceof MySQLParser.IdentifierContext) {
             MySQLParser.IdentifierContext idCtx = (MySQLParser.IdentifierContext) ctx;
             if (idCtx.UNQUOTED_IDENTIFIER() != null) {
