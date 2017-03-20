@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.10.0</version>
+  <version>0.10.1</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -29,6 +29,7 @@
       * 0.9.1 fix: name error in countAll() <br />
       * 0.9.2 fix : no @Id annotation in Entity Class <br />
       * 0.10.0 remove PostgreSQL support <br />
+      * 0.10.1 add column name check in sortby sql clauses <br />
     ]]>
   </change-notes>
 

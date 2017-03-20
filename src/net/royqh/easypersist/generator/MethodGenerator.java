@@ -391,29 +391,19 @@ public class MethodGenerator {
             }
         }
         parameterList.add("String orderBy");
-        parameterList.add("String sort");
+        parameterList.add("boolean isAscending");
         parameterList.add("int startPos");
         parameterList.add("int resultSize");
         content.append(String.join(",", parameterList));
         content.append(") {\n");
-        content.append("Preconditions.checkArgument(SqlTools.isValidColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
+        content.append("Preconditions.checkArgument(checkColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
         content.append("String sql;\n");
-        content.append("if (orderBy==null) {\n");
-        content.append("sql=\"");
-        content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
-        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
-        content.append(";\n");
-        content.append("}else{\n");
-        content.append(" String sortSql=\" asc \";\n");
-        content.append(" if (\"desc\".equals(sort)){\n");
-        content.append("sortSql=\" desc \";");
-        content.append("}\n");
+        content.append("String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
         content.append(" order by \"+orderBy+sortSql+\"");
         content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
         content.append(";\n");
-        content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
         int i = 1;
@@ -577,13 +567,12 @@ public class MethodGenerator {
             }
         }
         parameterList.add("String orderBy");
-        parameterList.add("String sort");
+        parameterList.add("boolean isAscending");
         parameterList.add("int startPos");
         parameterList.add("int resultSize");
         content.append(String.join(",", parameterList));
         content.append(") {\n");
 
-        content.append("Preconditions.checkArgument(SqlTools.isValidColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
         content.append("List<String> params=new ArrayList<>();\n");
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeType(property)) {
@@ -619,10 +608,9 @@ public class MethodGenerator {
         content.append("if (orderBy==null) {\n");
         content.append("orderClause=\"\";\n");
         content.append("}else{\n");
-        content.append(" String sortSql=\" asc \";\n");
-        content.append(" if (\"desc\".equals(sort)){\n");
-        content.append("sortSql=\" desc \";");
-        content.append("}\n");
+        content.append("Preconditions.checkArgument(checkColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
+
+        content.append(" String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("orderClause=\" order by \"+orderBy+sortSql;\n");
         content.append("}\n");
         content.append("String limitClause=\" ");
@@ -828,9 +816,8 @@ public class MethodGenerator {
         content.append("> find" +
                 StringUtils.capitalize(mappingEntity.getName()) + "WithSort(");
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" id,String orderBy,String sort,int startPos,int resultSize");
+        content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize");
         content.append(") {\n");
-        content.append("Preconditions.checkArgument(SqlTools.isValidColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
         content.append("String sql;\n");
         content.append("if (orderBy==null) {\n");
         content.append("sql=\"");
@@ -838,10 +825,8 @@ public class MethodGenerator {
         content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
         content.append(";\n");
         content.append("}else{\n");
-        content.append(" String sortSql=\" asc \";\n");
-        content.append(" if (\"desc\".equals(sort)){\n");
-        content.append("sortSql=\" desc \";");
-        content.append("}\n");
+        content.append("Preconditions.checkArgument(checkColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
+        content.append("String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
         content.append(" order by A.\"+orderBy+sortSql+\"");
@@ -1017,6 +1002,27 @@ public class MethodGenerator {
         }
         content.append("stmt.executeUpdate();\n");
         createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    public void createCheckColumnMethod(Entity entity, StringBuilder content) {
+        content.append("public boolean checkColumnName(");
+        content.append("String columnName");
+        content.append(") {\n");
+        content.append("if (columnName==null) { \n");
+        content.append(" return false;\n");
+        content.append("}\n");
+        for (Property property:entity.getProperties()) {
+            if (property.getPropertyType()== PropertyType.Column) {
+                SingleProperty singleProperty=(SingleProperty)property;
+                content.append("if (columnName.equalsIgnoreCase(\"");
+                content.append(singleProperty.getColumnName());
+                content.append("\")) {\n");
+                content.append("return true;\n");
+                content.append("}\n");
+            }
+        }
+        content.append("return false;\n");
         content.append("}\n");
     }
 }

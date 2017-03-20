@@ -168,6 +168,8 @@ public class PersistorsGenerator {
 
         createUtilMethods(content);
 
+        methodGenerator.createCheckColumnMethod(entity,content);
+
 
         content.append(RowMapperGenerator.createRowMapper(entity));
 
