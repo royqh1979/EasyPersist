@@ -120,7 +120,9 @@ public class EntitiesGenerator {
 
                 if (column.isPrimaryKey()) {
                     entityBuilder.append("@Id\n");
-                    if (isSerialType(column.getType())) {
+                    if (isSerialType(column.getType()) ||
+                            column.isAutoIncrement()
+                            ) {
                         entityBuilder.append("@GeneratedValue\n");
                     }
                 }

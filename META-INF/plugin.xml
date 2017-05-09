@@ -30,6 +30,7 @@
       * 0.9.2 fix : no @Id annotation in Entity Class <br />
       * 0.10.0 remove PostgreSQL support <br />
       * 0.10.1 add column name check in sortby sql clauses <br />
+      * 0.10.2 fix error: no @GeneratedValue annotation on id property
     ]]>
   </change-notes>
 
