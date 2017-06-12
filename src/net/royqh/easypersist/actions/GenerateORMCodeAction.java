@@ -3,6 +3,7 @@ package net.royqh.easypersist.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -30,16 +31,16 @@ public class GenerateORMCodeAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        final VirtualFile xmlConfigFile = anActionEvent.getData(CommonDataKeys.VIRTUAL_FILE);
-        final Project project = anActionEvent.getProject();
-        if (xmlConfigFile == null) {
-            return;
-        }
-        ProgressManager progressManager = ProgressManager.getInstance();
-        GenerateORMCodeTask task = new GenerateORMCodeTask(project, "Generating ORM Code...", true,
-                easyPersistor,
-                xmlConfigFile);
-        progressManager.run(task);
+                final VirtualFile xmlConfigFile = anActionEvent.getData(CommonDataKeys.VIRTUAL_FILE);
+                final Project project = anActionEvent.getProject();
+                if (xmlConfigFile == null) {
+                    return;
+                }
+                ProgressManager progressManager = ProgressManager.getInstance();
+                GenerateORMCodeTask task = new GenerateORMCodeTask(project, "Generating ORM Code...", true,
+                        easyPersistor,
+                        xmlConfigFile);
+                progressManager.run(task);
     }
 
     @Override
@@ -70,5 +71,6 @@ public class GenerateORMCodeAction extends AnAction {
         public void run(@NotNull ProgressIndicator indicator) {
             easyPersistor.execute(getProject(),xmlConfigFile,indicator);
         }
+
     }
 }

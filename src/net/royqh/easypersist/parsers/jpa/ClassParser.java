@@ -1,6 +1,9 @@
 package net.royqh.easypersist.parsers.jpa;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
+import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.model.jpa.Index;
@@ -175,6 +178,26 @@ public class ClassParser {
     }
 
 
-
-
+    public static Entity parseEntityClassWithMappings(PsiClass psiClass, Module module){
+        MappingRepository mappingRepository=new MappingRepository();
+        JavaPsiFacade facade=JavaPsiFacade.getInstance(module.getProject());
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleScope(module);
+        return doParseEntityClassWithMappings(psiClass,
+                module,mappingRepository,facade,moduleScope);
+    }
+    
+    private static Entity doParseEntityClassWithMappings(PsiClass psiClass, Module module, MappingRepository repository,
+                                                       JavaPsiFacade facade, GlobalSearchScope searchScope){
+        if (repository.isClassExist(psiClass)) {
+            return repository.findEntityByClass(psiClass.getQualifiedName());
+        }
+        Entity entity=parseEntityClass(psiClass);
+        repository.addEntity(entity);
+        for (MapRelationInfo mapRelationInfo: entity.getMapRelationInfos()) {
+            PsiClass mappingClass=facade.findClass(mapRelationInfo.getMappingEntityFullClassName(),searchScope);
+            doParseEntityClassWithMappings(mappingClass,
+                    module,repository,facade,searchScope);
+        }
+        return entity;
+    }
 }

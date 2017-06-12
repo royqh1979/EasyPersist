@@ -1,6 +1,7 @@
 package net.royqh.easypersist;
 
 import com.intellij.notification.*;
+import com.intellij.psi.PsiClass;
 import net.royqh.easypersist.model.Entity;
 
 import java.util.Collection;
@@ -16,21 +17,18 @@ public class MappingRepository {
     private Map<String,Entity> entityClassMap=new HashMap<>();
 
     public void addEntity(Entity entity) {
-        NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
-                NotificationDisplayType.TOOL_WINDOW, true);
-        Notification notification;
+
         // System.out.println(entity.getName()+":"+entity.getClassInfo().getQualifiedName()) ;
         if (tableNameMap.containsKey(entity.getTableName())) {
             Entity entity1=tableNameMap.get(entity.getTableName());
-
-            notification = notificationGroup.createNotification(
+            Notification notification = new Notification("Easy Persist","Warning",
                     String.format("Entity %s and %s refrence the same table: %s!",
                             entity.getClassInfo().getQualifiedName(),
                             entity1.getClassInfo().getQualifiedName(),
                             entity.getTableName()
                     ),
                     NotificationType.WARNING
-            );
+            );                                                         
             Notifications.Bus.notify(notification);
         }
         tableNameMap.put(entity.getTableName(),entity);
@@ -60,5 +58,9 @@ public class MappingRepository {
 
     public Collection<Entity> getAllEntities() {
         return entityNameMap.values();
+    }
+
+    public boolean isClassExist(PsiClass psiClass) {
+        return entityClassMap.containsKey(psiClass.getQualifiedName());
     }
 }

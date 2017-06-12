@@ -59,9 +59,6 @@ public class SQL2EntityAction extends AnAction {
             WriteCommandAction.runWriteCommandAction(getProject(), new Runnable() {
                 @Override
                 public void run() {
-                    NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
-                            NotificationDisplayType.TOOL_WINDOW, true);
-                    Notification notification;
                     try {
                         indicator.setFraction(0);
                         ModelParser modelParser=new MySQLModelParser();
@@ -85,11 +82,13 @@ public class SQL2EntityAction extends AnAction {
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        notification = notificationGroup.createNotification(
+                        Notification notification = new Notification(
+                                "Easy Persist",
+                                "Error",
                                 "Generation failed :" + e.getMessage(),
                                 NotificationType.ERROR
                         );
-                        Notifications.Bus.notify(notification, getProject());
+                        Notifications.Bus.notify(notification);
                         throw new RuntimeException(e);
                     }
                 }

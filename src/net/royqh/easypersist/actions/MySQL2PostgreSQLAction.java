@@ -67,9 +67,6 @@ public class MySQL2PostgreSQLAction extends AnAction {
             WriteCommandAction.runWriteCommandAction(getProject(), new Runnable() {
                 @Override
                 public void run() {
-                    NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
-                            NotificationDisplayType.TOOL_WINDOW, true);
-                    Notification notification;
                     try {
                         indicator.setFraction(0);
                         
@@ -102,7 +99,9 @@ public class MySQL2PostgreSQLAction extends AnAction {
                         indicator.setFraction(1);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        notification = notificationGroup.createNotification(
+                        Notification notification = new Notification(
+                                "Easy Persist",
+                                "Error",
                                 "Generation failed :" + e.getMessage(),
                                 NotificationType.ERROR
                         );

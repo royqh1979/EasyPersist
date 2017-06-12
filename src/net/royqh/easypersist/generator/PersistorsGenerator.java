@@ -1,12 +1,15 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.easypersist.MappingRepository;
@@ -26,43 +29,54 @@ public class PersistorsGenerator {
         this.methodGenerator = methodGenerator;
     }
 
-    public  void generate(Project project, MappingRepository mappingRepository, ProgressIndicator indicator) {
+    public void generate(Project project, MappingRepository mappingRepository, ProgressIndicator indicator) {
         PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
         CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-        int i,n;
-        i=1;n=mappingRepository.getAllEntities().size();
+        int i, n;
+        i = 1;
+        n = mappingRepository.getAllEntities().size();
         for (Entity entity : mappingRepository.getAllEntities()) {
+            //System.out.println(i+"/"+n);
+            //System.out.println("generating persistor for " + entity.getClassInfo().getQualifiedName());
             indicator.checkCanceled();
-            indicator.setText("generating persistor for "+entity.getClassInfo().getQualifiedName());
-            generatePersistor(psiFileFactory, facade, codeStyleManager, entity);
-            generatePersistorCompositor(psiFileFactory, facade,codeStyleManager,entity);
+            indicator.setText("generating persistor for " + entity.getClassInfo().getQualifiedName());
+            WriteCommandAction.runWriteCommandAction(project,new Runnable() {
+                @Override
+                public void run() {
+                    generatePersistor(psiFileFactory, facade, codeStyleManager, entity);
+                    generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity);
+                }
+            });
             indicator.setFraction(0.5 + (i + 0.0) / n / 2);
             i++;
         }
 
     }
 
-    private  void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
-        String compositorClassName= CodeUtils.getPersistorCompositorName(entity);
-        String fileName=compositorClassName+".java";
+    public void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
+        String compositorClassName = CodeUtils.getPersistorCompositorName(entity);
+        String fileName = compositorClassName + ".java";
 
-        PsiDirectory psiDirectory = findOrCreatePackageDirectory(entity.getPersistorPackageName(),facade,entity);
+        PsiDirectory psiDirectory = findOrCreatePackageDirectory(entity.getPersistorPackageName(), facade, entity);
         PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
 
-        PsiFile oldFile=psiDirectory.findFile(fileName);
+        PsiFile oldFile = psiDirectory.findFile(fileName);
         //We Only Create compositor when it is not existed;
-        if (oldFile != null ) {
-            return ;
+        if (oldFile != null) {
+            return;
         }
         PsiFile psiFile = generatePersistorCompositorFile(entity, targetPackage, psiFileFactory);
-        psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiDirectory.add(psiFile);
     }
-    private  PsiFile generatePersistorCompositorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+
+    private PsiFile generatePersistorCompositorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getPersistorCompositorName(entity);
         StringBuilder content = new StringBuilder();
-        content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        if (targetPackage != null) {
+            content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        }
         //imports
         content.append("import ");
         content.append(entity.getClassInfo().getQualifiedName());
@@ -80,8 +94,8 @@ public class PersistorsGenerator {
         content.append("    private ");
         content.append(CodeUtils.getPersistorName(entity));
         content.append(" persistor;\n\n");
-        content.append(" public "+className+"() {}\n");
-        content.append(" public "+className+"(DataSource dataSource) {\n");
+        content.append(" public " + className + "() {}\n");
+        content.append(" public " + className + "(DataSource dataSource) {\n");
         content.append("    setDataSource(dataSource);\n");
         content.append("}\n");
         content.append("    @Autowired\n");
@@ -98,16 +112,17 @@ public class PersistorsGenerator {
                 content.toString());
     }
 
-    private  void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
+    public void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
         /*
         PsiPackage targetPackage = findOrCreatePackageDirectory(entity.getPersistorPackageName(),facade,entity);
         PsiDirectory psiDirectory = targetPackage.getDirectories()[0];
         */
-        PsiDirectory psiDirectory = findOrCreatePackageDirectory(entity.getPersistorPackageName(),facade,entity);
-        PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);;
+        PsiDirectory psiDirectory = findOrCreatePackageDirectory(entity.getPersistorPackageName(), facade, entity);
+        PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
+        ;
 
         PsiFile psiFile = generatePersistorFile(entity, targetPackage, psiFileFactory);
-        psiFile=(PsiFile)codeStyleManager.reformat(psiFile);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
 
         PsiFile oldFile = psiDirectory.findFile(psiFile.getName());
         if (oldFile != null) {
@@ -116,88 +131,99 @@ public class PersistorsGenerator {
         psiDirectory.add(psiFile);
     }
 
-    private  PsiDirectory findOrCreatePackageDirectory(String packageName, JavaPsiFacade facade, Entity entity) {
-        int pos=packageName.lastIndexOf('.');
-        if (pos>0) {
-            String parentPackageName=packageName.substring(0,pos);
-            String dirName=packageName.substring(pos+1);
-            PsiDirectory parentDir= findOrCreatePackageDirectory(parentPackageName,facade, entity);
-            PsiDirectory packageDir= findOrCreateSubDirectory(parentDir,dirName);
+    private PsiDirectory findOrCreatePackageDirectory(String packageName, JavaPsiFacade facade, Entity entity) {
+        int pos = packageName.lastIndexOf('.');
+        if (pos > 0) {
+            String parentPackageName = packageName.substring(0, pos);
+            String dirName = packageName.substring(pos + 1);
+            PsiDirectory parentDir = findOrCreatePackageDirectory(parentPackageName, facade, entity);
+            PsiDirectory packageDir = findOrCreateSubDirectory(parentDir, dirName);
             return packageDir;
         } else {
-            PsiFile entityFile= entity.getPsiClass().getContainingFile();
-            Module module=ModuleUtil.findModuleForPsiElement(entity.getPsiClass().getContainingFile());
-            SourceFolder[] sourceFolders= ModuleRootManager.getInstance(module).getContentEntries()[0].getSourceFolders();
-            if (sourceFolders.length<=0) {
+            PsiFile entityFile = entity.getPsiClass().getContainingFile();
+            Module module = ModuleUtil.findModuleForPsiElement(entity.getPsiClass().getContainingFile());
+            SourceFolder[] sourceFolders = ModuleRootManager.getInstance(module).getContentEntries()[0].getSourceFolders();
+            if (sourceFolders.length <= 0) {
                 throw new RuntimeException("Can't find Source Folder for project!");
             }
-            PsiManager manager=PsiManager.getInstance(facade.getProject());
-            PsiDirectory parentDir=manager.findDirectory(sourceFolders[0].getFile());
-            PsiDirectory packageDir=findOrCreateSubDirectory(parentDir,packageName);
+            PsiManager manager = PsiManager.getInstance(facade.getProject());
+            PsiDirectory parentDir = manager.findDirectory(sourceFolders[0].getFile());
+            PsiDirectory packageDir = findOrCreateSubDirectory(parentDir, packageName);
             return packageDir;
         }
     }
 
-    private  PsiDirectory findOrCreateSubDirectory(PsiDirectory parentDir, String dirName) {
-        PsiDirectory subDirectory=parentDir.findSubdirectory(dirName);
-        if (subDirectory==null) {
-            subDirectory=parentDir.createSubdirectory(dirName);
+    private PsiDirectory findOrCreateSubDirectory(PsiDirectory parentDir, String dirName) {
+        PsiDirectory subDirectory = parentDir.findSubdirectory(dirName);
+        if (subDirectory == null) {
+            subDirectory = parentDir.createSubdirectory(dirName);
         }
         return subDirectory;
     }
 
-    private  PsiFile generatePersistorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+    private PsiFile generatePersistorFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getPersistorName(entity);
         StringBuilder content = new StringBuilder();
-        content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        if (targetPackage != null) {
+            content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        }
 
+        //System.out.println("Generating imports for "+entity.getName());
         generateImports(entity, content);
 
 
         content.append("public class " + className + "{\n");
-        content.append("private Logger logger= LoggerFactory.getLogger("+className+".class);\n");
+        content.append("private Logger logger= LoggerFactory.getLogger(" + className + ".class);\n");
         content.append("    private DataSource dataSource;\n");
         content.append("private SQLExceptionTranslator exceptionTranslator;\n");
+       // System.out.println("Generating SQLs for "+entity.getName());
         createSQLs(content, entity);
 
+       // System.out.println("Generating Basic Methods for "+entity.getName());
         createBasicMethods(entity, content);
 
-        createSearchMethods(entity,content);
+        //System.out.println("Generating Search Methods for "+entity.getName());
+        createSearchMethods(entity, content);
 
-        createMappingListMethods(entity,content);
+        //System.out.println("Generating Mapping List Methods for "+entity.getName());
+        createMappingListMethods(entity, content);
 
+        //System.out.println("Generating Util Methods for "+entity.getName());
         createUtilMethods(content);
 
-        methodGenerator.createCheckColumnMethod(entity,content);
+        //System.out.println("Generating Check Column Method for "+entity.getName());
+        methodGenerator.createCheckColumnMethod(entity, content);
 
 
+        //System.out.println("Generating Row Mapper for "+entity.getName());
         content.append(RowMapperGenerator.createRowMapper(entity));
 
         //content.append(RowCallbackHandlerGenerator.createRowCallbackHandler(entity));
 
         content.append("}\n");
 
+        //System.out.println("Generating Persistor File for "+entity.getName());
         return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
                 content.toString());
     }
 
 
-    private  void createMappingListMethods(Entity entity, StringBuilder content) {
-        for (MapRelationInfo relationInfo: entity.getMapRelationInfos()) {
-            methodGenerator.createCreateXXXMappingMethod(entity,relationInfo,content);
-            methodGenerator.createDeleteXXXMappingMethod(entity,relationInfo,content);
-            methodGenerator.createBatchDeleteXXXMappingMethod(entity,relationInfo,content);
-            methodGenerator.createCountXXXMappingMethod(entity,relationInfo,content);
-            methodGenerator.createFindXXXMappingMethod(entity,relationInfo,content);
-            methodGenerator.createFindXXXMappingWithSortMethod(entity,relationInfo,content);
+    private void createMappingListMethods(Entity entity, StringBuilder content) {
+        for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
+            methodGenerator.createCreateXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createDeleteXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createBatchDeleteXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createCountXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createFindXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createFindXXXMappingWithSortMethod(entity, relationInfo, content);
         }
     }
 
-    private  void createSearchMethods(Entity entity, StringBuilder content) {
-        for (IndexInfo indexInfo:entity.getIndexes()) {
+    private void createSearchMethods(Entity entity, StringBuilder content) {
+        for (IndexInfo indexInfo : entity.getIndexes()) {
             if (indexInfo.isUnique()) {
                 methodGenerator.createRetrieveByXXXMethod(entity, indexInfo, content);
-                if (canGenerateRangeQuery(entity,indexInfo)) {
+                if (canGenerateRangeQuery(entity, indexInfo)) {
                     methodGenerator.createCountByXXXMethod(entity, indexInfo, content);
                     methodGenerator.createFindByXXXMethod(entity, indexInfo, content);
                 }
@@ -205,14 +231,14 @@ public class PersistorsGenerator {
                 methodGenerator.createCountByXXXMethod(entity, indexInfo, content);
                 methodGenerator.createFindByXXXMethod(entity, indexInfo, content);
             }
-            methodGenerator.createDeleteByXXXMethod(entity,indexInfo,content);
+            methodGenerator.createDeleteByXXXMethod(entity, indexInfo, content);
         }
 
-        methodGenerator.createCountAllMethod(entity,content);
-        methodGenerator.createFindAllMethod(entity,content);
+        methodGenerator.createCountAllMethod(entity, content);
+        methodGenerator.createFindAllMethod(entity, content);
     }
 
-    private  boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
+    private boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
         List<SingleProperty> indexProperties = methodGenerator.getIndexProperties(entity, indexInfo);
         if (indexInfo.isUnique()) {
             for (SingleProperty singleProperty : indexProperties) {
@@ -225,23 +251,23 @@ public class PersistorsGenerator {
         return true;
     }
 
-    private  void createUtilMethods(StringBuilder content) {
+    private void createUtilMethods(StringBuilder content) {
         methodGenerator.createExceptionTranslatorGetter(content);
         methodGenerator.createDataSourceGetter(content);
         methodGenerator.createDataSourceSetter(content);
     }
 
-    private  void createBasicMethods(Entity entity, StringBuilder content) {
+    private void createBasicMethods(Entity entity, StringBuilder content) {
         methodGenerator.createLoadByIdMethod(content, entity);
         methodGenerator.createLoadAllMethod(content, entity);
 
         methodGenerator.createCreateMethod(content, entity);
         methodGenerator.createUpdateMethod(content, entity);
-        methodGenerator.createDeleteMethod(content,entity);
+        methodGenerator.createDeleteMethod(content, entity);
 
     }
 
-    private  void generateImports(Entity entity, StringBuilder content) {
+    private void generateImports(Entity entity, StringBuilder content) {
         content.append("import javax.sql.DataSource;\n");
         content.append("import org.slf4j.Logger;\n");
         content.append("import org.slf4j.LoggerFactory;\n");
@@ -294,15 +320,18 @@ public class PersistorsGenerator {
                     */
             }
         }
-        for (MapRelationInfo relationInfo:entity.getMapRelationInfos()) {
+        for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
             types.add(relationInfo.getMappingEntityFullClassName());
-            Entity mappingEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-            types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(),".")
-                +"."+CodeUtils.getPersistorName(mappingEntity));
+            Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+            /* 如果单独为某一个Entity生成Persistor, 这时我们不知道Persistor应该放在哪个包里 */
+            if (mappingEntity.getPersistorPackageName()!=null) {
+                types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(), ".")
+                        + "." + CodeUtils.getPersistorName(mappingEntity));
+            }
         }
         types.removeAll(Constants.PRIMITIVE_TYPES);
         types.removeAll(Constants.BASIC_TYPES);
-        for (String type:types){
+        for (String type : types) {
             content.append("import ");
             content.append(type);
             content.append(";\n");
@@ -343,9 +372,9 @@ public class PersistorsGenerator {
     }
     */
 
-    private  void createSQLs(StringBuilder content, Entity entity) {
+    private void createSQLs(StringBuilder content, Entity entity) {
         content.append(methodGenerator.getSqlGenerator().generateSimpleSelectSQL(entity));
-       // content.append(SQLGenerator.generateFullJoinSelectSQL(entity));
+        // content.append(SQLGenerator.generateFullJoinSelectSQL(entity));
         /*
         content.append(SQLGenerator.generateInsertSQL(entity));
         content.append(SQLGenerator.generateUpdateSQL(entity));
@@ -353,5 +382,30 @@ public class PersistorsGenerator {
         */
 
 
+    }
+
+    public void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory outputDir) {
+        PsiFile psiFile = generatePersistorFile(entity, null, psiFileFactory);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
+
+        PsiFile oldFile = outputDir.findFile(psiFile.getName());
+        if (oldFile != null) {
+            oldFile.delete();
+        }
+        outputDir.add(psiFile);
+    }
+
+    public void generatePersistorCompositor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
+        String compositorClassName = CodeUtils.getPersistorCompositorName(entity);
+        String fileName = compositorClassName + ".java";
+
+        PsiFile oldFile = psiOutputDir.findFile(fileName);
+        //We Only Create compositor when it is not existed;
+        if (oldFile != null) {
+            oldFile.delete();
+        }
+        PsiFile psiFile = generatePersistorCompositorFile(entity, null, psiFileFactory);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
+        psiOutputDir.add(psiFile);
     }
 }
