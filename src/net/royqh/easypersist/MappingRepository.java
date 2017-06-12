@@ -1,5 +1,6 @@
 package net.royqh.easypersist;
 
+import com.intellij.notification.*;
 import net.royqh.easypersist.model.Entity;
 
 import java.util.Collection;
@@ -10,11 +11,29 @@ import java.util.Map;
  * Created by Roy on 2016/2/10.
  */
 public class MappingRepository {
+    private Map<String,Entity> tableNameMap=new HashMap<>();
     private Map<String,Entity> entityNameMap=new HashMap<>();
     private Map<String,Entity> entityClassMap=new HashMap<>();
 
     public void addEntity(Entity entity) {
-        System.out.println(entity.getName()+":"+entity.getClassInfo().getQualifiedName()) ;
+        NotificationGroup notificationGroup = new NotificationGroup("Easy Persit",
+                NotificationDisplayType.TOOL_WINDOW, true);
+        Notification notification;
+        // System.out.println(entity.getName()+":"+entity.getClassInfo().getQualifiedName()) ;
+        if (tableNameMap.containsKey(entity.getTableName())) {
+            Entity entity1=tableNameMap.get(entity.getTableName());
+
+            notification = notificationGroup.createNotification(
+                    String.format("Entity %s and %s refrence the same table: %s!",
+                            entity.getClassInfo().getQualifiedName(),
+                            entity1.getClassInfo().getQualifiedName(),
+                            entity.getTableName()
+                    ),
+                    NotificationType.WARNING
+            );
+            Notifications.Bus.notify(notification);
+        }
+        tableNameMap.put(entity.getTableName(),entity);
         entityNameMap.put(entity.getName(),entity);
         entityClassMap.put(entity.getClassInfo().getQualifiedName(),entity);
         entity.setMappingRepository(this);
@@ -28,8 +47,13 @@ public class MappingRepository {
         return entityClassMap.get(className);
     }
 
+    public Entity findEntityByTable(String tableName) {
+        return tableNameMap.get(tableName);
+    }
+
 
     public void clear() {
+        tableNameMap.clear();
         entityClassMap.clear();
         entityNameMap.clear();
     }

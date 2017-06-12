@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.10.1</version>
+  <version>0.10.3</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -30,7 +30,8 @@
       * 0.9.2 fix : no @Id annotation in Entity Class <br />
       * 0.10.0 remove PostgreSQL support <br />
       * 0.10.1 add column name check in sortby sql clauses <br />
-      * 0.10.2 fix error: no @GeneratedValue annotation on id property
+      * 0.10.2 fix error: no @GeneratedValue annotation on id property <br />
+      * 0.10.3 check if two entity refrences the same table
     ]]>
   </change-notes>
 
