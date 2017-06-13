@@ -61,7 +61,7 @@ public class SQL2EntityAction extends AnAction {
                 @Override
                 public void run() {
                     try {
-                        indicator.setFraction(0);
+                        indicator.setFraction(0.1);
                         ModelParser modelParser=new MySQLModelParser();
                         Model model=modelParser.parse(sqlFile);
 

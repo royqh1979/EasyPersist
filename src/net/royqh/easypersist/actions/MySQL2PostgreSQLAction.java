@@ -69,7 +69,7 @@ public class MySQL2PostgreSQLAction extends AnAction {
                 @Override
                 public void run() {
                     try {
-                        indicator.setFraction(0);
+                        indicator.setFraction(0.1);
                         
                         InputStream is=mysqlFile.getInputStream();
                         InputStreamReader reader=new InputStreamReader(is, mysqlFile.getCharset());

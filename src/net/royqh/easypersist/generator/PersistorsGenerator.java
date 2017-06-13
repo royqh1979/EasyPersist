@@ -77,6 +77,8 @@ public class PersistorsGenerator {
         StringBuilder content = new StringBuilder();
         if (targetPackage != null) {
             content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        } else {
+            content.append("package dummy;\n");
         }
         //imports
         content.append("import ");
@@ -167,6 +169,8 @@ public class PersistorsGenerator {
         StringBuilder content = new StringBuilder();
         if (targetPackage != null) {
             content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        } else {
+            content.append("package dummy;\n");
         }
 
         //System.out.println("Generating imports for "+entity.getName());
@@ -261,11 +265,9 @@ public class PersistorsGenerator {
     private void createBasicMethods(Entity entity, StringBuilder content) {
         methodGenerator.createLoadByIdMethod(content, entity);
         methodGenerator.createLoadAllMethod(content, entity);
-
         methodGenerator.createCreateMethod(content, entity);
         methodGenerator.createUpdateMethod(content, entity);
         methodGenerator.createDeleteMethod(content, entity);
-
     }
 
     private void generateImports(Entity entity, StringBuilder content) {
