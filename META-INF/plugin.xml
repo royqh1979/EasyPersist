@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.11</version>
+  <version>0.11.1</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -33,8 +33,9 @@
       * 0.10.2 fix error: no @GeneratedValue annotation on id property <br />
       * 0.10.3 check if two entity refrences the same table <br />
       * 0.11 new feature: <br />
-        * generate persistor for specified entity (instead of all entities in specified package)
-        * generation work now run in background
+        * generate persistor for specified entity (instead of all entities in specified package) <br />
+        * generation work now run in background   <br />
+      * 0.11.1 check if mapping entity class exists.
     ]]>
   </change-notes>
 
