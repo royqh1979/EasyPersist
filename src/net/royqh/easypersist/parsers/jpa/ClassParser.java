@@ -1,5 +1,6 @@
 package net.royqh.easypersist.parsers.jpa;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -10,6 +11,7 @@ import net.royqh.easypersist.model.jpa.Index;
 import net.royqh.easypersist.model.jpa.Table;
 import net.royqh.easypersist.model.jpa.UniqueConstraint;
 import net.royqh.easypersist.parsers.ParseError;
+import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.AccessType;
@@ -32,6 +34,7 @@ public class ClassParser {
         checkIdExist(psiClass,entity);
 
         //for debug:
+        /*
         System.out.println("entity "+entity.getName()+" indexed properties:");
         for (IndexInfo indexInfo:entity.getIndexes()) {
             for (String propertyName:indexInfo.getProperties()){
@@ -40,6 +43,7 @@ public class ClassParser {
             System.out.println("");
         }
         System.out.println("--------");
+        */
         return entity;
     }
 
@@ -82,12 +86,12 @@ public class ClassParser {
                 indexInfo.setName(index.getName());
                 indexInfo.setUnique(index.isUnique());
                 Set<String> properties=new HashSet<>();
-                System.out.println(index.getColumnList());
+                //System.out.println(index.getColumnList());
                 for (String s:index.getColumnList().split(",")) {
                     s=s.replaceAll("(?i)asc", "");
                     s=s.replaceAll("(?i)desc","");
                     String columnName=s.trim();
-                    System.out.println("++"+columnName);
+                    //System.out.println("++"+columnName);
                     SingleProperty singleProperty=entity.getPropertyByColumnName(columnName);
                     if (singleProperty==null) {
                         throw new RuntimeException("There's no property corresponding to column \""+columnName+"\" in entity "+entity.getName());
@@ -191,13 +195,25 @@ public class ClassParser {
         if (repository.isClassExist(psiClass)) {
             return repository.findEntityByClass(psiClass.getQualifiedName());
         }
+        if (!ClassParser.isEntityClass(psiClass)) {
+            throw new RuntimeException("Class "+psiClass.getQualifiedName()+"is NOT a entity class!");
+        }
         Entity entity=parseEntityClass(psiClass);
         repository.addEntity(entity);
         for (MapRelationInfo mapRelationInfo: entity.getMapRelationInfos()) {
             PsiClass mappingClass=facade.findClass(mapRelationInfo.getMappingEntityFullClassName(),searchScope);
+            if (mappingClass==null) {
+                throw new RuntimeException("Mapping Class "+mapRelationInfo.getMappingEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
+            }
             doParseEntityClassWithMappings(mappingClass,
                     module,repository,facade,searchScope);
         }
         return entity;
+    }
+
+    public static boolean isEntityClass(PsiClass psiClass) {
+        PsiAnnotation entityAnnotation = AnnotationUtils.findAnnotation(psiClass,
+                Constants.ENTITY);
+        return entityAnnotation!=null;
     }
 }

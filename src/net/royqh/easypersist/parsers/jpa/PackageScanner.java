@@ -50,9 +50,8 @@ public class PackageScanner {
     }
 
     private static void scanClass(PsiClass psiClass, MappingRepository mappingRepository, String entitiesPackage, String persistorPackage) {
-        PsiAnnotation[] annotations=psiClass.getModifierList().getAnnotations();
-        if (!TypeUtils.containsAnnotation(psiClass, Constants.ENTITY)){
-            return;
+        if (!ClassParser.isEntityClass(psiClass)) {
+             return;
         }
 
         if (!psiClass.hasModifierProperty(PsiModifier.PUBLIC)){
@@ -67,15 +66,17 @@ public class PackageScanner {
         mappingRepository.addEntity(entity);
     }
 
-     /**
+     /*
      * method to dump Annotations, for debug only
      * @param modifierListOwner
      */
+     /*
     private void dumpAnnotations(PsiModifierListOwner modifierListOwner) {
         for (PsiAnnotation annotation:modifierListOwner.getModifierList().getAnnotations()){
             System.out.println(annotation.getQualifiedName());
         }
     }
+    */
 
     public void scanInModule(EntitiesConfig entitiesConfig, Module module, MappingRepository mappingRepository, int configNo, int numConfigs, ProgressIndicator indicator) {
         //System.out.println(entitiesConfig);

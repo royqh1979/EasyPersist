@@ -99,7 +99,7 @@ public class EntitiesGenerator {
             }
             entityBuilder.append("public class ");
             entityBuilder.append(entity.getName());
-            System.out.println(entity.getName());
+            //System.out.println(entity.getName());
             entityBuilder.append(" implements Serializable {\n");
 
             for (Column column : table.getColumns()) {

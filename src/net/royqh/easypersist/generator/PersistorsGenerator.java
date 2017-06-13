@@ -15,6 +15,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
+import net.royqh.easypersist.parsers.jpa.ClassParser;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.*;
@@ -323,6 +324,9 @@ public class PersistorsGenerator {
         for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
             types.add(relationInfo.getMappingEntityFullClassName());
             Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+            if (mappingEntity==null) {
+                throw new RuntimeException("Not found entity definition for class "+relationInfo.getMappingEntityFullClassName());
+            }
             /* 如果单独为某一个Entity生成Persistor, 这时我们不知道Persistor应该放在哪个包里 */
             if (mappingEntity.getPersistorPackageName()!=null) {
                 types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(), ".")

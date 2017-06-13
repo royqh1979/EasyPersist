@@ -3,6 +3,7 @@ package net.royqh.easypersist;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -22,6 +23,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class EasyPersistor {
     private OrmConfigParser ormConfigParser;
     private PackageScanner packageScanner;
+    private static Logger logger=Logger.getInstance(EasyPersistor.class);
 
     public EasyPersistor() throws ParserConfigurationException, SAXException {
         ormConfigParser = new OrmConfigParser();
@@ -60,7 +62,7 @@ public class EasyPersistor {
             PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
             persistorsGenerator.generate(project, mappingRepository, indicator);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
             Notification notification = new Notification("Easy Persist", "Error",
                     "Generation failed :" + e.getMessage(),
                     NotificationType.ERROR

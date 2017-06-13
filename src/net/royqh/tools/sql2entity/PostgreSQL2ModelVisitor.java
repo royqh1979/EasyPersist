@@ -60,7 +60,7 @@ public class PostgreSQL2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
             }
             index.addColumn(PostgreSQLParseTool.parseIdentifier(indexItemCtx.column_name()));
         }
-        System.out.println(table.getName()+":"+String.join(",",index.getColumns()));
+        //System.out.println(table.getName()+":"+String.join(",",index.getColumns()));
         table.addIndex(index);
         return null;
     }

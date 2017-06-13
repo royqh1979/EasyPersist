@@ -95,7 +95,6 @@ public class AnnotationParser {
         Index[] indexes=new Index[indexAnnos.length];
         for (int i=0;i<indexAnnos.length;i++){
             PsiAnnotation indexAnno=indexAnnos[i];
-            System.out.println(indexAnno.getText());
             Index index=new Index();
             index.setName(AnnotationUtils.getValue(indexAnno,"name"));
             index.setUnique(AnnotationUtils.getBooleanValue(indexAnno,"unique"));
@@ -306,7 +305,6 @@ public class AnnotationParser {
         List<MapRelationInfo> relationInfos=new ArrayList<>();
         for (int i=0;i<relationAnnos.length;i++){
             PsiAnnotation relationAnno=relationAnnos[i];
-            System.out.println(relationAnno.getText());
             MapRelationInfo relationInfo=new MapRelationInfo();
             relationInfo.setMapTable(AnnotationUtils.getValue(relationAnno,"table"));
             relationInfo.setMappingEntityFullClassName(AnnotationUtils.getClassName(relationAnno,"mappingEntityClass"));

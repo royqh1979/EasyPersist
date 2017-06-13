@@ -41,11 +41,11 @@ public class TestSQLVistitor extends MySQLBaseVisitor<String> {
     @Override
     public String visitSql_stmt(MySQLParser.Sql_stmtContext ctx) {
         StringBuilder builder=new StringBuilder();
-        System.out.println("Rule index:"+ctx.getRuleIndex());
-        System.out.println("Alt Num:"+ctx.getAltNumber());
+        //System.out.println("Rule index:"+ctx.getRuleIndex());
+        //System.out.println("Alt Num:"+ctx.getAltNumber());
 
         MySQLParseTool.getConvertedText(tokenStream,ctx,builder);
-        System.out.println( "statement : "+builder.toString()+";");
+        //System.out.println( "statement : "+builder.toString()+";");
         ctx.getChild(0);
         return null;
     }

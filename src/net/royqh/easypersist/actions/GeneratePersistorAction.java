@@ -1,10 +1,13 @@
 package net.royqh.easypersist.actions;
 
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -15,15 +18,10 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.psi.impl.file.PsiFileImplUtil;
-import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.generator.MethodGenerator;
 import net.royqh.easypersist.generator.MySQLGenerator;
 import net.royqh.easypersist.generator.PersistorsGenerator;
 import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.jpa.Constants;
-import net.royqh.easypersist.parsers.OrmConfigParser;
-import net.royqh.easypersist.parsers.jpa.AnnotationUtils;
 import net.royqh.easypersist.parsers.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
  * Created by Roy on 2017/6/12.
  */
 public class GeneratePersistorAction extends AnAction {
+    private static Logger logger=Logger.getInstance(GeneratePersistorAction.class);
     @Override
     public void actionPerformed(AnActionEvent e) {
         ProgressManager progressManager = ProgressManager.getInstance();
@@ -44,14 +43,14 @@ public class GeneratePersistorAction extends AnAction {
                     Project project = e.getProject();
                     Module module = ModuleUtil.findModuleForFile(psiClass.getContainingFile().getVirtualFile(), project);
                     indicator.setFraction(0.2);
-                    indicator.setText("Parsing Entity "+psiClass.getQualifiedName());
+                    indicator.setText("Parsing Entity " + psiClass.getQualifiedName());
                     Entity entity = ClassParser.parseEntityClassWithMappings(psiClass, module);
 
                     VirtualFile root = ProjectRootManager.getInstance(project)
                             .getFileIndex().getContentRootForFile(psiClass.getContainingFile().getVirtualFile());
-                    indicator.setText("Generating Persistor for "+psiClass.getQualifiedName());
+                    indicator.setText("Generating Persistor for " + psiClass.getQualifiedName());
                     indicator.setFraction(1);
-                    WriteCommandAction.runWriteCommandAction(e.getProject(),new Runnable() {
+                    WriteCommandAction.runWriteCommandAction(e.getProject(), new Runnable() {
 
                         @Override
                         public void run() {
@@ -64,7 +63,6 @@ public class GeneratePersistorAction extends AnAction {
                                     throw new RuntimeException("Can't create folder gen!");
                                 }
                                 PsiDirectory psiOutputDir = PsiManager.getInstance(project).findDirectory(genDir);
-
 
                                 PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
                                 JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
@@ -87,7 +85,7 @@ public class GeneratePersistorAction extends AnAction {
                         }
                     });
                 } catch (Exception exception) {
-                    exception.printStackTrace();
+                    logger.error(exception);
                     Notification notification = new Notification(
                             "Easy Persist",
                             "Error",
@@ -108,9 +106,7 @@ public class GeneratePersistorAction extends AnAction {
         PsiElement element = e.getData(CommonDataKeys.PSI_ELEMENT);
         if (element instanceof PsiClass) {
             PsiClass psiClass = (PsiClass) element;
-            PsiAnnotation entityAnnotation = AnnotationUtils.findAnnotation(psiClass,
-                    Constants.ENTITY);
-            if (entityAnnotation != null) {
+            if (ClassParser.isEntityClass(psiClass)) {
                 e.getPresentation().setVisible(true);
                 return;
             }
