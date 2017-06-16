@@ -76,7 +76,13 @@ public class OrmConfigParser extends DefaultHandler {
     public void characters(char[] ch, int start, int length) throws SAXException {
         if (currentTag!=null) {
             if (currentTag.equals("dialect")){
-                dialect=new String(ch,start,length);
+                String dial=new String(ch,start,length);
+                if ("MySQL".equals(dial) || "PostgreSQL".equals(dial)){
+                    dialect=dial;
+                } else {
+                    throw new RuntimeException("Wrong dialect in "+OrmConfigParser.ORM_CONFIG_FILE_NAME
+                        +"must be MySQL or PostgreSQL");
+                }
             }
         }
     }
