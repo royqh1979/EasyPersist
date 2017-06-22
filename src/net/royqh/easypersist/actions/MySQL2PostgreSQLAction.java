@@ -99,6 +99,7 @@ public class MySQL2PostgreSQLAction extends AnAction {
                         psiDirectory.add(psiFile);
                         indicator.setFraction(1);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         Logger.getInstance(MySQL2PostgreSQLTask.class).error(e);
                         Notification notification = new Notification(
                                 "Easy Persist",

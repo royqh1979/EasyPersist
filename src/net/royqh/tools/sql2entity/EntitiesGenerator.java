@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -302,8 +304,11 @@ public class EntitiesGenerator {
         return false;
     }
 
+    private static Pattern typePattern=Pattern.compile("^\\s*(\\w+)(.*)$") ;
     private static String getType(String type, boolean isNotNull) {
-        String s = type.replaceAll("\\(.*\\)", "").toLowerCase().trim();
+        Matcher matcher=typePattern.matcher(type);
+        String s = matcher.replaceAll("$1").toLowerCase().trim();
+        System.out.println("type:"+type+" - "+s);
         if (isNotNull) {
             switch (s) {
                 case "serial":

@@ -62,6 +62,7 @@ public class EasyPersistor {
             PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
             persistorsGenerator.generate(project, mappingRepository, indicator);
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error(e);
             Notification notification = new Notification("Easy Persist", "Error",
                     "Generation failed :" + e.getMessage(),

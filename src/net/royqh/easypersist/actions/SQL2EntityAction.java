@@ -82,6 +82,7 @@ public class SQL2EntityAction extends AnAction {
                         indicator.setFraction(1);
 
                     } catch (Exception e) {
+                        e.printStackTrace();
                         Logger.getInstance(SQL2EntityTask.class).error(e);
                         Notification notification = new Notification(
                                 "Easy Persist",

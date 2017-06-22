@@ -85,6 +85,7 @@ public class GeneratePersistorAction extends AnAction {
                         }
                     });
                 } catch (Exception exception) {
+                    exception.printStackTrace();
                     logger.error(exception);
                     Notification notification = new Notification(
                             "Easy Persist",
