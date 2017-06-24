@@ -1,5 +1,6 @@
 package net.royqh.easypersist.parsers;
 
+import com.github.rjeschke.txtmark.Run;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.royqh.easypersist.model.config.EntitiesConfig;
 import org.xml.sax.Attributes;
@@ -95,7 +96,11 @@ public class OrmConfigParser extends DefaultHandler {
         return dialect;
     }
 
-    public void parse(VirtualFile file) throws SAXException, IOException {
-        parser.parse(file.getInputStream(),this);
+    public void parse(VirtualFile file)  {
+        try {
+            parser.parse(file.getInputStream(),this);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } 
     }
 }

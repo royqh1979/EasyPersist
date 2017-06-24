@@ -35,16 +35,26 @@ public class EasyPersistor {
         indicator.setFraction(0.0);
         try {
             Module module = ModuleUtil.findModuleForFile(xmlConfigFile, project);
-            ormConfigParser.parse(xmlConfigFile);
+            ApplicationManager.getApplication().runReadAction(new Runnable() {
+                @Override
+                public void run() {
+                    ormConfigParser.parse(xmlConfigFile);
+                }
+            });
             MappingRepository mappingRepository = new MappingRepository();
-            int i = 1;
-            int n = ormConfigParser.getEntitiesConfigs().size();
-            for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
-                //System.out.println(entitiesConfig);
-                packageScanner.scanInModule(entitiesConfig, module, mappingRepository, i, n, indicator);
-                //packageScanner.scanInProject(entitiesConfig, project, mappingRepository, i, n, indicator);
-                i++;
-            }
+            ApplicationManager.getApplication().runReadAction(new Runnable() {
+                @Override
+                public void run() {
+                    int i = 1;
+                    int n = ormConfigParser.getEntitiesConfigs().size();
+                    for (EntitiesConfig entitiesConfig : ormConfigParser.getEntitiesConfigs()) {
+                        //System.out.println(entitiesConfig);
+                        packageScanner.scanInModule(entitiesConfig, module, mappingRepository, i, n, indicator);
+                        //packageScanner.scanInProject(entitiesConfig, project, mappingRepository, i, n, indicator);
+                        i++;
+                    }
+                }
+            });
             indicator.setText("Generating ORM codes ...");
             indicator.setFraction(0.5);
             SQLGenerator sqlGenerator;

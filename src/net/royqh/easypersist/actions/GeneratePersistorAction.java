@@ -6,6 +6,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -15,6 +16,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
@@ -29,7 +31,8 @@ import org.jetbrains.annotations.NotNull;
  * Created by Roy on 2017/6/12.
  */
 public class GeneratePersistorAction extends AnAction {
-    private static Logger logger=Logger.getInstance(GeneratePersistorAction.class);
+    private static Logger logger = Logger.getInstance(GeneratePersistorAction.class);
+
     @Override
     public void actionPerformed(AnActionEvent e) {
         ProgressManager progressManager = ProgressManager.getInstance();
@@ -44,7 +47,12 @@ public class GeneratePersistorAction extends AnAction {
                     Module module = ModuleUtil.findModuleForFile(psiClass.getContainingFile().getVirtualFile(), project);
                     indicator.setFraction(0.2);
                     indicator.setText("Parsing Entity " + psiClass.getQualifiedName());
-                    Entity entity = ClassParser.parseEntityClassWithMappings(psiClass, module);
+                    Entity entity=ApplicationManager.getApplication().runReadAction(new Computable<Entity>() {
+                        @Override
+                        public Entity compute() {
+                            return ClassParser.parseEntityClassWithMappings(psiClass, module);
+                        }
+                    });
 
                     VirtualFile root = ProjectRootManager.getInstance(project)
                             .getFileIndex().getContentRootForFile(psiClass.getContainingFile().getVirtualFile());
@@ -72,14 +80,6 @@ public class GeneratePersistorAction extends AnAction {
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                             } catch (Exception exception) {
-                                exception.printStackTrace();
-                                Notification notification = new Notification(
-                                        "Easy Persist",
-                                        "Error",
-                                        "Generation failed :" + exception.getMessage(),
-                                        NotificationType.ERROR
-                                );
-                                Notifications.Bus.notify(notification, e.getProject());
                                 throw new RuntimeException(exception);
                             }
                         }
