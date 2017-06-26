@@ -115,6 +115,92 @@ public class PersistorsGenerator {
                 content.toString());
     }
 
+    private PsiFile generatePersistorCompositorFileForEditor(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+        String className = CodeUtils.getPersistorCompositorName(entity);
+        StringBuilder content = new StringBuilder();
+        if (targetPackage != null) {
+            content.append("package " + targetPackage.getQualifiedName() + ";\n");
+        } else {
+            content.append("package dummy;\n");
+        }
+        //imports
+        content.append("import ");
+        content.append(entity.getClassInfo().getQualifiedName());
+        content.append(";\n");
+        content.append("import org.springframework.beans.factory.annotation.Autowired;\n");
+        content.append("import org.springframework.stereotype.Repository;\n");
+        content.append("import org.springframework.transaction.annotation.Transactional;\n");
+        content.append("import javax.sql.DataSource;\n");
+        content.append("import java.util.List;\n");
+
+
+        content.append("@Repository\n");
+        content.append("@Transactional\n");
+        content.append("public class " + className + "{\n");
+        content.append("    private DataSource dataSource;\n");
+        content.append("    private ");
+        content.append(CodeUtils.getPersistorName(entity));
+        content.append(" persistor;\n\n");
+        content.append(" public " + className + "() {}\n");
+        content.append(" public " + className + "(DataSource dataSource) {\n");
+        content.append("    setDataSource(dataSource);\n");
+        content.append("}\n");
+        content.append("    @Autowired\n");
+        content.append("public void setDataSource(DataSource dataSource) {\n");
+        content.append("this.dataSource=dataSource;\n");
+        content.append("persistor=new ");
+        content.append(CodeUtils.getPersistorName(entity));
+        content.append("();\n");
+        content.append("persistor.setDataSource(dataSource);\n");
+        content.append("}\n");
+
+        content.append("public List<");
+        content.append(entity.getClassInfo().getName());
+        content.append("> getAll() {\n");
+        content.append("return persistor.retrieveAll();\n");
+        content.append("}\n");
+
+        content.append("public ");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" create(");
+        content.append(entity.getClassInfo().getName());
+        content.append(" ");
+        content.append(entity.getName());
+        content.append(") {\n");
+        content.append("return persistor.create(");
+        content.append(entity.getName());
+        content.append(");\n");
+        content.append("}\n");
+
+        content.append("public ");
+        content.append(entity.getClassInfo().getName());
+        content.append(" retrieve(");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id) {\n");
+        content.append("return persistor.retrieve(id);\n");
+        content.append("}\n");
+
+        content.append("public void delete(");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id) {\n");
+        content.append("persistor.delete(id);\n");
+        content.append("}\n");
+
+        content.append("public void update(");
+        content.append(entity.getClassInfo().getName());
+        content.append(" ");
+        content.append(entity.getName());
+        content.append(") {\n");
+        content.append(String.format("persistor.update(%s);\n",
+                entity.getName()));
+        content.append("}\n\n");
+
+        content.append("}\n");
+
+        return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
+                content.toString());
+    }
+
     public void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity) {
         /*
         PsiPackage targetPackage = findOrCreatePackageDirectory(entity.getPersistorPackageName(),facade,entity);
@@ -414,4 +500,18 @@ public class PersistorsGenerator {
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
     }
+    public void generatePersistorCompositorForEditor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
+        String compositorClassName = CodeUtils.getPersistorCompositorName(entity);
+        String fileName = compositorClassName + ".java";
+
+        PsiFile oldFile = psiOutputDir.findFile(fileName);
+        //We Only Create compositor when it is not existed;
+        if (oldFile != null) {
+            oldFile.delete();
+        }
+        PsiFile psiFile = generatePersistorCompositorFileForEditor(entity, null, psiFileFactory);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
+        psiOutputDir.add(psiFile);
+    }
+
 }

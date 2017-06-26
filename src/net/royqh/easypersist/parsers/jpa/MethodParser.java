@@ -2,6 +2,7 @@ package net.royqh.easypersist.parsers.jpa;
 
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTypesUtil;
+import net.royqh.easypersist.annotations.ChineseAlias;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.*;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -83,6 +84,9 @@ public class MethodParser {
                 if (TypeUtils.containsAnnotation(psiMethod, Constants.ID)) {
                     entity.setIdProperty(singleProperty.getName());
                     entity.setAutoGenerateId(TypeUtils.containsAnnotation(psiMethod, Constants.GENERATED_VALUE));
+                }
+                if (TypeUtils.containsAnnotation(psiMethod, Constants.LIST_HEADER)){
+                    entity.setListHeaderProperty(singleProperty.getName());
                 }
             } catch (RuntimeException e) {
                 throw new RuntimeException(entity.getClassInfo().getQualifiedName() +
@@ -173,7 +177,18 @@ public class MethodParser {
         String name = TypeUtils.getPropertyNameByGetter(psiMethod);
         String type = psiMethod.getReturnType().getCanonicalText();
         Column column = AnnotationParser.parseColumn(psiMethod);
-        SingleProperty property = new SingleProperty(name, type, column);
+        SingleProperty property;
+        PsiAnnotation referenceAnno=AnnotationUtils.findAnnotation(psiMethod,Constants.REFERENCE);
+        if (referenceAnno!=null) {
+            ReferenceSingleProperty referenceSingleProperty= new ReferenceSingleProperty(name, type, column);
+            referenceSingleProperty.setRefEntityFullClassName(AnnotationUtils.getClassName(referenceAnno,"refEntityClass"));
+            referenceSingleProperty.setRefEntityColumnName(AnnotationUtils.getValue(referenceAnno,"refEntityColumn"));
+            property=referenceSingleProperty;
+        } else {
+             property= new SingleProperty(name, type, column);
+        }
+        String chineseAlias=AnnotationParser.parseChineseAlias(psiMethod);
+        property.setChineseAlias(chineseAlias);
         if (type.equals("java.util.Date"))  {
             TemporalType temporalType = AnnotationParser.parseTemporal(psiMethod);
             if ( temporalType == null) {

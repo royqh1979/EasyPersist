@@ -130,6 +130,10 @@ public abstract class TypeUtils {
         return shortTypeName;
     }
 
+    public static boolean isPrimitiveType(String type){
+        return PrimitiveTypeMapper.containsKey(type);
+    }
+
     public static Object getPrimitiveType(String type) {
         String shortTypeName= TypeUtils.getShortTypeName(type);
         if (PrimitiveTypeMapper.containsKey(type)){

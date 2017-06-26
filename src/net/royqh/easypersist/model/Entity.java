@@ -18,7 +18,9 @@ public class Entity {
     private ClassInfo classInfo;
     private PsiClass psiClass;
     private String name;
+    private String chineseAlias=null;
     private String idProperty;
+    private String listHeaderProperty=null;
     private Map<String,Property> propertyMap =new HashMap<>();
     private Map<String,String> columnPropertyMap = new HashMap<>();
     private Set<IndexInfo> indexes =new HashSet<>();
@@ -33,6 +35,14 @@ public class Entity {
         this.name=name;
         this.classInfo=classInfo;
         this.psiClass=psiClass;
+    }
+
+    public String getChineseAlias() {
+        return chineseAlias;
+    }
+
+    public void setChineseAlias(String chineseAlias) {
+        this.chineseAlias = chineseAlias;
     }
 
     public PsiClass getPsiClass() {
@@ -169,5 +179,13 @@ public class Entity {
 
     public void setPersistorPackageName(String persistorPackageName) {
         this.persistorPackageName = persistorPackageName;
+    }
+
+    public SingleProperty getListHeaderProperty() {
+        return (SingleProperty)propertyMap.get(listHeaderProperty);
+    }
+
+    public void setListHeaderProperty(String listHeaderProperty) {
+        this.listHeaderProperty = listHeaderProperty;
     }
 }

@@ -16,6 +16,10 @@
  */
 package net.royqh.easypersist.model.jpa;
 
+import net.royqh.easypersist.annotations.ChineseAlias;
+import net.royqh.easypersist.annotations.ListHeader;
+import net.royqh.easypersist.annotations.Reference;
+
 import java.util.*;
 
 /**
@@ -54,8 +58,11 @@ public final class Constants {
 	public static final String MAP_RELATIONS = "net.royqh.easypersist.annotations.MapRelations";
 	public static final String MAP_RELATION = "net.royqh.easypersist.annotations.MapRelation";
 	public static final String LOB = "javax.persistence.Lob";
+	public static final String CHINESE_ALIAS = ChineseAlias.class.getCanonicalName();
+	public static final String LIST_HEADER = ListHeader.class.getCanonicalName();
+	public static final String REFERENCE = Reference.class.getCanonicalName();
 
-    static {
+	static {
 		COLLECTIONS.add(SET);
 		COLLECTIONS.add(LIST);
 		COLLECTIONS.add(COLLECTION);

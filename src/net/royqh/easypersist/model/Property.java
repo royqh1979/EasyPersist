@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public abstract class Property {
     private String name;
+    private String chineseAlias=null;
     private String type;
     private String getter;
     private String setter;
@@ -16,6 +17,14 @@ public abstract class Property {
         this.type = type;
         this.setter="set"+ StringUtils.capitalize(name);
         this.getter="get"+StringUtils.capitalize(name);
+    }
+
+    public String getChineseAlias() {
+        return chineseAlias;
+    }
+
+    public void setChineseAlias(String chineseAlias) {
+        this.chineseAlias = chineseAlias;
     }
 
     public String getName() {

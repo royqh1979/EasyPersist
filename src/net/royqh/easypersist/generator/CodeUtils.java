@@ -67,4 +67,12 @@ public class CodeUtils {
         return  StringUtil.capitalize(entity.getName())
                 + "Persistor";
     }
+
+    public static String getServiceName(Entity entity) {
+        return StringUtil.capitalize(entity.getName())+"Service";
+    }
+
+    public static String getControllerName(Entity entity) {
+        return StringUtil.capitalize(entity.getName())+"Controller";
+    }
 }

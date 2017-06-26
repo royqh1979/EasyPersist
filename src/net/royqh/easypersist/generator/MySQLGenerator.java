@@ -29,7 +29,9 @@ public class MySQLGenerator extends SQLGenerator {
         SingleProperty idProperty = entity.getIdProperty();
         StringBuilder content=new StringBuilder();
         content.append("public static final String SIMPLE_SELECT_SQL=");
-        content.append("\"select * from `" + tableName + "`\";\n");
+        content.append("\"select * from `" + tableName + "` order by ");
+        content.append(idProperty.getColumnName());
+        content.append(" asc\";\n");
         return content;
     }
 

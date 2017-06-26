@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.11.2</version>
+  <version>0.12</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -37,6 +37,7 @@
         * generation work now run in background   <br />
       * 0.11.1 check if mapping entity class exists. <br />
       * 0.11.2 fix: column type parse error ( SQL to Entity )
+      * 0.12 add entity service/controller/view generator
     ]]>
   </change-notes>
 
@@ -85,9 +86,18 @@
   </action>
   -->
     <action
-            id="net.royqh.easypersist.actions.GeneratePersistorAction"
-            class="net.royqh.easypersist.actions.GeneratePersistorAction"
-            text="Generate Entity Persistor" >
+          id="net.royqh.easypersist.actions.GeneratePersistorAction"
+          class="net.royqh.easypersist.actions.GeneratePersistorAction"
+          text="Generate Entity Persistor" >
+    <add-to-group group-id="ToolsMenu" anchor="first"/>
+    <add-to-group group-id="EditorPopupMenu" />
+    <add-to-group group-id="ProjectViewPopupMenu" />
+    <add-to-group group-id="EditorTabPopupMenu" />
+  </action>
+    <action
+            id="net.royqh.easypersist.actions.GenerateEditorAction"
+            class="net.royqh.easypersist.actions.GenerateEditorAction"
+            text="Generate Entity Editor" >
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="ProjectViewPopupMenu" />

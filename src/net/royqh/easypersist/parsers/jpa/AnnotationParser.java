@@ -322,4 +322,14 @@ public class AnnotationParser {
         }
         return true;
     }
+
+    public static String parseChineseAlias(PsiModifierListOwner psiModifierListOwner) {
+        PsiAnnotation chineseAnnotation=AnnotationUtils.findAnnotation(psiModifierListOwner,
+                Constants.CHINESE_ALIAS);
+        if (chineseAnnotation==null) {
+            return null;
+        } else {
+            return AnnotationUtils.getValue(chineseAnnotation, "value");
+        }
+    }
 }

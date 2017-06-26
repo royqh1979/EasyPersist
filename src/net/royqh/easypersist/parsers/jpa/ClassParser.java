@@ -72,6 +72,10 @@ public class ClassParser {
         AccessType type=AnnotationParser.parseAccessType(psiClass);
         entity.setAccessType(type);
 
+        /* parse @ChineseAlias annotation */
+        String chineseAlias=AnnotationParser.parseChineseAlias(psiClass);
+        entity.setChineseAlias(chineseAlias);
+
         /* parse custom @MapRelations annotation */
         entity.setMapRelationInfos(AnnotationParser.parseMapRelations(psiClass));
     }
@@ -207,6 +211,17 @@ public class ClassParser {
             }
             doParseEntityClassWithMappings(mappingClass,
                     module,repository,facade,searchScope);
+        }
+        for (Property property: entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty)  {
+                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
+                PsiClass mappingClass=facade.findClass(referenceSingleProperty.getRefEntityFullClassName(),searchScope);
+                if (mappingClass==null) {
+                    throw new RuntimeException("Referencing Class "+referenceSingleProperty.getRefEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
+                }
+                doParseEntityClassWithMappings(mappingClass,
+                        module,repository,facade,searchScope);
+            }
         }
         return entity;
     }
