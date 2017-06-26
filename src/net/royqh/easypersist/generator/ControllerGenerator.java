@@ -8,6 +8,7 @@ import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,11 +49,13 @@ public class ControllerGenerator {
         content.append("import cn.edu.bjfu.smartforestry.view.utils.Result;\n");
         content.append("import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;\n");
         content.append("import com.qui.base.Grid;\n");
+        content.append("import com.qui.base.ListForSelect;\n");
         content.append("import com.qui.base.Pager;\n");
         content.append("import org.springframework.beans.factory.annotation.Autowired;\n");
         content.append("import org.springframework.stereotype.Controller;\n");
         content.append("import org.springframework.web.bind.annotation.RequestMapping;\n");
         content.append("import org.springframework.web.bind.annotation.RequestMethod;\n");
+        content.append("import org.springframework.web.bind.annotation.RequestParam;\n");
         content.append("import org.springframework.web.bind.annotation.ResponseBody;\n");
         content.append("import net.royqh.lang.DateTools;\n");
 
@@ -123,11 +126,19 @@ public class ControllerGenerator {
         content.append(" {\n");
 
         content.append("@Autowired\n");
-        content.append("private ");
-        content.append(serviceClassName);
-        content.append(" ");
-        content.append(serviceName);
-        content.append(";\n");
+        content.append(String.format("private %s %s;\n",
+                serviceClassName,
+                serviceName));
+        for (Property property:entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
+                content.append("@Autowired\n");
+                content.append(String.format("private %s %s;\n",
+                        CodeUtils.getServiceName(referenceEntity),
+                        referenceEntity.getName()+"Service"));
+            }
+        }
 
         /* main method */
         content.append("@RequestMapping(value = \"/main\",method = RequestMethod.GET)\n");
@@ -152,6 +163,43 @@ public class ControllerGenerator {
                 entity.getClassInfo().getName()));
         content.append("return result;\n");
         content.append("}\n");
+
+        /* list refrenced entity methods*/
+        for (Property property:entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
+                Entity referenceEntity=entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
+                content.append(String.format("@RequestMapping(value = \"/list%s\", method = RequestMethod.POST,\n",
+                        referenceEntity.getClassInfo().getName()));
+                content.append("produces = \"application/json\")\n");
+                content.append("@ResponseBody\n");
+                content.append(String.format("public ListForSelect list%s() {\n",
+                        referenceEntity.getClassInfo().getName()));
+                content.append(String.format("List<%s> list=%s.listAll();\n",
+                        referenceEntity.getClassInfo().getName(),
+                       referenceEntity.getName()+"Service" ));
+                content.append("ListForSelect listForSelect=new ListForSelect();\n");
+
+                content.append(String.format("for (%s %s:list) {\n",
+                        referenceEntity.getClassInfo().getName(),
+                        referenceEntity.getName()
+                        ));
+                if (referenceEntity.getListHeaderProperty()==null) {
+                    throw new RuntimeException("Entity "+entity.getClassInfo().getQualifiedName()+" don't have a List Header property!");
+                }
+                content.append(String.format("listForSelect.addItem(%s.%s()+\"\",%s.%s());\n",
+                        referenceEntity.getName(),
+                        referenceEntity.getIdProperty().getGetter(),
+                        referenceEntity.getName(),
+                        referenceEntity.getListHeaderProperty().getGetter()
+                        ));
+
+                content.append("}\n");
+                content.append("return listForSelect;\n");
+                content.append("}\n");
+
+            }
+        }
 
         /* create method */
         content.append("@RequestMapping(value = \"/create\",method = RequestMethod.POST,\n");
@@ -332,6 +380,8 @@ public class ControllerGenerator {
     }
 
     private static void generateEntityParam(StringBuilder content, Entity entity, SingleProperty property) {
+        content.append(String.format("@RequestParam(\"%s\")",
+                property.getName()));
         if (property.getEnumType()!=null) {
             content.append("Integer ");
             content.append(property.getName()+"Val");

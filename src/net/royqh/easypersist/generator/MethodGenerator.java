@@ -181,7 +181,7 @@ public class MethodGenerator {
     public  void createLoadAllMethod(StringBuilder content, Entity entity) {
 //        String rowCallbackHandlerClassName = CodeUtils.getRowCallbackHandlerClassName(entity);
         content.append("public List<" + entity.getClassInfo().getName() + "> retrieveAll() {\n");
-        content.append("String sql=SIMPLE_SELECT_SQL;");
+        content.append("String sql=SELECT_ALL_SQL;");
         content.append("logger.debug(sql);\n");
         createStatementStatments(content);
         content.append("ResultSet resultSet=stmt.executeQuery(sql);\n");

@@ -33,6 +33,18 @@ public class PostgreSQLGenerator extends SQLGenerator {
         return content;
     }
 
+    @Override
+    public StringBuilder generateSelectAllSQL(Entity entity) {
+        String tableName = entity.getTableName();
+        SingleProperty idProperty = entity.getIdProperty();
+        StringBuilder content=new StringBuilder();
+        content.append("public static final String SELECT_ALL_SQL=");
+        content.append("\"select * from \\\"" + tableName + "\\\" order by \\\"");
+        content.append(idProperty.getColumnName());
+        content.append("\\\" asc\";\n");
+        return content;
+    }
+
     /**
      * 生成包含Join关系的Selete语句
      * <p>用于对JPA @ElementCollection的支持</p>

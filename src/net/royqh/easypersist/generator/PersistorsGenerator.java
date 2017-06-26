@@ -466,6 +466,7 @@ public class PersistorsGenerator {
 
     private void createSQLs(StringBuilder content, Entity entity) {
         content.append(methodGenerator.getSqlGenerator().generateSimpleSelectSQL(entity));
+        content.append(methodGenerator.getSqlGenerator().generateSelectAllSQL(entity));
         // content.append(SQLGenerator.generateFullJoinSelectSQL(entity));
         /*
         content.append(SQLGenerator.generateInsertSQL(entity));

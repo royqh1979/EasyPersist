@@ -12,6 +12,8 @@ import java.util.List;
 public abstract class SQLGenerator {
     public abstract StringBuilder generateSimpleSelectSQL(Entity entity);
 
+    public abstract StringBuilder generateSelectAllSQL(Entity entity);
+
     public abstract StringBuilder  generateFullJoinSelectSQL(Entity entity);
 
     public abstract StringBuilder generateInsertSQL(String tableName, List<String> insertFields);
