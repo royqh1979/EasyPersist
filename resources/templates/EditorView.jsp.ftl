@@ -1,3 +1,6 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -137,19 +140,19 @@
     function initGrid(){
         g = $("#maingrid").quiGrid({
             columns: [
+                { name: '${entity.idProperty.name}', align: 'left', width: 120,isSort:false,headerRender:function(column){
+                    return '${entity.idProperty.chineseAlias}';
+                }},
             <#list entity.properties as property>
                 <#if property == entity.idProperty >
-                    { name: '${property.name}', align: 'left', width: 120,isSort:false,headerRender:function(column){
-                        return '${property.chineseAlias}';
-                    }}
                 <#elseif property.isReferenceProperty()>
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${refEntity.classInfo.name},
-                            headerRender:genHeaderRender("${property.chineseAlias}")},
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
+                            headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
+
                 <#else>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")},
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 </#if>
-                <#sep>,</#sep>
             </#list>
             ],
             data:[],sortName: 'id',rownumbers:true,checkbox:true,pageSize:1000,dataAction:"server",usePager: true,
@@ -232,12 +235,12 @@
         var obj={
     <#list entity.properties as property>
         <#if property == entity.idProperty >
-            '${property.name}':0
+            '${property.name}': ${generator.getDefaultValue(property.type)}
         <#elseif property.isReferenceProperty()>
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
             ${property.name}: ${refEntity.name}Data.list[0].value
         <#else>
-            ${property.name}:0
+             ${property.name}: ${generator.getDefaultValue(property.type)}
         </#if>
         <#sep>,</#sep>
     </#list>
@@ -314,11 +317,6 @@
             ${property.name}:obj.${property.name}
         <#sep>,</#sep>
     </#list>
-            id: obj.id,
-            name: obj.name,
-            amount:obj.amount,
-            productTypeId: obj.productTypeId,
-            firstDate: obj.firstDate
         },function(result){
             console.log("更新结果",result);
             if(result && result.result && result.result=="Success"){
