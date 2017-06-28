@@ -1,20 +1,25 @@
 package net.royqh.easypersist.generator;
 
+import com.github.rjeschke.txtmark.Run;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 /**
  * Created by Roy on 2017/6/24.
  */
 public class ControllerGenerator {
+    private static Template ControllerTemplate=TemplateLoader.loadTemplate("Controller.ftl");
+
     public static void generateController(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         String fileName = controllerClassName + ".java";
@@ -34,33 +39,35 @@ public class ControllerGenerator {
         String serviceClassName=CodeUtils.getServiceName(entity);
         String serviceName=entity.getName()+"Service";
         String persistorName=CodeUtils.getPersistorCompositorName(entity);
-        StringBuilder content = new StringBuilder();
+        StringWriter writer = new StringWriter();
         if (targetPackage != null) {
-            content.append("package " + targetPackage.getQualifiedName() + ";\n");
+            writer.append("package " + targetPackage.getQualifiedName() + ";\n");
         } else {
-            content.append("package dummy;\n");
+            writer.append("package dummy;\n");
         }
 
         /*-- */
-        content.append("import ");
-        content.append(entity.getClassInfo().getQualifiedName());
-        content.append(";\n");
-        content.append("import cn.edu.bjfu.smartforestry.view.ProcessingResultType;\n");
-        content.append("import cn.edu.bjfu.smartforestry.view.utils.Result;\n");
-        content.append("import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;\n");
-        content.append("import com.qui.base.Grid;\n");
-        content.append("import com.qui.base.ListForSelect;\n");
-        content.append("import com.qui.base.Pager;\n");
-        content.append("import org.springframework.beans.factory.annotation.Autowired;\n");
-        content.append("import org.springframework.stereotype.Controller;\n");
-        content.append("import org.springframework.web.bind.annotation.RequestMapping;\n");
-        content.append("import org.springframework.web.bind.annotation.RequestMethod;\n");
-        content.append("import org.springframework.web.bind.annotation.RequestParam;\n");
-        content.append("import org.springframework.web.bind.annotation.ResponseBody;\n");
-        content.append("import net.royqh.lang.DateTools;\n");
+        writer.append("import ");
+        writer.append(entity.getClassInfo().getQualifiedName());
+        writer.append(";\n");
+        writer.append("import cn.edu.bjfu.smartforestry.view.ProcessingResultType;\n");
+        writer.append("import cn.edu.bjfu.smartforestry.view.utils.Result;\n");
+        writer.append("import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;\n");
+        writer.append("import com.qui.base.Grid;\n");
+        writer.append("import com.qui.base.ListForSelect;\n");
+        writer.append("import com.qui.base.Pager;\n");
+        writer.append("import org.slf4j.Logger;\n");
+        writer.append("import org.slf4j.LoggerFactory;\n");
+        writer.append("import org.springframework.beans.factory.annotation.Autowired;\n");
+        writer.append("import org.springframework.stereotype.Controller;\n");
+        writer.append("import org.springframework.web.bind.annotation.RequestMapping;\n");
+        writer.append("import org.springframework.web.bind.annotation.RequestMethod;\n");
+        writer.append("import org.springframework.web.bind.annotation.RequestParam;\n");
+        writer.append("import org.springframework.web.bind.annotation.ResponseBody;\n");
+        writer.append("import net.royqh.lang.DateTools;\n");
 
 
-        content.append("import java.util.List;\n");
+        writer.append("import java.util.List;\n");
 
         Set<String> types = new HashSet<>();
         for (Property property : entity.getProperties()) {
@@ -112,11 +119,47 @@ public class ControllerGenerator {
         types.removeAll(Constants.PRIMITIVE_TYPES);
         types.removeAll(Constants.BASIC_TYPES);
         for (String type : types) {
-            content.append("import ");
-            content.append(type);
-            content.append(";\n");
+            writer.append("import ");
+            writer.append(type);
+            writer.append(";\n");
         }
 
+        Map<String,Object> dataModel=new HashMap<>();
+        Set<Entity> refEntities=new HashSet<>();
+        dataModel.put("entity",entity);
+        for (Property property:entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
+                refEntities.add(referenceEntity);
+            }
+        }
+        dataModel.put("refEntities",refEntities);
+        StringBuilder content=new StringBuilder();
+        generateEntityPropertySettings(content,entity,false);
+        dataModel.put("entityPropertySettings",content);
+        content=new StringBuilder();
+        generateEntityParamList(content,entity,false);
+        dataModel.put("params",content);
+        content=new StringBuilder();
+        generateEntityParam(content,entity,entity.getIdProperty());
+        dataModel.put("idParam",content);
+        content=new StringBuilder();
+        generateEntityDump(content,entity,false);
+        dataModel.put("entityDumpWithoutId",content);
+        content=new StringBuilder();
+        generateEntityDump(content,entity,true);
+        dataModel.put("entityDumpWithId",content);
+
+        try {
+            ControllerTemplate.process(dataModel,writer);
+            dataModel.clear();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+
+         /*
         content.append("@Controller\n");
         content.append("@RequestMapping(\"codes/");
         content.append(entity.getName());
@@ -139,16 +182,20 @@ public class ControllerGenerator {
                         referenceEntity.getName()+"Service"));
             }
         }
+        */
 
         /* main method */
+        /*
         content.append("@RequestMapping(value = \"/main\",method = RequestMethod.GET)\n");
         content.append("public String main(){\n");
         content.append("return \"");
         content.append(entity.getName());
         content.append("\";");
         content.append("}\n");
+        */
 
         /* list method */
+        /*
         content.append("@RequestMapping(value = \"/list\",method = RequestMethod.POST,\n");
         content.append("produces = \"application/json\")\n");
         content.append("@ResponseBody\n");
@@ -163,8 +210,10 @@ public class ControllerGenerator {
                 entity.getClassInfo().getName()));
         content.append("return result;\n");
         content.append("}\n");
+        */
 
         /* list refrenced entity methods*/
+        /*
         for (Property property:entity.getProperties()) {
             if (property instanceof ReferenceSingleProperty) {
                 ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
@@ -200,8 +249,10 @@ public class ControllerGenerator {
 
             }
         }
+        */
 
         /* create method */
+        /*
         content.append("@RequestMapping(value = \"/create\",method = RequestMethod.POST,\n");
         content.append("produces = \"application/json\")\n");
         content.append("@ResponseBody\n");
@@ -222,9 +273,11 @@ public class ControllerGenerator {
                 entity.getName()
                 ));
         content.append("}\n");
+        */
 
 
         /* update method */
+        /*
         content.append("@RequestMapping(value = \"/update\",method = RequestMethod.POST,\n");
         content.append("produces = \"application/json\")\n");
         content.append("@ResponseBody\n");
@@ -250,8 +303,10 @@ public class ControllerGenerator {
         content.append(String.format("return new ResultWithEntity<>(ProcessingResultType.Success,%s);\n",
                 entity.getName()));
         content.append("}\n");
+        */
 
         /* delete method */
+        /*
         content.append("@RequestMapping(value = \"/delete\",method = RequestMethod.POST,\n");
         content.append("produces = \"application/json\")\n");
         content.append("@ResponseBody\n");
@@ -268,11 +323,55 @@ public class ControllerGenerator {
         content.append("}\n");
 
         content.append("}\n");
-
+        */
         /*--*/
 
+        /*
+        try {
+            FileOutputStream outputStream=new FileOutputStream("E:\\test.java");
+            OutputStreamWriter fWriter=new OutputStreamWriter(outputStream,"UTF-8");
+            fWriter.write(writer.toString());
+            fWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
+
         return psiFileFactory.createFileFromText(controllerClassName + ".java", JavaLanguage.INSTANCE,
-                content.toString());
+                writer.toString());
+    }
+
+    private static void generateEntityDump(StringBuilder content, Entity entity,boolean withIdProperty) {
+        for (Property property:entity.getProperties()){
+            if (property == entity.getIdProperty() && !withIdProperty) {
+                continue;
+            }
+            if (property.getPropertyType()== PropertyType.Column) {
+                generateEntityPropertyDump(content,entity,(SingleProperty)property);
+            }
+        }
+    }
+
+    private static void generateEntityPropertyDump(StringBuilder content, Entity entity, SingleProperty property) {
+        content.append(String.format("logger.debug(\"%s.%s:\",",
+                entity.getClassInfo().getName(),
+                property.getName()
+                ));
+        if (property.getEnumType()!=null) {
+            content.append(property.getName()+"Val");
+        } else {
+            String shortTypeName=TypeUtils.getShortTypeName(property.getType());
+            switch (shortTypeName) {
+                case "Date":
+                case "boolean":
+                case "Boolean":
+                    content.append(property.getName() + "Val");
+                    break;
+                default:
+                    content.append(property.getName());
+            }
+        }
+        content.append(");\n");
     }
 
     private static void generateEntityPropertySettings(StringBuilder content, Entity entity, boolean withIdProperty) {
@@ -402,3 +501,4 @@ public class ControllerGenerator {
         }
     }
 }
+

@@ -66,4 +66,5 @@ public class SingleProperty extends Property {
     public PropertyType getPropertyType() {
         return PropertyType.Column;
     }
+
 }

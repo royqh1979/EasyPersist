@@ -27,6 +27,8 @@ import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.parsers.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+
 /**
  * Created by Roy on 2017/6/12.
  */
@@ -79,7 +81,7 @@ public class GeneratePersistorAction extends AnAction {
                                 PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
-                            } catch (Exception exception) {
+                            } catch (IOException exception) {
                                 throw new RuntimeException(exception);
                             }
                         }

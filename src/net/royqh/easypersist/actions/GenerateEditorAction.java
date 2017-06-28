@@ -25,6 +25,8 @@ import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.parsers.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+
 /**
  * Created by Roy on 2017/6/12.
  */
@@ -79,15 +81,14 @@ public class GenerateEditorAction extends AnAction {
                                 persistorsGenerator.generatePersistorCompositorForEditor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 ServiceGenerator.generateService(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
                                 ControllerGenerator.generateController(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
-                                // ViewGenerator.generateJspViews(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
-                            } catch (Exception exception) {
-                                throw new RuntimeException(exception);
+                                ViewGenerator.generateJspViews(entity,psiOutputDir);
+                            }  catch (IOException e1) {
+                                throw new RuntimeException(e1);
                             }
                         }
                     });
                 } catch (Exception exception) {
                     exception.printStackTrace();
-                    logger.error(exception);
                     Notification notification = new Notification(
                             "Easy Persist",
                             "Error",
@@ -95,7 +96,7 @@ public class GenerateEditorAction extends AnAction {
                             NotificationType.ERROR
                     );
                     Notifications.Bus.notify(notification, e.getProject());
-                    throw new RuntimeException(exception);
+                    logger.error(exception);
                 }
 
             }

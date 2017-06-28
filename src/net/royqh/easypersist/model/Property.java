@@ -48,4 +48,8 @@ public abstract class Property {
     }
 
     public abstract PropertyType getPropertyType();
+
+    public boolean isReferenceProperty() {
+        return false;
+    }
 }

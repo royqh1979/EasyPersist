@@ -6,25 +6,30 @@ import net.royqh.easypersist.model.jpa.Column;
  * Created by Roy on 2017/6/24.
  */
 public class ReferenceSingleProperty extends SingleProperty {
-    private String RefEntityFullClassName;
-    private String RefEntityColumnName;
+    private String refEntityFullClassName;
+    private String refEntityColumnName;
     public ReferenceSingleProperty(String name, String type, Column column) {
         super(name, type, column);
     }
 
     public String getRefEntityFullClassName() {
-        return RefEntityFullClassName;
+        return refEntityFullClassName;
     }
 
     public void setRefEntityFullClassName(String refEntityFullClassName) {
-        RefEntityFullClassName = refEntityFullClassName;
+        this.refEntityFullClassName = refEntityFullClassName;
     }
 
     public String getRefEntityColumnName() {
-        return RefEntityColumnName;
+        return refEntityColumnName;
     }
 
     public void setRefEntityColumnName(String refEntityColumnName) {
-        RefEntityColumnName = refEntityColumnName;
+        this.refEntityColumnName = refEntityColumnName;
+    }
+
+    @Override
+    public boolean isReferenceProperty() {
+        return true;
     }
 }
