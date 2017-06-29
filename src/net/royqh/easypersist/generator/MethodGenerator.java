@@ -199,6 +199,16 @@ public class MethodGenerator {
     public  void createRetrieveByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
+        createRetrieveByXXXMethod(entity, content, indexProperties);
+    }
+
+    public  void createRetrieveByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+        List<SingleProperty> indexProperties = new ArrayList<>();
+        indexProperties.add(referenceSingleProperty);
+        createRetrieveByXXXMethod(entity, content, indexProperties);
+    }
+
+    private void createRetrieveByXXXMethod(Entity entity, StringBuilder content, List<SingleProperty> indexProperties) {
         String indexName = JdbcUtils.generateIndexName(indexProperties);
 
         content.append("public " + entity.getClassInfo().getName() + " retrieveBy" +
@@ -227,13 +237,23 @@ public class MethodGenerator {
         content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
+    }
 
+    public  void createCountByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+        List<SingleProperty> indexProperties = new ArrayList<>();
+        indexProperties.add(referenceSingleProperty);
+        createCountByXXXMethod(entity, content, indexProperties);
     }
 
 
     public  void createCountByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
+        createCountByXXXMethod(entity, content, indexProperties);
+
+    }
+
+    private void createCountByXXXMethod(Entity entity, StringBuilder content, List<SingleProperty> indexProperties) {
         String indexName = JdbcUtils.generateIndexName(indexProperties);
 
         content.append("public int countBy" +
@@ -291,7 +311,11 @@ public class MethodGenerator {
         content.append("return resultSet.getInt(1);\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
+    }
 
+    public  void createFindByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+        createFindByXXXMethodWithoutSort(entity, referenceSingleProperty, content);
+        createFindByXXXMethodWithSort(entity, referenceSingleProperty, content);
     }
 
     public  void createFindByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
@@ -299,9 +323,18 @@ public class MethodGenerator {
         createFindByXXXMethodWithSort(entity, indexInfo, content);
     }
 
+    private  void createFindByXXXMethodWithoutSort(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+        List<SingleProperty> indexProperties = new ArrayList<>();
+        indexProperties.add(referenceSingleProperty);
+        createFindByXXXMethodWithoutSort(entity, content, indexProperties);
+    }
     private  void createFindByXXXMethodWithoutSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
+        createFindByXXXMethodWithoutSort(entity, content, indexProperties);
+    }
+
+    private void createFindByXXXMethodWithoutSort(Entity entity, StringBuilder content, List<SingleProperty> indexProperties) {
         String indexName = JdbcUtils.generateIndexName(indexProperties);
 
         content.append("public List<" + entity.getClassInfo().getName() + "> findBy" +
@@ -365,9 +398,18 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
+    private  void createFindByXXXMethodWithSort(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+        List<SingleProperty> indexProperties = new ArrayList<>();
+        indexProperties.add(referenceSingleProperty);
+        createFindByXXXMethodWithSort(entity, content, indexProperties);
+    }
+
     private  void createFindByXXXMethodWithSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
+        createFindByXXXMethodWithSort(entity, content, indexProperties);
+    }
 
+    private void createFindByXXXMethodWithSort(Entity entity, StringBuilder content, List<SingleProperty> indexProperties) {
         String indexName = JdbcUtils.generateIndexName(indexProperties);
 
         content.append("public List<" + entity.getClassInfo().getName() + "> findBy" +
@@ -947,9 +989,19 @@ public class MethodGenerator {
         createExceptionHandleStatements(content);
         content.append("}\n");    }
 
+    public  void createDeleteByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+        List<SingleProperty> indexProperties = new ArrayList<>();
+        indexProperties.add(referenceSingleProperty);
+        createDeleteByXXXMethod(entity, content, indexProperties);
+    }
+
     public  void createDeleteByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
+        createDeleteByXXXMethod(entity, content, indexProperties);
+    }
+
+    private void createDeleteByXXXMethod(Entity entity, StringBuilder content, List<SingleProperty> indexProperties) {
         String indexName = JdbcUtils.generateIndexName(indexProperties);
 
         content.append("public void deleteBy" +

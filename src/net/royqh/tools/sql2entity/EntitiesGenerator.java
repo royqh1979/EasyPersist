@@ -52,6 +52,7 @@ public class EntitiesGenerator {
             }
             StringBuilder entityBuilder = new StringBuilder();
             Entity entity = entityModel.getEntityByTableName(table.getName());
+            entityBuilder.append("package dummy;\n\n");
             entityBuilder.append("import java.io.Serializable;\n");
             entityBuilder.append("import java.util.Date;\n");
             entityBuilder.append("import java.math.BigDecimal;\n");
@@ -69,9 +70,11 @@ public class EntitiesGenerator {
                 indexBuilder.append("),\n");
             }
             for (ForeignKey foreignKey : table.getForeignKeys()) {
-                indexBuilder.append("      @Index(columnList = \"");
-                indexBuilder.append(String.join(",", foreignKey.getColumns()));
-                indexBuilder.append("\"),\n");
+                if (foreignKey.getColumns().size()>1) {
+                    indexBuilder.append("      @Index(columnList = \"");
+                    indexBuilder.append(String.join(",", foreignKey.getColumns()));
+                    indexBuilder.append("\"),\n");
+                }
             }
             if (indexBuilder.length()==0) {
                 entityBuilder.append("@Table(name=\"");
@@ -142,6 +145,35 @@ public class EntitiesGenerator {
                     entityBuilder.append("@Temporal(TemporalType.");
                     entityBuilder.append(getTemporalType(column.getType()));
                     entityBuilder.append(")\n");
+                }
+                boolean  hasReference=false;
+                /*
+                ColumnReference columnReference=column.getReference();
+                if (columnReference!=null) {
+                    entityBuilder.append("@Reference(refEntityClass = ");
+                    entityBuilder.append(entityModel.getEntityByTableName(columnReference.getTable()));
+                    entityBuilder.append(".class,refEntityColumn = \"");
+                    entityBuilder.append(columnReference.getColumn());
+                    entityBuilder.append("\")\n");
+                    hasReference=true;
+                }
+                */
+                for (ForeignKey foreignKey : table.getForeignKeys()) {
+                    if (foreignKey.getColumns().size()>1) {
+                        continue;
+                    }
+                    if (foreignKey.getColumns().get(0).endsWith(column.getName())) {
+                        if (hasReference) {
+                            throw new RuntimeException("Table "+table.getName()+" has duplicate references for column "+column.getName());
+                        }
+                        entityBuilder.append("@Reference(refEntityClass = ");
+                        entityBuilder.append(entityModel.getEntityByTableName(foreignKey.getRefTable()).getName());
+                        entityBuilder.append(".class,refEntityColumn = \"");
+                        entityBuilder.append(foreignKey.getRefColumns().get(0));
+                        entityBuilder.append("\")\n");
+                        hasReference=true;
+                    }
+
                 }
                 entityBuilder.append("  public ");
                 entityBuilder.append(propertyType);

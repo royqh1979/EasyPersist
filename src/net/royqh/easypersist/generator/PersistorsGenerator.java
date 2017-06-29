@@ -17,6 +17,7 @@ import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.parsers.jpa.ClassParser;
 import net.royqh.easypersist.utils.TypeUtils;
+import org.apache.xmlbeans.SchemaType;
 
 import java.util.*;
 
@@ -325,13 +326,41 @@ public class PersistorsGenerator {
             methodGenerator.createDeleteByXXXMethod(entity, indexInfo, content);
         }
 
+        for (Property property : entity.getProperties()) {
+            if (!property.isReferenceProperty()) {
+                continue;
+            }
+            ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
+            if (referenceSingleProperty.getColumn().isUnique()) {
+                methodGenerator.createRetrieveByXXXMethod(entity, referenceSingleProperty, content);
+                if (canGenerateRangeQuery(entity, referenceSingleProperty)) {
+                    methodGenerator.createCountByXXXMethod(entity, referenceSingleProperty, content);
+                    methodGenerator.createFindByXXXMethod(entity, referenceSingleProperty, content);
+                }
+            } else {
+                methodGenerator.createCountByXXXMethod(entity, referenceSingleProperty, content);
+                methodGenerator.createFindByXXXMethod(entity, referenceSingleProperty, content);
+            }
+            methodGenerator.createDeleteByXXXMethod(entity, referenceSingleProperty, content);
+        }
+
         methodGenerator.createCountAllMethod(entity, content);
         methodGenerator.createFindAllMethod(entity, content);
     }
 
+    private boolean canGenerateRangeQuery(Entity entity, ReferenceSingleProperty referenceSingleProperty) {
+        List<SingleProperty> indexProperties = new ArrayList<>();
+        indexProperties.add(referenceSingleProperty);
+        return canGenerateRangeQuery(referenceSingleProperty.getColumn().isUnique(), indexProperties);
+    }
+
     private boolean canGenerateRangeQuery(Entity entity, IndexInfo indexInfo) {
         List<SingleProperty> indexProperties = methodGenerator.getIndexProperties(entity, indexInfo);
-        if (indexInfo.isUnique()) {
+        return canGenerateRangeQuery(indexInfo.isUnique(), indexProperties);
+    }
+
+    private boolean canGenerateRangeQuery(boolean isUniqueIndex, List<SingleProperty> indexProperties) {
+        if (isUniqueIndex) {
             for (SingleProperty singleProperty : indexProperties) {
                 if (!TypeUtils.isRangeType(singleProperty) && !TypeUtils.isStringType(singleProperty)) {
                     //unique and not range type, can't retrive many entity by this property
