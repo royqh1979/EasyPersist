@@ -140,9 +140,13 @@
     function initGrid(){
         g = $("#maingrid").quiGrid({
             columns: [
+            <#if entity.isAutoGenerateId() >
                 { name: '${entity.idProperty.name}', align: 'left', width: 120,isSort:false,headerRender:function(column){
                     return '${entity.idProperty.chineseAlias}';
                 }},
+            <#else>
+                { name: '${entity.idProperty.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${entity.idProperty.chineseAlias}")},
+            </#if>
             <#list entity.properties as property>
                 <#if property == entity.idProperty >
                 <#elseif property.isReferenceProperty()>
@@ -215,9 +219,7 @@
         for(var index in rows){
             ${entity.idProperty.name}s.push(rows[index].${entity.idProperty.name});
         }
-        console.log(${entity.idProperty.name}s);
         $.post("${"$"}{baseUrl}/codes/${entity.name}/batchDelete",{${entity.idProperty.name}s:${entity.idProperty.name}s},function(result){
-            console.log("删除结果",result);
             if(result && result.result && result.result=="Success"){
                 //成功
             } else if (result && result.reason) {
@@ -231,11 +233,27 @@
         });
     }
 
+    <#if !entity.isAutoGenerateId() >
+    function getNextId() {
+         var maxId=0;
+         for (var i=0;i<g.rows.length;i++) {
+             if (maxId<g.rows[i].${entity.idProperty.name}) {
+                 maxId=g.rows[i].${entity.idProperty.name};
+             }
+         }
+         return maxId+1;
+    }
+    </#if>
+
     function onAdd() {
         var obj={
     <#list entity.properties as property>
         <#if property == entity.idProperty >
+            <#if entity.isAutoGenerateId() >
             '${property.name}': ${generator.getDefaultValue(property.type)}
+            <#else>
+            '${property.name}': getNextId()
+            </#if>
         <#elseif property.isReferenceProperty()>
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
             ${property.name}: ${refEntity.name}Data.list[0].value
@@ -246,7 +264,6 @@
     </#list>
         } ;
         $.post("${"$"}{baseUrl}/codes/${entity.name}/create",obj,function(result){
-            console.log("添加结果",result);
             if(result && result.result && result.result=="Success"){
                 //成功
             } else if (result && result.reason) {
@@ -263,7 +280,6 @@
     function onDelete(rowindex){
         var rowData=g.getRow(rowindex);
         $.post("${"$"}{baseUrl}/codes/${entity.name}/delete",{${entity.idProperty.name}:rowData.${entity.idProperty.name}},function(result){
-            console.log("删除结果",result);
             if(result && result.result && result.result=="Success"){
                 //成功
             } else if (result && result.reason) {
@@ -318,7 +334,6 @@
         <#sep>,</#sep>
     </#list>
         },function(result){
-            console.log("更新结果",result);
             if(result && result.result && result.result=="Success"){
                 var cell = g.getCellObj(obj, e.column);
                 $(cell).removeClass("l-grid-row-cell-edited");

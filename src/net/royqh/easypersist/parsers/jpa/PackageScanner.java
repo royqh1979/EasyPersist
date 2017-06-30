@@ -18,7 +18,6 @@ import net.royqh.easypersist.model.jpa.Constants;
  * Created by Roy on 2016/2/11.
  */
 public class PackageScanner {
-
     public void scanInProject(EntitiesConfig entitiesConfig, Project project, MappingRepository mappingRepository,
                               int configNo, int numConfigs, ProgressIndicator indicator){
 

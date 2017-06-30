@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.12.1</version>
+  <version>0.12.2</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -36,9 +36,10 @@
         * generate persistor for specified entity (instead of all entities in specified package) <br />
         * generation work now run in background   <br />
       * 0.11.1 check if mapping entity class exists. <br />
-      * 0.11.2 fix: column type parse error ( SQL to Entity )
-      * 0.12 add entity service/controller/view generator
-      * 0.12.1 add: generate @Reference annotation in Entity classes
+      * 0.11.2 fix: column type parse error ( SQL to Entity )  <br />
+      * 0.12 add entity service/controller/view generator <br />
+      * 0.12.1 add: generate @Reference annotation in Entity classes <br />
+      * 0.12.2 entity editor generation: support for non-auto generate id <br />
     ]]>
   </change-notes>
 

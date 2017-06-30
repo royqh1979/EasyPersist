@@ -47,24 +47,24 @@ public class GeneratePersistorAction extends AnAction {
                     PsiClass psiClass = (PsiClass) e.getData(CommonDataKeys.PSI_ELEMENT);
                     Project project = e.getProject();
                     Module module = ModuleUtil.findModuleForFile(psiClass.getContainingFile().getVirtualFile(), project);
-                    indicator.setFraction(0.2);
-                    indicator.setText("Parsing Entity " + psiClass.getQualifiedName());
                     Entity entity=ApplicationManager.getApplication().runReadAction(new Computable<Entity>() {
                         @Override
                         public Entity compute() {
+                            indicator.setFraction(0.2);
+                            indicator.setText("Parsing Entity " + psiClass.getQualifiedName());
                             return ClassParser.parseEntityClassWithMappings(psiClass, module);
                         }
                     });
 
                     VirtualFile root = ProjectRootManager.getInstance(project)
                             .getFileIndex().getContentRootForFile(psiClass.getContainingFile().getVirtualFile());
-                    indicator.setText("Generating Persistor for " + psiClass.getQualifiedName());
-                    indicator.setFraction(1);
                     WriteCommandAction.runWriteCommandAction(e.getProject(), new Runnable() {
 
                         @Override
                         public void run() {
                             try {
+                                indicator.setText("Generating Persistor for " + psiClass.getQualifiedName());
+                                indicator.setFraction(0.5);
                                 VirtualFile genDir = root.findChild("gen");
                                 if (genDir == null) {
                                     genDir = root.createChildDirectory(project, "gen");
@@ -86,6 +86,13 @@ public class GeneratePersistorAction extends AnAction {
                             }
                         }
                     });
+                    Notification notification = new Notification(
+                            "Easy Persist",
+                            "Success",
+                            "Entity "+psiClass.getName()+" 's persistor code generation finised.",
+                            NotificationType.INFORMATION
+                    );
+                    Notifications.Bus.notify(notification, e.getProject());
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     logger.error(exception);

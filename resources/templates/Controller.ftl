@@ -53,9 +53,12 @@ public class ${entity.classInfo.name}Controller {
     @RequestMapping(value = "/create", method = RequestMethod.POST,
             produces = "application/json")
     @ResponseBody
-    public Object create(${params}) {
+    public Object create(<#if !entity.isAutoGenerateId() >${idParam},</#if> ${params}) {
         try {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
+            <#if !entity.isAutoGenerateId() >
+            ${entityIdPropertySetting}
+            </#if>
             ${entityPropertySettings}
             ${entity.name}Service.create(${entity.name});
             return new ResultWithEntity<>(ProcessingResultType.Success, ${entity.name});

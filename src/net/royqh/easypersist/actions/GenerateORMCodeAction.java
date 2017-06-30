@@ -1,5 +1,8 @@
 package net.royqh.easypersist.actions;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -69,6 +72,13 @@ public class GenerateORMCodeAction extends AnAction {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
             easyPersistor.execute(getProject(),xmlConfigFile,indicator);
+            Notification notification = new Notification(
+                    "Easy Persist",
+                    "Success",
+                    "ORM Code generation finised.",
+                    NotificationType.INFORMATION
+            );
+            Notifications.Bus.notify(notification, getProject());
         }
 
     }

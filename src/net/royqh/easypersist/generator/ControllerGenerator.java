@@ -138,6 +138,11 @@ public class ControllerGenerator {
         StringBuilder content=new StringBuilder();
         generateEntityPropertySettings(content,entity,false);
         dataModel.put("entityPropertySettings",content);
+        if (!entity.isAutoGenerateId()) {
+            content=new StringBuilder();
+            generateEntityPropertySetting(content,entity,entity.getIdProperty());
+            dataModel.put("entityIdPropertySetting",content);
+        }
         content=new StringBuilder();
         generateEntityParamList(content,entity,false);
         dataModel.put("params",content);

@@ -80,7 +80,13 @@ public class SQL2EntityAction extends AnAction {
                         EntitiesGenerator.generate(psiOutputDir,model,getProject());
 
                         indicator.setFraction(1);
-
+                        Notification notification = new Notification(
+                                "Easy Persist",
+                                "Success",
+                                "Entities for "+sqlFile.getName()+" generation finised.",
+                                NotificationType.INFORMATION
+                        );
+                        Notifications.Bus.notify(notification, getProject());
                     } catch (Exception e) {
                         e.printStackTrace();
                         Logger.getInstance(SQL2EntityTask.class).error(e);
