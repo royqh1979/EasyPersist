@@ -53,6 +53,7 @@ public class EntitiesGenerator {
             StringBuilder entityBuilder = new StringBuilder();
             Entity entity = entityModel.getEntityByTableName(table.getName());
             entityBuilder.append("package dummy;\n\n");
+            entityBuilder.append("import net.royqh.easypersist.annotations.Reference;\n");
             entityBuilder.append("import java.io.Serializable;\n");
             entityBuilder.append("import java.util.Date;\n");
             entityBuilder.append("import java.math.BigDecimal;\n");
@@ -167,7 +168,14 @@ public class EntitiesGenerator {
                             throw new RuntimeException("Table "+table.getName()+" has duplicate references for column "+column.getName());
                         }
                         entityBuilder.append("@Reference(refEntityClass = ");
-                        entityBuilder.append(entityModel.getEntityByTableName(foreignKey.getRefTable()).getName());
+                        {
+                            Entity refEntity =entityModel.getEntityByTableName(foreignKey.getRefTable());
+                            if (refEntity!=null) {
+                                entityBuilder.append(refEntity.getName());
+                            } else {
+                                entityBuilder.append(convertTableName(foreignKey.getRefTable()));
+                            }
+                        }
                         entityBuilder.append(".class,refEntityColumn = \"");
                         entityBuilder.append(foreignKey.getRefColumns().get(0));
                         entityBuilder.append("\")\n");
@@ -354,6 +362,8 @@ public class EntitiesGenerator {
                 case "serial8":
                 case "int8":
                     return "long";
+                case "tinyint":
+                    return "byte";
                 case "smallint":
                 case "int2":
                 case "smallserial":
@@ -384,6 +394,8 @@ public class EntitiesGenerator {
                 case "bigint":
                 case "int8":
                     return "Long";
+                case "tinyint":
+                    return "Byte";
                 case "smallint":
                 case "int2":
                     return "Short";

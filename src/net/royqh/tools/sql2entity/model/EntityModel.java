@@ -25,7 +25,11 @@ public class EntityModel {
     }
 
     public String getEntityNameByTable(String tableName) {
-        return entityTableMap.getKey(tableName);
+        for (String tn: entityTableMap.values()) {
+            if (tn.equalsIgnoreCase(tableName))
+                return entityTableMap.getKey(tn);
+        }
+        return null;
     }
 
     public Entity getEntityByTableName(String tableName) {

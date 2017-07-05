@@ -40,6 +40,7 @@
       * 0.12 add entity service/controller/view generator <br />
       * 0.12.1 add: generate @Reference annotation in Entity classes <br />
       * 0.12.2 entity editor generation: support for non-auto generate id <br />
+      * 0.12.3 fixes: entity generation error where reference table's definition is not in the same sql file<br />
     ]]>
   </change-notes>
 
