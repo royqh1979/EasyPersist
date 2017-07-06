@@ -83,7 +83,7 @@ public class SQL2EntityAction extends AnAction {
                         Notification notification = new Notification(
                                 "Easy Persist",
                                 "Success",
-                                "Entities for "+sqlFile.getName()+" generation finised.",
+                                "Entities for "+sqlFile.getName()+" generation finished.",
                                 NotificationType.INFORMATION
                         );
                         Notifications.Bus.notify(notification, getProject());

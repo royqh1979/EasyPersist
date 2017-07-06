@@ -8,10 +8,7 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.Property;
-import net.royqh.easypersist.model.ReferenceSingleProperty;
-import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -49,15 +46,21 @@ public class ViewGenerator {
             Map<String,Object> dataModel=new HashMap<>();
             dataModel.put("entity",entity);
             Set<Entity> refEntities=new HashSet<>();
+            Set<Entity> suggestionEntities=new HashSet<>();
             dataModel.put("entity",entity);
             for (Property property:entity.getProperties()) {
                 if (property instanceof ReferenceSingleProperty) {
                     ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
                     Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
                     refEntities.add(referenceEntity);
+                } else if (property instanceof SuggestionSingleProperty) {
+                    SuggestionSingleProperty suggestionSingleProperty = (SuggestionSingleProperty) property;
+                    Entity suggestionEntity = entity.getMappingRepository().findEntityByClass(suggestionSingleProperty.getRefEntityFullClassName());
+                    suggestionEntities.add(suggestionEntity);
                 }
             }
             dataModel.put("refEntities",refEntities);
+            dataModel.put("suggestionEntities",suggestionEntities);
             dataModel.put("generator",generator);
             /* check chinese alias */
             if (StringUtils.isEmpty(entity.getChineseAlias())){

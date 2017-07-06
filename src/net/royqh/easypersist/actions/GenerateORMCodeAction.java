@@ -75,7 +75,7 @@ public class GenerateORMCodeAction extends AnAction {
             Notification notification = new Notification(
                     "Easy Persist",
                     "Success",
-                    "ORM Code generation finised.",
+                    "ORM Code generation finished.",
                     NotificationType.INFORMATION
             );
             Notifications.Bus.notify(notification, getProject());

@@ -15,5 +15,6 @@
     <orderEntry type="library" name="org.apache.commons:commons-collections4:4.0" level="project" />
     <orderEntry type="library" name="org.antlr:antlr4-runtime:4.6" level="project" />
     <orderEntry type="library" name="org.freemarker:freemarker:2.3.23" level="project" />
+    <orderEntry type="library" name="com.belerweb:pinyin4j:2.5.1" level="project" />
   </component>
 </module>

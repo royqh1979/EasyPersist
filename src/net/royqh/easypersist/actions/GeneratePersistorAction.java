@@ -89,7 +89,7 @@ public class GeneratePersistorAction extends AnAction {
                     Notification notification = new Notification(
                             "Easy Persist",
                             "Success",
-                            "Entity "+psiClass.getName()+" 's persistor code generation finised.",
+                            "Entity "+psiClass.getName()+" 's persistor code generation finished.",
                             NotificationType.INFORMATION
                     );
                     Notifications.Bus.notify(notification, e.getProject());

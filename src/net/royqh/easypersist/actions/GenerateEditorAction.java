@@ -90,7 +90,7 @@ public class GenerateEditorAction extends AnAction {
                     Notification notification = new Notification(
                             "Easy Persist",
                             "Success",
-                            "Entity "+psiClass.getName()+" 's editor code generation finised.",
+                            "Entity "+psiClass.getName()+" 's editor code generation finished.",
                             NotificationType.INFORMATION
                     );
                     Notifications.Bus.notify(notification, e.getProject());

@@ -52,4 +52,8 @@ public abstract class Property {
     public boolean isReferenceProperty() {
         return false;
     }
+
+    public boolean isSuggestionProperty() {
+        return false;
+    }
 }
