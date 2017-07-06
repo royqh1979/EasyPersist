@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.12.4</version>
+  <version>0.12.5</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -42,6 +42,8 @@
       * 0.12.2 entity editor generation: support for non-auto generate id <br />
       * 0.12.3 fixes: entity generation error where reference table's definition is not in the same sql file<br />
       * 0.12.4 fixes: generate editor fail when run in standalone plugin (not in ide envirenment)<br />
+      * 0.12.5 fixes: jsp page error,when referenced entity has zero record. <br />
+               add: force refresh cached entity list <br />
     ]]>
   </change-notes>
 

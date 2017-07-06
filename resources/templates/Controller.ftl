@@ -18,9 +18,10 @@ public class ${entity.classInfo.name}Controller {
     @RequestMapping(value = "/list", method = RequestMethod.POST,
             produces = "application/json")
     @ResponseBody
-    public Object list() {
+    public Object list(@RequestParam("refresh") String strRefresh) {
         try {
-            List<${entity.classInfo.name}> list = ${entity.name}Service.listAll();
+            boolean refresh=(strRefresh!=null);
+            List<${entity.classInfo.name}> list = ${entity.name}Service.listAll(refresh);
             Pager pager = new Pager(1000, 1);
             pager.setTotalRows(list.size());
             Grid<${entity.classInfo.name}> result = new Grid<>(pager, list, null, null);
@@ -35,9 +36,10 @@ public class ${entity.classInfo.name}Controller {
     @RequestMapping(value = "/list${refEntity.classInfo.name}", method = RequestMethod.POST,
             produces = "application/json")
     @ResponseBody
-    public Object list${refEntity.classInfo.name}() {
+    public Object list${refEntity.classInfo.name}(@RequestParam("refresh") String strRefresh) {
         try {
-            List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll();
+            boolean refresh=(strRefresh!=null);
+            List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll(refresh);
             ListForSelect listForSelect = new ListForSelect();
             for (${refEntity.classInfo.name} ${refEntity.name} : list) {
                 listForSelect.addItem(${refEntity.name}.${refEntity.idProperty.getter}() + "", ${refEntity.name}.${refEntity.listHeaderProperty.getter}());

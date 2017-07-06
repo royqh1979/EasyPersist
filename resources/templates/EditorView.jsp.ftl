@@ -82,14 +82,17 @@
     };
     </#list>
 
-    function loadGridRenderData(url,list) {
+    function loadGridRenderData(url,list,name,refresh) {
         $.post(url,
-                {},
+                {refresh:refresh?"y":null},
                 function(result){
                     if(result && result.reason) {
                         top.Dialog.alert("读取数据失败, 原因:"+result.reason);
                     } else {
                         list.list=result.list;
+                        if (list.list.length<=0) {
+                            top.Dialog.alert("辅助数据"+name+"列表为空!<br />");
+                        }
                     }
                 },"json").error(function() {
             top.Dialog.alert("读取数据失败")
@@ -104,7 +107,7 @@
                 ]
         });
         <#list refEntities as refEntity>
-            loadGridRenderData("${"$"}{baseUrl}/codes/${entity.name}/list${refEntity.classInfo.name}",${refEntity.name}Data);
+            loadGridRenderData("${"$"}{baseUrl}/codes/${entity.name}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,false);
         </#list>
         initGrid();
 
@@ -173,18 +176,26 @@
                 items:[
                     {text: '新增', click: onAdd, iconClass: 'icon_add'},
                     { line : true },
-                    {text: '批量删除', click: onBatchDelete ,iconClass: 'icon_delete'}
-
+                    {text: '批量删除', click: onBatchDelete ,iconClass: 'icon_delete'},
+                    { line : true },
+                    {text: '刷新', click: onReload ,iconClass: 'icon_reload'}
                 ]
             }
         });
 
-        getData();
+        getData(false);
     }
 
-    function getData(){
+    function onReload() {
+        <#list refEntities as refEntity>
+            loadGridRenderData("${"$"}{baseUrl}/codes/${entity.name}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,true);
+        </#list>
+        getData(true);
+    }
+
+    function getData(refresh){
         $.post("${"$"}{baseUrl}/codes/${entity.name}/list",
-                {},
+                {refresh:refresh?"y":null},
                 function(result){
                     if(result && result.reason) {
                         top.Dialog.alert("读取数据失败, 原因:"+result.reason);

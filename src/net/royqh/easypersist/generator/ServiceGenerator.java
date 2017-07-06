@@ -58,7 +58,10 @@ public class ServiceGenerator {
 
         content.append("public List<");
         content.append(entity.getClassInfo().getName());
-        content.append("> listAll() {\n");
+        content.append("> listAll(boolean refresh) {\n");
+        content.append("if (refresh) {\n");
+        content.append("dirty=true;\n");
+        content.append("}\n");
         content.append("checkCache();\n");
         content.append("return cachedList;\n");
         content.append("}\n");
