@@ -190,7 +190,7 @@ public class ClassParser {
     public static Entity parseEntityClassWithMappings(PsiClass psiClass, Module module){
         MappingRepository mappingRepository=new MappingRepository();
         JavaPsiFacade facade=JavaPsiFacade.getInstance(module.getProject());
-        GlobalSearchScope moduleScope = GlobalSearchScope.moduleScope(module);
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
         return doParseEntityClassWithMappings(psiClass,
                 module,mappingRepository,facade,moduleScope);
     }
