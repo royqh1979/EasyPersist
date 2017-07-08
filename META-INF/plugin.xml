@@ -48,6 +48,8 @@
                fixes: check for @ListHeader in referencing entities <br />
       * 0.12.7 fixes: can't find referenced entities in dependencies <br  />
       * 0.12.8 fixes: generate date picker for temporal properties <br />
+      * 0.12.9 fixes: suggestion generation error <br />
+               fixes: url generation error
     ]]>
   </change-notes>
 

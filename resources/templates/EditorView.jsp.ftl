@@ -161,7 +161,7 @@
                             headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 <#elseif property.isSuggestionProperty()>
                     <#assign suggestionEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'suggestion', data: ${suggestionEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'suggestion', data: ${suggestionEntity.name}Data,inputWidth:150,showList:true},isSort:false,
                         headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 <#elseif property.isTemporal() >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
