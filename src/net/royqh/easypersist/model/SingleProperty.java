@@ -36,6 +36,10 @@ public class SingleProperty extends Property {
         this.temporalType = temporalType;
     }
 
+    public boolean isTemporal() {
+        return temporalType!=null;
+    }
+
     public EnumType getEnumType() {
         return enumType;
     }
