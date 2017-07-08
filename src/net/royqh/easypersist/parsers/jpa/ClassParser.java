@@ -5,7 +5,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import net.royqh.easypersist.MappingRepository;
-import net.royqh.easypersist.annotations.Suggestion;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.model.jpa.Index;
@@ -222,15 +221,7 @@ public class ClassParser {
                 }
                 doParseEntityClassWithMappings(mappingClass,
                         module,repository,facade,searchScope);
-            } else if (property instanceof SuggestionSingleProperty)  {
-                SuggestionSingleProperty suggestionSingleProperty=(SuggestionSingleProperty)property;
-                PsiClass mappingClass=facade.findClass(suggestionSingleProperty.getRefEntityFullClassName(),searchScope);
-                if (mappingClass==null) {
-                    throw new RuntimeException("Suggestion referencing Class "+suggestionSingleProperty.getRefEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
-                }
-                doParseEntityClassWithMappings(mappingClass,
-                        module,repository,facade,searchScope);
-            }
+            } 
         }
         return entity;
     }

@@ -19,7 +19,6 @@ package net.royqh.easypersist.model.jpa;
 import net.royqh.easypersist.annotations.ChineseAlias;
 import net.royqh.easypersist.annotations.ListHeader;
 import net.royqh.easypersist.annotations.Reference;
-import net.royqh.easypersist.annotations.Suggestion;
 
 import java.util.*;
 
@@ -62,7 +61,6 @@ public final class Constants {
 	public static final String CHINESE_ALIAS = ChineseAlias.class.getCanonicalName();
 	public static final String LIST_HEADER = ListHeader.class.getCanonicalName();
 	public static final String REFERENCE = Reference.class.getCanonicalName();
-	public static final String SUGGESTION = Suggestion.class.getCanonicalName();
 
     static {
 		COLLECTIONS.add(SET);

@@ -81,11 +81,6 @@
         list:[]
     };
     </#list>
-    <#list suggestionEntities as suggestionEntity>
-    var ${suggestionEntity.name}Data={
-        list:[]
-    };
-    </#list>
 
     function loadGridRenderData(url,list,name,refresh) {
         $.post(url,
@@ -127,7 +122,7 @@
     }
 
     <#list entity.properties as property>
-         <#if property.isReferenceProperty()>
+         <#if property.isReferenceProperty() >
               <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
 
     function render${property.name?cap_first}(item) {
@@ -159,10 +154,6 @@
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
                             headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
-                <#elseif property.isSuggestionProperty()>
-                    <#assign suggestionEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'suggestion', data: ${suggestionEntity.name}Data,inputWidth:150,showList:true},isSort:false,
-                        headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 <#elseif property.isTemporal() >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 <#else>
@@ -197,9 +188,6 @@
     function loadReferenceData(refresh){
         <#list refEntities as refEntity>
             loadGridRenderData("${"$"}{baseDir}/codes/${entity.name}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
-        </#list>
-        <#list suggestionEntities as suggestionEntity>
-            loadGridRenderData("${"$"}{baseDir}/codes/${entity.name}/list${suggestionEntity.classInfo.name}",${suggestionEntity.name}Data,"${suggestionEntity.name}" ,refresh);
         </#list>
     }
 

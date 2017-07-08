@@ -179,19 +179,11 @@ public class MethodParser {
         Column column = AnnotationParser.parseColumn(psiMethod);
         SingleProperty property;
         PsiAnnotation referenceAnno=AnnotationUtils.findAnnotation(psiMethod,Constants.REFERENCE);
-        PsiAnnotation suggestionAnno=AnnotationUtils.findAnnotation(psiMethod,Constants.SUGGESTION);
-        if (referenceAnno!=null && suggestionAnno!=null) {
-            throw new RuntimeException("property "+psiMethod.getName()+" both have @Suggestion and @Reference!");
-        } else if (referenceAnno!=null) {
+        if (referenceAnno!=null) {
             ReferenceSingleProperty referenceSingleProperty= new ReferenceSingleProperty(name, type, column);
             referenceSingleProperty.setRefEntityFullClassName(AnnotationUtils.getClassName(referenceAnno,"refEntityClass"));
             referenceSingleProperty.setRefEntityColumnName(AnnotationUtils.getValue(referenceAnno,"refEntityColumn"));
             property=referenceSingleProperty;
-        } else if(suggestionAnno!=null) {
-            SuggestionSingleProperty suggestionSingleProperty=new SuggestionSingleProperty(name,type,column);
-            suggestionSingleProperty.setRefEntityFullClassName(AnnotationUtils.getClassName(suggestionAnno,"refEntityClass"));
-            suggestionSingleProperty.setRefEntityColumnName(AnnotationUtils.getValue(suggestionAnno,"refEntityColumn"));
-            property=suggestionSingleProperty;
         } else {
             property= new SingleProperty(name, type, column);
         }

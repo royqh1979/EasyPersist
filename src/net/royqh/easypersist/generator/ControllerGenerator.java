@@ -78,9 +78,6 @@ public class ControllerGenerator {
                     if (property instanceof ReferenceSingleProperty) {
                         ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
                         types.add(referenceSingleProperty.getRefEntityFullClassName());
-                    } else if (property instanceof SuggestionSingleProperty) {
-                        SuggestionSingleProperty suggestionSinglePropertySingleProperty=(SuggestionSingleProperty)property;
-                        types.add(suggestionSinglePropertySingleProperty.getRefEntityFullClassName());                        
                     }
                     break;
                 /*
@@ -128,7 +125,6 @@ public class ControllerGenerator {
         }
 
         Map<String,Object> dataModel=new HashMap<>();
-        /* 在Controller里,只需要提供引用列表,因此reference和suggestion可以一起处理 */
         Set<Entity> refEntities=new HashSet<>();
         dataModel.put("entity",entity);
         for (Property property:entity.getProperties()) {
@@ -136,10 +132,6 @@ public class ControllerGenerator {
                 ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
                 Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
                 refEntities.add(referenceEntity);
-            } else if (property instanceof SuggestionSingleProperty) {
-                SuggestionSingleProperty suggestionSingleProperty = (SuggestionSingleProperty) property;
-                Entity suggestionEntity = entity.getMappingRepository().findEntityByClass(suggestionSingleProperty.getRefEntityFullClassName());
-                refEntities.add(suggestionEntity);
             }
         }
         //check list headers
