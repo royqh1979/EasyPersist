@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.12.8</version>
+  <version>0.12.9</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
