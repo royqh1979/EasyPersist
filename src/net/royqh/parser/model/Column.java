@@ -13,7 +13,7 @@ public class Column {
     private String defaultValue;
     private String comment;
     private String collate;
-    private ColumnReference reference;
+    private ColumnReference reference=null;
     private String check;
 
     public String getCheck() {

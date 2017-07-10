@@ -11,6 +11,7 @@ public class Table {
     private List<Index> indexs=new ArrayList<>();
     private List<ForeignKey> foreignKeys=new ArrayList<>();
     private List<Check> checks=new ArrayList<>();
+    private Set<IndexColumnsSet> indexedColumnsSet=new HashSet<>();
 
     public Table(String name) {
         this.name = name;
@@ -43,13 +44,40 @@ public class Table {
 
     public void addColumn(Column column) {
         columns.put(column.getName(),column);
+        if (column.isPrimaryKey() || column.isUnique() ) {
+            addIndexedColumns(column.getName());
+        }
+    }
+
+    private void addIndexedColumns(String columnName) {
+        //System.out.println("Add indexed Column "+columnName+" to table "+getName());
+        IndexColumnsSet set = new IndexColumnsSet();
+        set.add(columnName);
+        if (indexedColumnsSet.contains(set)) {
+            throw new RuntimeException("Column " + columnName + " in table " + getName() + " has indexed/referenced!");
+        }
+        indexedColumnsSet.add(set);
+    }
+
+    private void addIndexedColumns(Collection<String> columnNames) {
+       // System.out.println("Add indexed Columns "+String.join(",",columnNames)+" to table "+getName());
+        IndexColumnsSet set = new IndexColumnsSet();
+        set.addAll(columnNames);
+        if (indexedColumnsSet.contains(set)) {
+            throw new RuntimeException("Columns " + String.join(",",columnNames) + " in table " + getName() + " has indexed/referenced!");
+        }
+        indexedColumnsSet.add(set);
     }
 
     public void addIndex(Index index) {
+       // System.out.println("add index:"+String.join(",",index.getColumns()));
+        addIndexedColumns(index.getColumns());
         indexs.add(index);
     }
 
     public void addForeignKey(ForeignKey foreignKey) {
+       // System.out.println("add foreign key:"+String.join(",",foreignKey.getColumns()));
+        addIndexedColumns(foreignKey.getColumns());
         foreignKeys.add(foreignKey);
     }
 
