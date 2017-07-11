@@ -78,7 +78,7 @@ public class GenerateEditorAction extends AnAction {
                                 MethodGenerator methodGenerator = new MethodGenerator(new MySQLGenerator());
                                 PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
-                                persistorsGenerator.generatePersistorCompositorForEditor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
+                                persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 ServiceGenerator.generateService(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
                                 ControllerGenerator.generateController(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
                                 ViewGenerator.generateJspViews(entity,psiOutputDir);
