@@ -30,6 +30,7 @@ public class Entity {
     private List<MapRelationInfo> mapRelationInfos=Collections.EMPTY_LIST;
     private String packageName;
     private String persistorPackageName;
+    private Set<String> subEntities=Collections.EMPTY_SET;
 
     public Entity(String name, ClassInfo classInfo, PsiClass psiClass) {
         this.name=name;
@@ -187,5 +188,17 @@ public class Entity {
 
     public void setListHeaderProperty(String listHeaderProperty) {
         this.listHeaderProperty = listHeaderProperty;
+    }
+
+    public boolean hasSubEntity() {
+        return subEntities.size()>0;
+    }
+
+    public Set<String> getSubEntities() {
+        return subEntities;
+    }
+
+    public void setSubEntities(Set<String> subEntities) {
+        this.subEntities = subEntities;
     }
 }

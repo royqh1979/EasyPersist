@@ -42,7 +42,12 @@ public class ${entity.classInfo.name}Controller {
             List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll(refresh);
             ListForSelect listForSelect = new ListForSelect();
             for (${refEntity.classInfo.name} ${refEntity.name} : list) {
-                listForSelect.addItem(${refEntity.name}.${refEntity.idProperty.getter}() + "", ${refEntity.name}.${refEntity.listHeaderProperty.getter}());
+                <#if refEntity.listHeaderProperty??>
+                    <#assign listHeader=refEntity.listHeaderProperty>
+                <#else>
+                    <#assign listHeader=refEntity.idProperty>
+                </#if>
+                listForSelect.addItem(${refEntity.name}.${refEntity.idProperty.getter}() + "", ${refEntity.name}.${listHeader.getter}()+"");
             }
             return listForSelect;
         } catch (RuntimeException e) {

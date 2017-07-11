@@ -25,9 +25,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Collections.EMPTY_SET;
 
 /**
  * Created by Roy on 2016/2/14.
@@ -330,6 +330,17 @@ public class AnnotationParser {
             return null;
         } else {
             return AnnotationUtils.getValue(chineseAnnotation, "value");
+        }
+    }
+
+    public static Set<String> parseSubEntities(PsiModifierListOwner psiModifierListOwner) {
+        PsiAnnotation subEntitiesAnnotation=AnnotationUtils.findAnnotation(psiModifierListOwner,
+                Constants.SUB_ENTITIES);
+        if (subEntitiesAnnotation==null) {
+            return EMPTY_SET;
+        } else {
+            String[] values=AnnotationUtils.getValues(subEntitiesAnnotation, "value");
+            return new HashSet<String>(Arrays.asList(values));
         }
     }
 }

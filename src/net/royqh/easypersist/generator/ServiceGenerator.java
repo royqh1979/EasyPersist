@@ -108,7 +108,7 @@ public class ServiceGenerator {
 
         content.append("private void checkCache() {\n");
         content.append("if (cachedList==null || dirty) {\n");
-        content.append("cachedList= persistor.getAll();\n");
+        content.append("cachedList= persistor.retrieveAll();\n");
         content.append("dirty=false;\n");
         content.append("}\n");
         content.append("}\n\n");

@@ -134,6 +134,7 @@ public class ControllerGenerator {
                 refEntities.add(referenceEntity);
             }
         }
+        /*
         //check list headers
         for (Entity refEntity:refEntities) {
             System.out.println("ref:"+refEntity.getClassInfo().getName());
@@ -141,6 +142,7 @@ public class ControllerGenerator {
                 throw new RuntimeException("Referencing entity class "+refEntity.getClassInfo().getQualifiedName()+" don't have @ListHeader annotation!");
             }
         }
+        */
         dataModel.put("refEntities",refEntities);
         StringBuilder content=new StringBuilder();
         generateEntityPropertySettings(content,entity,false);
@@ -459,6 +461,40 @@ public class ControllerGenerator {
                         content.append(");\n");
                         content.append("}\n");
                         break;
+                    case "Integer":
+                        content.append(String.format("if (%s==null){\n",
+                                property.getName()+"Val"));
+                        content.append(entity.getName());
+                        content.append(".");
+                        content.append(property.getSetter());
+                        content.append("(null);\n");
+                        content.append("} else {\n");
+                        content.append(entity.getName());
+                        content.append(".");
+                        content.append(property.getSetter());
+                        content.append("(");
+                        content.append(String.format("Integer.parseInt(%s)",
+                                property.getName()+"Val"));
+                        content.append(");\n");
+                        content.append("}\n");
+                        break;
+                    case "Long":
+                        content.append(String.format("if (%s==null){\n",
+                                property.getName()+"Val"));
+                        content.append(entity.getName());
+                        content.append(".");
+                        content.append(property.getSetter());
+                        content.append("(null);\n");
+                        content.append("} else {\n");
+                        content.append(entity.getName());
+                        content.append(".");
+                        content.append(property.getSetter());
+                        content.append("(");
+                        content.append(String.format("Long.parseLong(%s)",
+                                property.getName()+"Val"));
+                        content.append(");\n");
+                        content.append("}\n");
+                        break;
                     default:
                         content.append(entity.getName());
                         content.append(".");
@@ -502,6 +538,8 @@ public class ControllerGenerator {
                 case "Date":
                 case "boolean":
                 case "Boolean":
+                case "Integer":
+                case "Long":
                     content.append("String ");
                     content.append(property.getName() + "Val");
                     break;

@@ -78,6 +78,8 @@ public class ClassParser {
 
         /* parse custom @MapRelations annotation */
         entity.setMapRelationInfos(AnnotationParser.parseMapRelations(psiClass));
+
+        entity.setSubEntities(AnnotationParser.parseSubEntities(psiClass));
     }
 
     private static void processIndexInfo(Entity entity) {
