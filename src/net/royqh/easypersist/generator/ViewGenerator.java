@@ -1,19 +1,17 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import net.royqh.easypersist.model.*;
+import net.royqh.easypersist.model.Entity;
+import net.royqh.easypersist.model.Property;
+import net.royqh.easypersist.model.ReferenceSingleProperty;
+import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
@@ -26,10 +24,12 @@ import java.util.Set;
  */
 public class ViewGenerator {
     private static Template JspViewTemplate;
-    private static ViewGenerator generator=new ViewGenerator();
+    private static ViewGenerator generator = new ViewGenerator();
+
     static {
-        JspViewTemplate=TemplateLoader.loadTemplate("EditorView.jsp.ftl");
+        JspViewTemplate = TemplateLoader.loadTemplate("EditorView.jsp.ftl");
     }
+
     public static void generateJspViews(Entity entity, PsiDirectory psiOutputDir) {
         String fileName = entity.getName() + ".jsp";
 
@@ -38,47 +38,47 @@ public class ViewGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        OutputStreamWriter writer=null;
+        OutputStreamWriter writer = null;
         try {
-            VirtualFile jspViewFile =psiOutputDir.getVirtualFile().createChildData(ViewGenerator.class,fileName);
+            VirtualFile jspViewFile = psiOutputDir.getVirtualFile().createChildData(ViewGenerator.class, fileName);
 
-            writer=new OutputStreamWriter(jspViewFile.getOutputStream(ViewGenerator.class),"UTF-8");
-            Map<String,Object> dataModel=new HashMap<>();
-            dataModel.put("entity",entity);
-            Set<Entity> refEntities=new HashSet<>();
-            dataModel.put("entity",entity);
-            for (Property property:entity.getProperties()) {
+            writer = new OutputStreamWriter(jspViewFile.getOutputStream(ViewGenerator.class), "UTF-8");
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("entity", entity);
+            Set<Entity> refEntities = new HashSet<>();
+            dataModel.put("entity", entity);
+            for (Property property : entity.getProperties()) {
                 if (property instanceof ReferenceSingleProperty) {
                     ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
                     Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
                     refEntities.add(referenceEntity);
                 }
             }
-            dataModel.put("refEntities",refEntities);
-            dataModel.put("generator",generator);
+            dataModel.put("refEntities", refEntities);
+            dataModel.put("generator", generator);
             /* check chinese alias */
-            if (StringUtils.isEmpty(entity.getChineseAlias())){
-                throw new RuntimeException("Entity Class "+entity.getClassInfo().getQualifiedName()
-                        +" don't have @ChineseAlias annotation.");
+            if (StringUtils.isEmpty(entity.getChineseAlias())) {
+                throw new RuntimeException("Entity Class " + entity.getClassInfo().getQualifiedName()
+                        + " don't have @ChineseAlias annotation.");
 
             }
-            for (Property property:entity.getProperties()) {
+            for (Property property : entity.getProperties()) {
                 if (property instanceof SingleProperty) {
-                    SingleProperty singleProperty=(SingleProperty)property;
+                    SingleProperty singleProperty = (SingleProperty) property;
                     if (StringUtils.isEmpty(singleProperty.getChineseAlias())) {
-                        throw new RuntimeException("Entity Class "+entity.getClassInfo().getQualifiedName()
-                            +"'s property "+property.getGetter()+"() don't have @ChineseAlias annotation.");
+                        throw new RuntimeException("Entity Class " + entity.getClassInfo().getQualifiedName()
+                                + "'s property " + property.getGetter() + "() don't have @ChineseAlias annotation.");
                     }
                 }
             }
 
-            JspViewTemplate.process(dataModel,writer);
+            JspViewTemplate.process(dataModel, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (TemplateException e) {
             throw new RuntimeException(e);
         } finally {
-            if (writer!=null) {
+            if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
@@ -90,8 +90,8 @@ public class ViewGenerator {
     }
 
     public String getDefaultValue(String type) {
-        String shortTypeName=TypeUtils.getShortTypeName(type);
-        switch(shortTypeName) {
+        String shortTypeName = TypeUtils.getShortTypeName(type);
+        switch (shortTypeName) {
             case "int":
             case "long":
             case "short":
@@ -104,6 +104,33 @@ public class ViewGenerator {
                 return "\"n\"";
             default:
                 return "\"\"";
+        }
+    }
+
+    public boolean isIntProperty(SingleProperty property) {
+        switch (TypeUtils.getShortTypeName(property.getType())) {
+            case "Integer":
+            case "int":
+            case "Short":
+            case "short":
+            case "Long":
+            case "long":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isNumberProperty(SingleProperty property) {
+        switch (TypeUtils.getShortTypeName(property.getType())) {
+            case "Float":
+            case "float":
+            case "Double":
+            case "double":
+            case "BigDecimal":
+                return true;
+            default:
+                return false;
         }
     }
 }

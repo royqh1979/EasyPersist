@@ -157,7 +157,14 @@
                 <#elseif property.isTemporal() >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 <#else>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
+                    <#if generator.isIntProperty(property) >
+                      <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
+                    <#elseif generator.isNumberProperty(property) >
+                        <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
+                    <#else>
+                        <#assign limit="" />
+                    </#if>
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
                 </#if>
             </#list>
             ],
@@ -344,7 +351,7 @@
         var obj=e.record;
         $.post("${"$"}{baseDir}/codes/${entity.name}/update",{
     <#list entity.properties as property>
-            ${property.name}:obj.${property.name}
+            ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""
         <#sep>,</#sep>
     </#list>
         },function(result){

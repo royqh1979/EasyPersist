@@ -56,6 +56,7 @@ public class ControllerGenerator {
         writer.append("import com.qui.base.Grid;\n");
         writer.append("import com.qui.base.ListForSelect;\n");
         writer.append("import com.qui.base.Pager;\n");
+        writer.append("import org.apache.commons.lang.StringUtils;\n");
         writer.append("import org.slf4j.Logger;\n");
         writer.append("import org.slf4j.LoggerFactory;\n");
         writer.append("import org.springframework.beans.factory.annotation.Autowired;\n");
@@ -367,7 +368,7 @@ public class ControllerGenerator {
     }
 
     private static void generateEntityPropertyDump(StringBuilder content, Entity entity, SingleProperty property) {
-        content.append(String.format("logger.debug(\"%s.%s:\",",
+        content.append(String.format("logger.debug(\"%s.%s:\"+",
                 entity.getClassInfo().getName(),
                 property.getName()
                 ));
@@ -379,6 +380,8 @@ public class ControllerGenerator {
                 case "Date":
                 case "boolean":
                 case "Boolean":
+                case "Integer":
+                case "Long":
                     content.append(property.getName() + "Val");
                     break;
                 default:
@@ -418,7 +421,7 @@ public class ControllerGenerator {
         } else{
             String shortTypeName=TypeUtils.getShortTypeName(property.getType());
             if (property.getEnumType()!=null) {
-                content.append(String.format("if (%s==null){\n",
+                content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                         property.getName()+"Val"));
                 content.append(entity.getName());
                 content.append(".");
@@ -445,7 +448,7 @@ public class ControllerGenerator {
                         content.append("));\n");
                         break;
                     case "Boolean":
-                        content.append(String.format("if (%s==null){\n",
+                        content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                                 property.getName()+"Val"));
                         content.append(entity.getName());
                         content.append(".");
@@ -462,7 +465,7 @@ public class ControllerGenerator {
                         content.append("}\n");
                         break;
                     case "Integer":
-                        content.append(String.format("if (%s==null){\n",
+                        content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                                 property.getName()+"Val"));
                         content.append(entity.getName());
                         content.append(".");
@@ -479,7 +482,7 @@ public class ControllerGenerator {
                         content.append("}\n");
                         break;
                     case "Long":
-                        content.append(String.format("if (%s==null){\n",
+                        content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                                 property.getName()+"Val"));
                         content.append(entity.getName());
                         content.append(".");
@@ -518,7 +521,7 @@ public class ControllerGenerator {
             }
             if (property.getPropertyType()== PropertyType.Column) {
                 if (i!=0) {
-                    content.append(" , ");
+                    content.append(",\n");
                 }
                 i++;
                 generateEntityParam(content,entity,(SingleProperty)property);
