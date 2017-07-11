@@ -102,6 +102,10 @@ public class ViewGenerator {
                 return "\"\"";
             case "boolean":
                 return "\"n\"";
+            case "BigDecimal":
+            case "float":
+            case "double":
+                return "0";
             default:
                 return "\"\"";
         }

@@ -12,6 +12,7 @@ import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -382,6 +383,9 @@ public class ControllerGenerator {
                 case "Boolean":
                 case "Integer":
                 case "Long":
+                case "BigDecimal":
+                case "Double":
+                case "Short":
                     content.append(property.getName() + "Val");
                     break;
                 default:
@@ -482,6 +486,9 @@ public class ControllerGenerator {
                         content.append("}\n");
                         break;
                     case "Long":
+                    case "Short":
+                    case "Double":
+                    case "Float":
                         content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                                 property.getName()+"Val"));
                         content.append(entity.getName());
@@ -493,7 +500,24 @@ public class ControllerGenerator {
                         content.append(".");
                         content.append(property.getSetter());
                         content.append("(");
-                        content.append(String.format("Long.parseLong(%s)",
+                        content.append(String.format("%s.parse%s(%s)",
+                                shortTypeName,shortTypeName,property.getName()+"Val"));
+                        content.append(");\n");
+                        content.append("}\n");
+                        break;
+                    case "BigDecimal":
+                        content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
+                                property.getName()+"Val"));
+                        content.append(entity.getName());
+                        content.append(".");
+                        content.append(property.getSetter());
+                        content.append("(null);\n");
+                        content.append("} else {\n");
+                        content.append(entity.getName());
+                        content.append(".");
+                        content.append(property.getSetter());
+                        content.append("(");
+                        content.append(String.format("new BigDecimal(%s)",
                                 property.getName()+"Val"));
                         content.append(");\n");
                         content.append("}\n");
@@ -543,6 +567,10 @@ public class ControllerGenerator {
                 case "Boolean":
                 case "Integer":
                 case "Long":
+                case "Short":
+                case "Double":
+                case "Float":
+                case "BigDecimal":
                     content.append("String ");
                     content.append(property.getName() + "Val");
                     break;
