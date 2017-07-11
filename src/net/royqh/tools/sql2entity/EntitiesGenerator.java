@@ -436,6 +436,9 @@ public class EntitiesGenerator {
             if (isColumnNamePrefix(name)) {
                 continue;
             }
+            if (StringUtils.isAllUpperCase(name)){
+                name=name.toLowerCase();
+            }
             if (isFirst) {
                 isFirst = false;
                 builder.append(StringUtils.uncapitalize(name));
@@ -477,6 +480,9 @@ public class EntitiesGenerator {
         for (String name : names) {
             if (isTableNamePrefix(name)) {
                 continue;
+            }
+            if (StringUtils.isAllUpperCase(name)){
+                name=name.toLowerCase();
             }
             builder.append(StringUtils.capitalize(name));
         }
