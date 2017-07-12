@@ -1,5 +1,6 @@
 package net.royqh.easypersist.parsers.jpa;
 
+import com.github.rjeschke.txtmark.Run;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -31,6 +32,10 @@ public class ClassParser {
         parseClassProperties(psiClass, entity);
         processIndexInfo(entity);
         checkIdExist(psiClass,entity);
+
+        if (!entity.isAutoGenerateId() && entity.hasSubEntity()) {
+             throw new RuntimeException("Entity "+entityName+" has sub entities, but id is not auto-generate(don't have @Generated annotation)!");
+        }
 
         //for debug:
         /*

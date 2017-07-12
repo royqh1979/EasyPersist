@@ -6,7 +6,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <base href="${"$"}{baseDir}/"/>
-    <title>${entity.chineseAlias}编辑</title>
+    <title>${entity.chineseAlias}查询</title>
     <!--框架必需start-->
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/jquery.js"></script>
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/language/cn.js"></script>
@@ -194,7 +194,7 @@
 
     function loadReferenceData(refresh){
         <#list refEntities as refEntity>
-            loadGridRenderData("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
+            loadGridRenderData("${"$"}{baseDir}/codes/${entity.name}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
         </#list>
     }
 
@@ -204,7 +204,7 @@
     }
 
     function getData(refresh){
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list",
+        $.post("${"$"}{baseDir}/codes/${entity.name}/list",
                 {refresh:refresh?"y":null},
                 function(result){
                     if(result && result.reason) {
@@ -240,7 +240,7 @@
         for(var index in rows){
             ${entity.idProperty.name}s.push(rows[index].${entity.idProperty.name});
         }
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/batchDelete",{${entity.idProperty.name}s:${entity.idProperty.name}s},function(result){
+        $.post("${"$"}{baseDir}/codes/${entity.name}/batchDelete",{${entity.idProperty.name}s:${entity.idProperty.name}s},function(result){
             if(result && result.result && result.result=="Success"){
                 //成功
             } else if (result && result.reason) {
@@ -284,7 +284,7 @@
         <#sep>,</#sep>
     </#list>
         } ;
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/create",obj,function(result){
+        $.post("${"$"}{baseDir}/codes/${entity.name}/create",obj,function(result){
             if(result && result.result && result.result=="Success"){
                 //成功
             } else if (result && result.reason) {
@@ -300,7 +300,7 @@
 
     function onDelete(rowindex){
         var rowData=g.getRow(rowindex);
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/delete",{${entity.idProperty.name}:rowData.${entity.idProperty.name}},function(result){
+        $.post("${"$"}{baseDir}/codes/${entity.name}/delete",{${entity.idProperty.name}:rowData.${entity.idProperty.name}},function(result){
             if(result && result.result && result.result=="Success"){
                 //成功
             } else if (result && result.reason) {
@@ -314,14 +314,13 @@
         });
     }
 
-    <#if !entity.isAutoGenerateId() >var editId;</#if>
+
     //编辑前事件,可阻止某些行或列进行编辑
     // 列名：e.column.name
     // 行号：e.rowindex
     // 编辑前的值 e.value
     function onBeforeEdit(e)
     {
-        <#if !entity.isAutoGenerateId() >editId=e.record.${entity.idProperty.name}; </#if>
         //if(e.record.id=="121"){
         //	top.Dialog.alert("此行不可编辑",null,null,null,2);
         //	 return false;
@@ -351,8 +350,7 @@
     function onAfterEdit(e)
     {
         var obj=e.record;
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update",{
-            <#if !entity.isAutoGenerateId() >idForUpdate: editId ,</#if>
+        $.post("${"$"}{baseDir}/codes/${entity.name}/update",{
     <#list entity.properties as property>
             ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""
         <#sep>,</#sep>

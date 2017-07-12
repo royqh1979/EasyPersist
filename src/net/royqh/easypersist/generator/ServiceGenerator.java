@@ -5,6 +5,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
 import net.royqh.easypersist.model.Entity;
+import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.StringWriter;
@@ -18,6 +19,7 @@ public class ServiceGenerator {
 
     private static Template ServiceForCodeEditorTemplate =TemplateLoader.loadTemplate("Service-CodeEditor.ftl");
     private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
+    private static ServiceGenerator generator=new ServiceGenerator();
 
     public static void generateService(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String serviceClassName = CodeUtils.getServiceName(entity);
@@ -44,24 +46,13 @@ public class ServiceGenerator {
         }
 
         /*---*/
-        writer.append("import ");
-        writer.append(entity.getClassInfo().getQualifiedName());
-        writer.append(";\n");
-        writer.append("import org.springframework.beans.factory.annotation.Autowired;\n");
-        writer.append("import org.springframework.stereotype.Service;\n");
-
-        writer.append("import java.util.List;\n");
-
         Map<String,Object> dataModel=new HashMap<>();
         dataModel.put("entity",entity);
         dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        /*
-        Set<Entity> refEntities=CodeUtils.getRefencingEntities(entity);
-        dataModel.put("refEntities",refEntities);
-        */
-
+        dataModel.put("generator", generator);
         try {
             if (entity.hasSubEntity()) {
+                dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             } else {
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
@@ -73,5 +64,14 @@ public class ServiceGenerator {
 
         return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
                 writer.toString());
+    }
+
+    /* used by free marker */
+    public String getObjectType(String type) {
+        return TypeUtils.getObjectType(type);
+    }
+
+    public boolean isRangeTypeProperty(SingleProperty property){
+        return TypeUtils.isRangeTypeProperty(property);
     }
 }

@@ -82,18 +82,18 @@ public class GenerateEditorAction extends AnAction {
                                 ServiceGenerator.generateService(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
                                 ControllerGenerator.generateController(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
                                 ViewGenerator.generateJspViews(entity,psiOutputDir);
+                                Notification notification = new Notification(
+                                        "Easy Persist",
+                                        "Success",
+                                        "Entity "+psiClass.getName()+" 's editor code generation finished.",
+                                        NotificationType.INFORMATION
+                                );
+                                Notifications.Bus.notify(notification, e.getProject());
                             }  catch (IOException e1) {
                                 throw new RuntimeException(e1);
                             }
                         }
                     });
-                    Notification notification = new Notification(
-                            "Easy Persist",
-                            "Success",
-                            "Entity "+psiClass.getName()+" 's editor code generation finished.",
-                            NotificationType.INFORMATION
-                    );
-                    Notifications.Bus.notify(notification, e.getProject());
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     Notification notification = new Notification(

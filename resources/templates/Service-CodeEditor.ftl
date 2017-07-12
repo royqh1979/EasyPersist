@@ -1,3 +1,9 @@
+import ${entity.classInfo.qualifiedName};
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
 @Service
 public class ${entity.classInfo.name}Service {
     @Autowired
@@ -27,9 +33,13 @@ public class ${entity.classInfo.name}Service {
         persistor.delete(id);
     }
 
-    public void update(${entity.classInfo.name} ${entity.name}) {
+    public void update(${entity.classInfo.name} ${entity.name}<#if !entity.isAutoGenerateId() >,${entity.idProperty.type} ${entity.idProperty.name}</#if>) {
         dirty=true;
+<#if entity.isAutoGenerateId() >
         persistor.update(${entity.name});
+<#else>
+        persistor.update(${entity.name},${entity.idProperty.name});
+</#if>
     }
 
     private void checkCache() {

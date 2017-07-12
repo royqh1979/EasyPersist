@@ -1,7 +1,6 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.lang.java.JavaLanguage;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -9,15 +8,11 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
-import net.royqh.easypersist.model.jpa.Constants;
-import net.royqh.easypersist.parsers.jpa.ClassParser;
 import net.royqh.easypersist.utils.TypeUtils;
-import org.apache.xmlbeans.SchemaType;
 
 import java.util.*;
 
@@ -265,7 +260,7 @@ public class PersistorsGenerator {
     private boolean canGenerateRangeQuery(boolean isUniqueIndex, List<SingleProperty> indexProperties) {
         if (isUniqueIndex) {
             for (SingleProperty singleProperty : indexProperties) {
-                if (!TypeUtils.isRangeType(singleProperty) && !TypeUtils.isStringType(singleProperty)) {
+                if (!TypeUtils.isRangeTypeProperty(singleProperty) && !TypeUtils.isStringType(singleProperty)) {
                     //unique and not range type, can't retrive many entity by this property
                     return false;
                 }
@@ -310,51 +305,7 @@ public class PersistorsGenerator {
         content.append("import javax.sql.rowset.serial.SerialClob;\n");
         content.append("import org.apache.commons.lang3.SerializationUtils;\n");
         content.append("import " + entity.getClassInfo().getQualifiedName() + ";\n");
-        Set<String> types = new HashSet<>();
-        for (Property property : entity.getProperties()) {
-            PropertyType propertyType = property.getPropertyType();
-            switch (propertyType) {
-                case Column:
-                    types.add(TypeUtils.cleanForImport(property.getType()));
-                    break;
-                /*
-                case OneToMany:
-                    types.add(((OneToManyCollectionProperty) property)
-                            .getOneToMany().getTargetEntity());
-                    break;
-                case ManyToMany:
-                    types.add(((ManyToManyCollectionProperty) property)
-                            .getManyToMany().getTargetEntity());
-                    break;
-                case OneToOne:
-                    types.add(((OneToOneProperty) property)
-                            .getOneToOne().getTargetEntity());
-                    break;
-                case ManyToOne:
-                    types.add(((ManyToOneProperty) property)
-                            .getManyToOne().getTargetEntity());
-                    break;
-                case ElementCollection:
-                    types.add(((ElementCollectionProperty) property)
-                            .getElementCollection().getTargetClassName());
-                    break;
-                    */
-            }
-        }
-        for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
-            types.add(relationInfo.getMappingEntityFullClassName());
-            Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-            if (mappingEntity==null) {
-                throw new RuntimeException("Not found entity definition for class "+relationInfo.getMappingEntityFullClassName());
-            }
-            /* 如果单独为某一个Entity生成Persistor, 这时我们不知道Persistor应该放在哪个包里 */
-            if (mappingEntity.getPersistorPackageName()!=null) {
-                types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(), ".")
-                        + "." + CodeUtils.getPersistorName(mappingEntity));
-            }
-        }
-        types.removeAll(Constants.PRIMITIVE_TYPES);
-        types.removeAll(Constants.BASIC_TYPES);
+        Set<String> types = CodeUtils.getTypeList(entity);
         for (String type : types) {
             content.append("import ");
             content.append(type);

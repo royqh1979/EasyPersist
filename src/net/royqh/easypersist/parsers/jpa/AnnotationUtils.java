@@ -76,8 +76,7 @@ public class AnnotationUtils {
         return Integer.valueOf(value);
     }
 
-    public static String getClassName(PsiAnnotation annotation, String attributeName) {
-        String value=getValue(annotation,attributeName);
+    private static String parseClassName(PsiAnnotation annotation, String value) {
         if (value.equals(Constants.VOID))
             return value;
         if (value.endsWith(".class")) {
@@ -90,6 +89,20 @@ public class AnnotationUtils {
         //JavaPsiFacade javaPsiFacade=JavaPsiFacade.getInstance(psiManager.getProject());
         //PsiType type=javaPsiFacade.getParserFacade().createTypeFromText(value,annotation.getContext());
         return type.getCanonicalText(true);
+    }
+
+    public static String[] getClassNames(PsiAnnotation annotation, String attributeName) {
+        String[] values=getValues(annotation,attributeName);
+        String[] results=new String[values.length];
+        for (int i=0;i<values.length;i++) {
+            results[i]=parseClassName(annotation,values[i]);
+        }
+        return results;
+    }
+
+    public static String getClassName(PsiAnnotation annotation, String attributeName) {
+        String value=getValue(annotation,attributeName);
+        return parseClassName(annotation,value);
     }
 
     public static PsiAnnotation[] getAnnotationArray(PsiAnnotation annotation, String attributeName){

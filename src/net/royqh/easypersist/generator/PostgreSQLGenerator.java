@@ -1,12 +1,5 @@
 package net.royqh.easypersist.generator;
 
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.sql.psi.SqlPsiFacade;
-import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Column;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -182,7 +175,7 @@ public class PostgreSQLGenerator extends SQLGenerator {
         content.append("\\\" where ");
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(\\\"" + property.getColumnName() + "\\\" between ? and ? )");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
@@ -205,7 +198,7 @@ public class PostgreSQLGenerator extends SQLGenerator {
         content.append("\\\" where ");
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(\\\"" + property.getColumnName() + "\\\" between ? and ? )");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property)) {
@@ -298,7 +291,7 @@ public class PostgreSQLGenerator extends SQLGenerator {
         content.append("\\\" where ");
         List<String> clauses=new ArrayList<>();
         for (SingleProperty property:indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(\\\"" + property.getColumnName() + "\\\" between ? and ? )");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {

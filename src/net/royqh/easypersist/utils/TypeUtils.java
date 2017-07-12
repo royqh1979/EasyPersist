@@ -142,7 +142,7 @@ public abstract class TypeUtils {
         return InversePrimitiveTypeMapper.get(shortTypeName);
     }
 
-    public static boolean isRangeType(SingleProperty singleProperty) {
+    public static boolean isRangeTypeProperty(SingleProperty singleProperty) {
         if (singleProperty.getTemporalType()!=null) {
             return true;
         }

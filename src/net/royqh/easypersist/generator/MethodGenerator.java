@@ -6,9 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by Roy on 2016/2/24.
@@ -47,7 +45,7 @@ public class MethodGenerator {
         List<SingleProperty> updateProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
         for (Property property : entity.getProperties()) {
-            if (idProperty == property)
+            if (idProperty == property && entity.isAutoGenerateId())
                 continue;
             if (property.getPropertyType() == PropertyType.Column) {
                 SingleProperty singleProperty = (SingleProperty) property;
@@ -62,6 +60,12 @@ public class MethodGenerator {
         content.append(entity.getClassInfo().getName());
         content.append(" ");
         content.append(entity.getName());
+        if (!entity.isAutoGenerateId()) {
+            content.append(",");
+            content.append(entity.getIdProperty().getType());
+            content.append(" ");
+            content.append(entity.getIdProperty().getName());
+        }
         content.append(") {\n");
         content.append("String sql=UPDATE_SQL;\n");
         content.append("logger.debug(sql);\n");
@@ -72,8 +76,13 @@ public class MethodGenerator {
             String stmtSetter = JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, entity);
             content.append(stmtSetter);
         }
-        content.append(
-                JdbcUtils.generateStatementParameterSetter((updateProperties.size() + 1) + "", idProperty, entity));
+        if (entity.isAutoGenerateId()) {
+            content.append(
+                    JdbcUtils.generateStatementParameterSetter((updateProperties.size() + 1) + "", idProperty, entity));
+        } else {
+            content.append(
+                    JdbcUtils.generateStatementParameterSetter((updateProperties.size() + 1) + "", idProperty, entity.getIdProperty().getName()));
+        }
         content.append("stmt.executeUpdate();\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
@@ -260,7 +269,7 @@ public class MethodGenerator {
                 indexName + "(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeType(singleProperty)) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
@@ -285,7 +294,7 @@ public class MethodGenerator {
         createPreparedStatementStatments(content);
         int i = 1;
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, "min" + StringUtils.capitalize(property.getName())));
                 content.append(
@@ -341,7 +350,7 @@ public class MethodGenerator {
                 indexName + "(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeType(singleProperty)) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
@@ -367,7 +376,7 @@ public class MethodGenerator {
         createPreparedStatementStatments(content);
         int i = 1;
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, "min" + StringUtils.capitalize(property.getName())));
                 content.append(
@@ -416,7 +425,7 @@ public class MethodGenerator {
                 indexName + "(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeType(singleProperty)) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
@@ -450,7 +459,7 @@ public class MethodGenerator {
         createPreparedStatementStatments(content);
         int i = 1;
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, "min" + StringUtils.capitalize(property.getName())));
                 content.append(
@@ -482,12 +491,12 @@ public class MethodGenerator {
     }
 
     public  void createCountAllMethod(Entity entity, StringBuilder content) {
-        List<SingleProperty> indexProperties = getAllIndexProperties(entity);
+        List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
 
         content.append("public int countAll(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeType(singleProperty)) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
@@ -507,7 +516,7 @@ public class MethodGenerator {
         content.append(") {\n");
         content.append("List<String> params=new ArrayList<>();\n");
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(String.format("if (%s!=null && %s!=null) {\n",
                         "min" + StringUtils.capitalize(property.getName()),
                         "max" + StringUtils.capitalize(property.getName())));
@@ -548,7 +557,7 @@ public class MethodGenerator {
         createPreparedStatementStatments(content);
         content.append("int i=1;\n");
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(String.format("if (%s!=null && %s!=null) {\n",
                         "min" + StringUtils.capitalize(property.getName()),
                         "max" + StringUtils.capitalize(property.getName())));
@@ -587,12 +596,12 @@ public class MethodGenerator {
 
 
     public  void createFindAllMethod(Entity entity, StringBuilder content) {
-        List<SingleProperty> indexProperties = getAllIndexProperties(entity);
+        List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
 
         content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeType(singleProperty)) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
@@ -617,7 +626,7 @@ public class MethodGenerator {
 
         content.append("List<String> params=new ArrayList<>();\n");
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(String.format("if (%s!=null && %s!=null) {\n",
                         "min" + StringUtils.capitalize(property.getName()),
                         "max" + StringUtils.capitalize(property.getName())));
@@ -670,7 +679,7 @@ public class MethodGenerator {
         createPreparedStatementStatments(content);
         content.append("int i=1;\n");
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(String.format("if (%s!=null && %s!=null) {\n",
                         "min" + StringUtils.capitalize(property.getName()),
                         "max" + StringUtils.capitalize(property.getName())));
@@ -780,26 +789,6 @@ public class MethodGenerator {
             indexProperties.add(singleProperty);
         }
         return indexProperties;
-    }
-
-    private  List<SingleProperty> getAllIndexProperties(Entity entity) {
-        Set<String> allIndexPropertieNames = new HashSet<>();
-        for (IndexInfo indexInfo : entity.getIndexes()) {
-            for (String propertyName : indexInfo.getProperties()) {
-                SingleProperty singleProperty = (SingleProperty) entity.getProperty(propertyName);
-                allIndexPropertieNames.add(singleProperty.getName());
-            }
-        }
-        for (Property property:entity.getProperties()) {
-            if (property.isReferenceProperty()) {
-                allIndexPropertieNames.add(property.getName());
-            }
-        }
-        List<SingleProperty> allIndexProperties = new ArrayList<>();
-        for (String propertyName : allIndexPropertieNames) {
-            allIndexProperties.add((SingleProperty) entity.getProperty(propertyName));
-        }
-        return allIndexProperties;
     }
 
     public  void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
@@ -1013,7 +1002,7 @@ public class MethodGenerator {
                 indexName + "(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeType(singleProperty)) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
@@ -1038,7 +1027,7 @@ public class MethodGenerator {
         createPreparedStatementStatments(content);
         int i = 1;
         for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeType(property)) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, "min" + StringUtils.capitalize(property.getName())));
                 content.append(

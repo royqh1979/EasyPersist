@@ -340,7 +340,7 @@ public class AnnotationParser {
         if (subEntitiesAnnotation==null) {
             return EMPTY_SET;
         } else {
-            String[] values=AnnotationUtils.getValues(subEntitiesAnnotation, "value");
+            String[] values=AnnotationUtils.getClassNames(subEntitiesAnnotation, "value");
             Set<SubEntityInfo> subEntityInfos=new HashSet<>();
             for (String v:values)  {
                 subEntityInfos.add(new SubEntityInfo(v));
