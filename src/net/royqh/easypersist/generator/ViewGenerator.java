@@ -7,7 +7,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.Property;
-import net.royqh.easypersist.model.ReferenceSingleProperty;
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -15,7 +14,6 @@ import org.apache.commons.lang.StringUtils;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,15 +43,7 @@ public class ViewGenerator {
             writer = new OutputStreamWriter(jspViewFile.getOutputStream(ViewGenerator.class), "UTF-8");
             Map<String, Object> dataModel = new HashMap<>();
             dataModel.put("entity", entity);
-            Set<Entity> refEntities = new HashSet<>();
-            dataModel.put("entity", entity);
-            for (Property property : entity.getProperties()) {
-                if (property instanceof ReferenceSingleProperty) {
-                    ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
-                    Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
-                    refEntities.add(referenceEntity);
-                }
-            }
+            Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
             dataModel.put("refEntities", refEntities);
             dataModel.put("generator", generator);
             /* check chinese alias */

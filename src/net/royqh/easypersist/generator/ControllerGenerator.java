@@ -1,18 +1,14 @@
 package net.royqh.easypersist.generator;
 
-import com.github.rjeschke.txtmark.Run;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -37,9 +33,6 @@ public class ControllerGenerator {
 
     private static PsiFile generateControllerFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String controllerClassName = CodeUtils.getControllerName(entity);
-        String serviceClassName=CodeUtils.getServiceName(entity);
-        String serviceName=entity.getName()+"Service";
-        String persistorName=CodeUtils.getPersistorCompositorName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
             writer.append("package " + targetPackage.getQualifiedName() + ";\n");
@@ -127,24 +120,8 @@ public class ControllerGenerator {
         }
 
         Map<String,Object> dataModel=new HashMap<>();
-        Set<Entity> refEntities=new HashSet<>();
         dataModel.put("entity",entity);
-        for (Property property:entity.getProperties()) {
-            if (property instanceof ReferenceSingleProperty) {
-                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
-                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
-                refEntities.add(referenceEntity);
-            }
-        }
-        /*
-        //check list headers
-        for (Entity refEntity:refEntities) {
-            System.out.println("ref:"+refEntity.getClassInfo().getName());
-            if (refEntity.getListHeaderProperty()==null) {
-                throw new RuntimeException("Referencing entity class "+refEntity.getClassInfo().getQualifiedName()+" don't have @ListHeader annotation!");
-            }
-        }
-        */
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities",refEntities);
         StringBuilder content=new StringBuilder();
         generateEntityPropertySettings(content,entity,false);
@@ -174,188 +151,10 @@ public class ControllerGenerator {
             throw new RuntimeException(e);
         }
 
-
-         /*
-        content.append("@Controller\n");
-        content.append("@RequestMapping(\"codes/");
-        content.append(entity.getName());
-        content.append("\")\n");
-        content.append("public class ");
-        content.append(controllerClassName);
-        content.append(" {\n");
-
-        content.append("@Autowired\n");
-        content.append(String.format("private %s %s;\n",
-                serviceClassName,
-                serviceName));
-        for (Property property:entity.getProperties()) {
-            if (property instanceof ReferenceSingleProperty) {
-                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
-                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
-                content.append("@Autowired\n");
-                content.append(String.format("private %s %s;\n",
-                        CodeUtils.getServiceName(referenceEntity),
-                        referenceEntity.getName()+"Service"));
-            }
-        }
-        */
-
-        /* main method */
-        /*
-        content.append("@RequestMapping(value = \"/main\",method = RequestMethod.GET)\n");
-        content.append("public String main(){\n");
-        content.append("return \"");
-        content.append(entity.getName());
-        content.append("\";");
-        content.append("}\n");
-        */
-
-        /* list method */
-        /*
-        content.append("@RequestMapping(value = \"/list\",method = RequestMethod.POST,\n");
-        content.append("produces = \"application/json\")\n");
-        content.append("@ResponseBody\n");
-        content.append(String.format("public Grid<%s> list() {\n",
-                entity.getClassInfo().getName()));
-        content.append(String.format("List<%s> list=%s.listAll();\n",
-                entity.getClassInfo().getName(),
-                serviceName));
-        content.append("Pager pager = new Pager(1000, 1);\n");
-        content.append("pager.setTotalRows(list.size());\n");
-        content.append(String.format("Grid<%s> result = new Grid<>(pager, list, null, null);\n",
-                entity.getClassInfo().getName()));
-        content.append("return result;\n");
-        content.append("}\n");
-        */
-
-        /* list refrenced entity methods*/
-        /*
-        for (Property property:entity.getProperties()) {
-            if (property instanceof ReferenceSingleProperty) {
-                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
-                Entity referenceEntity=entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
-                content.append(String.format("@RequestMapping(value = \"/list%s\", method = RequestMethod.POST,\n",
-                        referenceEntity.getClassInfo().getName()));
-                content.append("produces = \"application/json\")\n");
-                content.append("@ResponseBody\n");
-                content.append(String.format("public ListForSelect list%s() {\n",
-                        referenceEntity.getClassInfo().getName()));
-                content.append(String.format("List<%s> list=%s.listAll();\n",
-                        referenceEntity.getClassInfo().getName(),
-                       referenceEntity.getName()+"Service" ));
-                content.append("ListForSelect listForSelect=new ListForSelect();\n");
-
-                content.append(String.format("for (%s %s:list) {\n",
-                        referenceEntity.getClassInfo().getName(),
-                        referenceEntity.getName()
-                        ));
-                if (referenceEntity.getListHeaderProperty()==null) {
-                    throw new RuntimeException("Entity "+entity.getClassInfo().getQualifiedName()+" don't have a List Header property!");
-                }
-                content.append(String.format("listForSelect.addItem(%s.%s()+\"\",%s.%s());\n",
-                        referenceEntity.getName(),
-                        referenceEntity.getIdProperty().getGetter(),
-                        referenceEntity.getName(),
-                        referenceEntity.getListHeaderProperty().getGetter()
-                        ));
-
-                content.append("}\n");
-                content.append("return listForSelect;\n");
-                content.append("}\n");
-
-            }
-        }
-        */
-
-        /* create method */
-        /*
-        content.append("@RequestMapping(value = \"/create\",method = RequestMethod.POST,\n");
-        content.append("produces = \"application/json\")\n");
-        content.append("@ResponseBody\n");
-        content.append("public ResultWithEntity<");
-        content.append(entity.getClassInfo().getName());
-        content.append("> create(");
-        generateEntityParamList(content,entity,false);
-        content.append(") {\n");
-        content.append(String.format("%s %s=new %s();\n",
-                entity.getClassInfo().getName(),
-                entity.getName(),
-                entity.getClassInfo().getName()));
-        generateEntityPropertySettings(content,entity,false);
-        content.append(String.format("%s.create(%s);\n",
-                serviceName,
-                entity.getName()));
-        content.append(String.format("return new ResultWithEntity<>(ProcessingResultType.Success,%s);\n",
-                entity.getName()
-                ));
-        content.append("}\n");
-        */
-
-
-        /* update method */
-        /*
-        content.append("@RequestMapping(value = \"/update\",method = RequestMethod.POST,\n");
-        content.append("produces = \"application/json\")\n");
-        content.append("@ResponseBody\n");
-        content.append(String.format("public ResultWithEntity<%s> update(",
-                entity.getClassInfo().getName()));
-        generateEntityParamList(content,entity,true);
-        content.append(") {\n");
-        content.append(String.format("%s %s=%s.retrieve(%s);\n",
-                entity.getClassInfo().getName(),
-                entity.getName(),
-                serviceName,
-                entity.getIdProperty().getName()));
-        content.append(String.format("if (%s==null)      {\n",
-                entity.getName()));
-        content.append(String.format("return new ResultWithEntity<>(ProcessingResultType.Fail,%s);\n",
-                entity.getName()));
-        content.append("}\n");
-        generateEntityPropertySettings(content,entity,false);
-        content.append(String.format("%s.update(%s);\n",
-                serviceName,
-                entity.getName()
-                ));
-        content.append(String.format("return new ResultWithEntity<>(ProcessingResultType.Success,%s);\n",
-                entity.getName()));
-        content.append("}\n");
-        */
-
-        /* delete method */
-        /*
-        content.append("@RequestMapping(value = \"/delete\",method = RequestMethod.POST,\n");
-        content.append("produces = \"application/json\")\n");
-        content.append("@ResponseBody\n");
-        content.append(String.format("public Result delete(%s id) {\n",
-                entity.getIdProperty().getType(),
-                entity.getIdProperty().getName()
-                ));
-        content.append(String.format("%s.delete(id);\n",
-                serviceName
-                ));
-        content.append("return new Result(ProcessingResultType.Success,\"删除成功\");\n");
-
-
-        content.append("}\n");
-
-        content.append("}\n");
-        */
-        /*--*/
-
-        /*
-        try {
-            FileOutputStream outputStream=new FileOutputStream("E:\\test.java");
-            OutputStreamWriter fWriter=new OutputStreamWriter(outputStream,"UTF-8");
-            fWriter.write(writer.toString());
-            fWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
-
         return psiFileFactory.createFileFromText(controllerClassName + ".java", JavaLanguage.INSTANCE,
                 writer.toString());
     }
+
 
     private static void generateEntityDump(StringBuilder content, Entity entity,boolean withIdProperty) {
         for (Property property:entity.getProperties()){

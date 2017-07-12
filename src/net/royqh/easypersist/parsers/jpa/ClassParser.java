@@ -1,17 +1,16 @@
 package net.royqh.easypersist.parsers.jpa;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import net.royqh.easypersist.MappingRepository;
+import net.royqh.easypersist.annotations.SubEntities;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.model.jpa.Index;
 import net.royqh.easypersist.model.jpa.Table;
 import net.royqh.easypersist.model.jpa.UniqueConstraint;
 import net.royqh.easypersist.parsers.ParseError;
-import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.AccessType;
@@ -188,16 +187,16 @@ public class ClassParser {
     }
 
 
-    public static Entity parseEntityClassWithMappings(PsiClass psiClass, Module module){
+    public static Entity parseEntityClassWithReferences(PsiClass psiClass, Module module){
         MappingRepository mappingRepository=new MappingRepository();
         JavaPsiFacade facade=JavaPsiFacade.getInstance(module.getProject());
         GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
-        return doParseEntityClassWithMappings(psiClass,
+        return doParseEntityClassWithReferences(psiClass,
                 module,mappingRepository,facade,moduleScope);
     }
     
-    private static Entity doParseEntityClassWithMappings(PsiClass psiClass, Module module, MappingRepository repository,
-                                                       JavaPsiFacade facade, GlobalSearchScope searchScope){
+    private static Entity doParseEntityClassWithReferences(PsiClass psiClass, Module module, MappingRepository repository,
+                                                           JavaPsiFacade facade, GlobalSearchScope searchScope){
         if (repository.isClassExist(psiClass)) {
             return repository.findEntityByClass(psiClass.getQualifiedName());
         }
@@ -211,7 +210,7 @@ public class ClassParser {
             if (mappingClass==null) {
                 throw new RuntimeException("Mapping Class "+mapRelationInfo.getMappingEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
             }
-            doParseEntityClassWithMappings(mappingClass,
+            doParseEntityClassWithReferences(mappingClass,
                     module,repository,facade,searchScope);
         }
         for (Property property: entity.getProperties()) {
@@ -221,11 +220,32 @@ public class ClassParser {
                 if (mappingClass==null) {
                     throw new RuntimeException("Referencing Class "+referenceSingleProperty.getRefEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
                 }
-                doParseEntityClassWithMappings(mappingClass,
+                doParseEntityClassWithReferences(mappingClass,
                         module,repository,facade,searchScope);
             } 
         }
+        for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+            PsiClass mappingClass=facade.findClass(subEntityInfo.getEntityClassName(),searchScope);
+            if (mappingClass==null) {
+                throw new RuntimeException("Sub Entity Class "+subEntityInfo.getEntityClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
+            }
+            Entity subEntity=doParseEntityClassWithReferences(mappingClass,
+                    module,repository,facade,searchScope);
+            subEntityInfo.setSubEntityReferenceProperty(findReferenceProperty(subEntity,entity.getIdProperty()));
+        }
         return entity;
+    }
+
+    private static String findReferenceProperty(Entity subEntity, SingleProperty idProperty) {
+        for (Property property: subEntity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty)  {
+                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
+                if (referenceSingleProperty.getRefEntityColumnName().equals(idProperty.getColumnName())){
+                    return referenceSingleProperty.getName();
+                }
+            }
+        }
+        throw new RuntimeException("Can't find property referencing \""+idProperty+"\" in entity "+subEntity.getClassInfo().getQualifiedName());
     }
 
     public static boolean isEntityClass(PsiClass psiClass) {

@@ -1,11 +1,11 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.openapi.util.text.StringUtil;
-import net.royqh.easypersist.model.CollectionProperty;
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.Property;
-import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.model.*;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Roy on 2016/2/18.
@@ -75,4 +75,17 @@ public class CodeUtils {
     public static String getControllerName(Entity entity) {
         return StringUtil.capitalize(entity.getName())+"Controller";
     }
+    @NotNull
+    public static Set<Entity> getRefencingEntities(Entity entity) {
+        Set<Entity> refEntities=new HashSet<>();
+        for (Property property:entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
+                refEntities.add(referenceEntity);
+            }
+        }
+        return refEntities;
+    }
+
 }

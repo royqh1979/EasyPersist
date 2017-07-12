@@ -3,13 +3,23 @@ package net.royqh.easypersist.generator;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import freemarker.template.Template;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.utils.TypeUtils;
+import net.royqh.parser.model.Index;
+
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Roy on 2017/6/24.
  */
 public class ServiceGenerator {
+
+    private static Template ServiceForCodeTemplate=TemplateLoader.loadTemplate("Service-Code.ftl");
+
     public static void generateService(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String serviceClassName = CodeUtils.getServiceName(entity);
         String fileName = serviceClassName + ".java";
@@ -27,96 +37,38 @@ public class ServiceGenerator {
     private static PsiFile generateServiceFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getServiceName(entity);
         String persistorName=CodeUtils.getPersistorCompositorName(entity);
-        StringBuilder content = new StringBuilder();
+        StringWriter writer = new StringWriter();
         if (targetPackage != null) {
-            content.append("package " + targetPackage.getQualifiedName() + ";\n");
+            writer.append("package " + targetPackage.getQualifiedName() + ";\n");
         } else {
-            content.append("package dummy;\n");
+            writer.append("package dummy;\n");
         }
 
         /*---*/
-        content.append("import ");
-        content.append(entity.getClassInfo().getQualifiedName());
-        content.append(";\n");
-        content.append("import org.springframework.beans.factory.annotation.Autowired;\n");
-        content.append("import org.springframework.stereotype.Service;\n");
+        writer.append("import ");
+        writer.append(entity.getClassInfo().getQualifiedName());
+        writer.append(";\n");
+        writer.append("import org.springframework.beans.factory.annotation.Autowired;\n");
+        writer.append("import org.springframework.stereotype.Service;\n");
 
-        content.append("import java.util.List;\n");
+        writer.append("import java.util.List;\n");
 
-        content.append("@Service\n");
-        content.append("public class ");
-        content.append(className);
-        content.append(" {\n");
-        content.append("@Autowired\n");
-        content.append("private ");
-        content.append(persistorName);
-        content.append(" persistor;\n");
-        content.append("private List<");
-        content.append(entity.getClassInfo().getName());
-        content.append("> cachedList=null;\n");
-        content.append("private boolean dirty=false;");
+        Map<String,Object> dataModel=new HashMap<>();
+        dataModel.put("entity",entity);
+        dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        /*
+        Set<Entity> refEntities=CodeUtils.getRefencingEntities(entity);
+        dataModel.put("refEntities",refEntities);
+        */
 
-        content.append("public List<");
-        content.append(entity.getClassInfo().getName());
-        content.append("> listAll(boolean refresh) {\n");
-        content.append("if (refresh) {\n");
-        content.append("dirty=true;\n");
-        content.append("}\n");
-        content.append("checkCache();\n");
-        content.append("return cachedList;\n");
-        content.append("}\n");
-
-        content.append("public ");
-        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" create(");
-        content.append(entity.getClassInfo().getName());
-        content.append(" ");
-        content.append(entity.getName());
-        content.append(") {\n");
-        content.append(" dirty=true;\n");
-        content.append("return persistor.create(");
-        content.append(entity.getName());
-        content.append(");\n");
-        content.append("}\n");
-
-        content.append("public ");
-        content.append(entity.getClassInfo().getName());
-        content.append(" retrieve(");
-        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" id) {\n");
-        content.append("return persistor.retrieve(id);\n");
-        content.append("}\n");
-
-        content.append("public void delete(");
-        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" id) {\n");
-        content.append(" dirty=true;\n");
-        content.append("persistor.delete(id);\n");
-        content.append("}\n");
-
-        content.append("public void update(");
-        content.append(entity.getClassInfo().getName());
-        content.append(" ");
-        content.append(entity.getName());
-        content.append(") {\n");
-        content.append(" dirty=true;\n");
-        content.append(String.format("persistor.update(%s);\n",
-                entity.getName()
-                ));
-        content.append("}\n\n");
-
-
-        content.append("private void checkCache() {\n");
-        content.append("if (cachedList==null || dirty) {\n");
-        content.append("cachedList= persistor.retrieveAll();\n");
-        content.append("dirty=false;\n");
-        content.append("}\n");
-        content.append("}\n\n");
-
-        content.append("}\n");
-        /*--*/
+        try {
+            ServiceForCodeTemplate.process(dataModel,writer);
+            dataModel.clear();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
-                content.toString());
+                writer.toString());
     }
 }

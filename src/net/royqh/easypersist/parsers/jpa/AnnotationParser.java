@@ -6,6 +6,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
 import net.royqh.easypersist.annotations.MapRelation;
 import net.royqh.easypersist.model.MapRelationInfo;
+import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.model.jpa.*;
 import net.royqh.easypersist.model.jpa.CollectionTable;
 import net.royqh.easypersist.model.jpa.Column;
@@ -333,14 +334,18 @@ public class AnnotationParser {
         }
     }
 
-    public static Set<String> parseSubEntities(PsiModifierListOwner psiModifierListOwner) {
+    public static Set<SubEntityInfo> parseSubEntities(PsiModifierListOwner psiModifierListOwner) {
         PsiAnnotation subEntitiesAnnotation=AnnotationUtils.findAnnotation(psiModifierListOwner,
                 Constants.SUB_ENTITIES);
         if (subEntitiesAnnotation==null) {
             return EMPTY_SET;
         } else {
             String[] values=AnnotationUtils.getValues(subEntitiesAnnotation, "value");
-            return new HashSet<String>(Arrays.asList(values));
+            Set<SubEntityInfo> subEntityInfos=new HashSet<>();
+            for (String v:values)  {
+                subEntityInfos.add(new SubEntityInfo(v));
+            }
+            return subEntityInfos;
         }
     }
 }

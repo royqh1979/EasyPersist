@@ -50,7 +50,7 @@ public class GenerateEditorAction extends AnAction {
                         public Entity compute() {
                             indicator.setFraction(0.2);
                             indicator.setText("Parsing Entity " + psiClass.getQualifiedName());
-                            return ClassParser.parseEntityClassWithMappings(psiClass, module);
+                            return ClassParser.parseEntityClassWithReferences(psiClass, module);
                         }
                     });
 

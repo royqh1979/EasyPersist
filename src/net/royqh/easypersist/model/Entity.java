@@ -30,7 +30,7 @@ public class Entity {
     private List<MapRelationInfo> mapRelationInfos=Collections.EMPTY_LIST;
     private String packageName;
     private String persistorPackageName;
-    private Set<String> subEntities=Collections.EMPTY_SET;
+    private Set<SubEntityInfo> subEntities=Collections.EMPTY_SET;
 
     public Entity(String name, ClassInfo classInfo, PsiClass psiClass) {
         this.name=name;
@@ -194,11 +194,11 @@ public class Entity {
         return subEntities.size()>0;
     }
 
-    public Set<String> getSubEntities() {
+    public Set<SubEntityInfo> getSubEntities() {
         return subEntities;
     }
 
-    public void setSubEntities(Set<String> subEntities) {
+    public void setSubEntities(Set<SubEntityInfo> subEntities) {
         this.subEntities = subEntities;
     }
 }
