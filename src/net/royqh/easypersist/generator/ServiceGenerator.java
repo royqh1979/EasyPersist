@@ -6,19 +6,18 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.utils.TypeUtils;
-import net.royqh.parser.model.Index;
 
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Roy on 2017/6/24.
  */
 public class ServiceGenerator {
 
-    private static Template ServiceForCodeTemplate=TemplateLoader.loadTemplate("Service-Code.ftl");
+    private static Template ServiceForCodeEditorTemplate =TemplateLoader.loadTemplate("Service-CodeEditor.ftl");
+    private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
 
     public static void generateService(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String serviceClassName = CodeUtils.getServiceName(entity);
@@ -62,7 +61,11 @@ public class ServiceGenerator {
         */
 
         try {
-            ServiceForCodeTemplate.process(dataModel,writer);
+            if (entity.hasSubEntity()) {
+                ServiceForFullEditorTemplate.process(dataModel,writer);
+            } else {
+                ServiceForCodeEditorTemplate.process(dataModel, writer);
+            }
             dataModel.clear();
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -790,6 +790,11 @@ public class MethodGenerator {
                 allIndexPropertieNames.add(singleProperty.getName());
             }
         }
+        for (Property property:entity.getProperties()) {
+            if (property.isReferenceProperty()) {
+                allIndexPropertieNames.add(property.getName());
+            }
+        }
         List<SingleProperty> allIndexProperties = new ArrayList<>();
         for (String propertyName : allIndexPropertieNames) {
             allIndexProperties.add((SingleProperty) entity.getProperty(propertyName));
