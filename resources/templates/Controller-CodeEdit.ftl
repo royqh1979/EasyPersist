@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import net.royqh.lang.DateTools;
 
 import java.util.List;
+import java.util.Date;
 
 <#list typeList as type>
 import ${type};

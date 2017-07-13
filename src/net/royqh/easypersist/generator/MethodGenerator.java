@@ -524,6 +524,18 @@ public class MethodGenerator {
                         sqlGenerator.getQuote(),
                         property.getColumnName(),
                         sqlGenerator.getQuote()));
+                content.append(String.format("} else if (%s != null) {\n",
+                        "min" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s > ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
+                content.append(String.format("} else if (%s != null) {\n",
+                        "max" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s < ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
@@ -558,14 +570,17 @@ public class MethodGenerator {
         content.append("int i=1;\n");
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeTypeProperty(property)) {
-                content.append(String.format("if (%s!=null && %s!=null) {\n",
-                        "min" + StringUtils.capitalize(property.getName()),
-                        "max" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("if (%s!=null) {\n",
+                        "min" + StringUtils.capitalize(property.getName())));
                 content.append(
                         JdbcUtils.generateStatementParameterSetter("i", property, "min" + StringUtils.capitalize(property.getName())));
+                content.append("i++;\n");
+                content.append("}\n");
+                content.append(String.format("if (%s!=null) {\n",
+                        "max" + StringUtils.capitalize(property.getName())));
                 content.append(
-                        JdbcUtils.generateStatementParameterSetter("i+1", property, "max" + StringUtils.capitalize(property.getName())));
-                content.append("i+=2;\n");
+                        JdbcUtils.generateStatementParameterSetter("i", property, "max" + StringUtils.capitalize(property.getName())));
+                content.append("i++;\n");
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
@@ -634,6 +649,18 @@ public class MethodGenerator {
                         sqlGenerator.getQuote(),
                         property.getColumnName(),
                         sqlGenerator.getQuote()));
+                content.append(String.format("} else if (%s != null) {\n",
+                        "min" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s > ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
+                content.append(String.format("} else if (%s != null) {\n",
+                        "max" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s < ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {
@@ -680,14 +707,17 @@ public class MethodGenerator {
         content.append("int i=1;\n");
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeTypeProperty(property)) {
-                content.append(String.format("if (%s!=null && %s!=null) {\n",
-                        "min" + StringUtils.capitalize(property.getName()),
-                        "max" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("if (%s!=null) {\n",
+                        "min" + StringUtils.capitalize(property.getName())));
                 content.append(
                         JdbcUtils.generateStatementParameterSetter("i", property, "min" + StringUtils.capitalize(property.getName())));
+                content.append("i++;\n");
+                content.append("}\n");
+                content.append(String.format("if (%s!=null) {\n",
+                        "max" + StringUtils.capitalize(property.getName())));
                 content.append(
-                        JdbcUtils.generateStatementParameterSetter("i+1", property, "max" + StringUtils.capitalize(property.getName())));
-                content.append("i+=2;\n");
+                        JdbcUtils.generateStatementParameterSetter("i", property, "max" + StringUtils.capitalize(property.getName())));
+                content.append("i++;\n");
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isString(property.getType()))  {

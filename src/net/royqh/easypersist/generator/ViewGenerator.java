@@ -21,12 +21,9 @@ import java.util.Set;
  * Created by Roy on 2017/6/24.
  */
 public class ViewGenerator {
-    private static Template JspViewTemplate;
+    private static Template JspViewForCodeEditorTemplate = TemplateLoader.loadTemplate("View-CodeEditor.jsp.ftl");
+    private static Template JspViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Main.jsp.ftl");
     private static ViewGenerator generator = new ViewGenerator();
-
-    static {
-        JspViewTemplate = TemplateLoader.loadTemplate("EditorView.jsp.ftl");
-    }
 
     public static void generateJspViews(Entity entity, PsiDirectory psiOutputDir) {
         String fileName = entity.getName() + ".jsp";
@@ -46,23 +43,14 @@ public class ViewGenerator {
             Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
             dataModel.put("refEntities", refEntities);
             dataModel.put("generator", generator);
-            /* check chinese alias */
-            if (StringUtils.isEmpty(entity.getChineseAlias())) {
-                throw new RuntimeException("Entity Class " + entity.getClassInfo().getQualifiedName()
-                        + " don't have @ChineseAlias annotation.");
-
-            }
-            for (Property property : entity.getProperties()) {
-                if (property instanceof SingleProperty) {
-                    SingleProperty singleProperty = (SingleProperty) property;
-                    if (StringUtils.isEmpty(singleProperty.getChineseAlias())) {
-                        throw new RuntimeException("Entity Class " + entity.getClassInfo().getQualifiedName()
-                                + "'s property " + property.getGetter() + "() don't have @ChineseAlias annotation.");
-                    }
-                }
+            if (entity.hasSubEntity()) {
+                dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+                JspViewForFullEditorTemplate.process(dataModel, writer);
+            } else {
+                JspViewForCodeEditorTemplate.process(dataModel, writer);
             }
 
-            JspViewTemplate.process(dataModel, writer);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (TemplateException e) {
@@ -126,5 +114,9 @@ public class ViewGenerator {
             default:
                 return false;
         }
+    }
+
+    public boolean isDateProperty(SingleProperty property){
+        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
     }
 }

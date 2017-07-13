@@ -168,7 +168,7 @@
                 </#if>
             </#list>
             ],
-            data:[],sortName: 'id',rownumbers:true,checkbox:true,pageSize:1000,dataAction:"server",usePager: true,
+            data:[],sortName: '${entity.idProperty.name}',rownumbers:true,checkbox:true,pageSize:1000,dataAction:"server",usePager: true,
             height: "100%", width:"100%",enabledEdit: true,onBeforeEdit: onBeforeEdit, onBeforeSubmitEdit: onBeforeSubmitEdit,
             onAfterEdit: onAfterEdit, whenRClickToSelect:false,excelMode:true,usePager:false,onDelete:onDelete,
             onContextmenu : function (parm,e)

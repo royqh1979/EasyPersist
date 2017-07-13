@@ -17,6 +17,7 @@ import java.util.*;
 public class ControllerGenerator {
     private static Template ControllerForCodeEditorTemplate = TemplateLoader.loadTemplate("Controller-CodeEdit.ftl");
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
+    private static ControllerGenerator generator=new ControllerGenerator();
 
     public static void generateController(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String controllerClassName = CodeUtils.getControllerName(entity);
@@ -55,6 +56,7 @@ public class ControllerGenerator {
             generateEntityPropertySetting(content, entity, entity.getIdProperty());
             dataModel.put("entityIdPropertySetting", content);
         }
+        dataModel.put("generator",generator);
 
         try {
             if (entity.hasSubEntity()) {
@@ -73,8 +75,6 @@ public class ControllerGenerator {
     }
 
 
-
-
     private static void generateEntityPropertySettings(StringBuilder content, Entity entity, boolean withIdProperty) {
         for (Property property : entity.getProperties()) {
             if (property == entity.getIdProperty() && !withIdProperty) {
@@ -88,44 +88,36 @@ public class ControllerGenerator {
     }
 
     private static void generateEntityPropertySetting(StringBuilder content, Entity entity, SingleProperty property) {
-        if (TypeUtils.isPrimitiveType(property.getType())) {
+            String shortTypeName = TypeUtils.getShortTypeName(property.getType());
+
             content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                     property.getName() + "Val"));
-            content.append(" throw new RuntimeException(\"param for "+property.getName()+" is empty!\");\n");
-            content.append("}\n");
+            if (property.getColumn().isNullable()) {
+                content.append(entity.getName());
+                content.append(".");
+                content.append(property.getSetter());
+                content.append("(null);\n");
+            } else {
+                if ("Date".equals(shortTypeName)) {
+                    content.append("//if date is empty, let it be now.\n");
+                    content.append(entity.getName());
+                    content.append(".");
+                    content.append(property.getSetter());
+                    content.append("(");
+                    content.append("new Date()");
+                    content.append(");\n");
+                } else {
+                    content.append(" throw new RuntimeException(\"param for " + property.getName() + " is empty!\");\n");
+                }
+            }
+            content.append("} else {\n");
             content.append(entity.getName());
             content.append(".");
             content.append(property.getSetter());
             content.append("(");
             generateConvertParameterStatement(property, content);
             content.append(");\n");
-        } else {
-            String shortTypeName=TypeUtils.getShortTypeName(property.getType());
-            if ("Date".equals(shortTypeName)) {
-                content.append(entity.getName());
-                content.append(".");
-                content.append(property.getSetter());
-                content.append("(");
-                generateConvertParameterStatement(property, content);
-                content.append(");\n");
-            } else {
-                content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
-                        property.getName() + "Val"));
-                content.append(entity.getName());
-                content.append(".");
-                content.append(property.getSetter());
-                content.append("(null);\n");
-                content.append("} else {\n");
-                content.append(entity.getName());
-                content.append(".");
-                content.append(property.getSetter());
-                content.append("(");
-                generateConvertParameterStatement(property, content);
-                content.append(");\n");
-                content.append("}\n");
-            }
-        }
-
+            content.append("}\n");
     }
 
     public String getObjectType(String type) {
@@ -139,7 +131,7 @@ public class ControllerGenerator {
     }
 
     private static void generateConvertParameterStatement(SingleProperty property, StringBuilder builder) {
-        String shortTypeName=TypeUtils.getObjectType(property.getType());
+        String shortTypeName = TypeUtils.getObjectType(property.getType());
         if (property.getEnumType() != null) {
             builder.append(String.format("%s.values()[%s]",
                     shortTypeName,
@@ -171,9 +163,13 @@ public class ControllerGenerator {
                             property.getName() + "Val"));
                     break;
                 default:
-                    builder.append(property.getName()+"Val");
+                    builder.append(property.getName() + "Val");
             }
         }
+    }
+    
+    public boolean isDateProperty(SingleProperty property){
+        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
     }
 }
 

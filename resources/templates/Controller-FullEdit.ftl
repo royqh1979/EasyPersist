@@ -5,6 +5,7 @@ import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;
 import com.qui.base.Grid;
 import com.qui.base.ListForSelect;
 import com.qui.base.Pager;
+import com.qui.base.SortType;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import net.royqh.lang.DateTools;
 
 import java.util.List;
+import java.util.Date;
 
 <#list typeList as type>
 import ${type};
@@ -33,35 +35,53 @@ public class ${entity.classInfo.name}Controller {
     private ${refEntity.classInfo.name}Service ${refEntity.name}Service;
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
-    private static final String pathPrefix="codes/";
+    private static final String jspPrefix= "";
+    private static final String pathPrefix = "codes/";
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
-        return "${entity.name}";
+        return jspPrefix+"${entity.name}";
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.POST,
             produces = "application/json")
     @ResponseBody
     public Object list(<#list indexedProperties as indexProperty>
-            @RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#list>
+    <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+    @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
+    <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
             @RequestParam("pager.pageNo") int pageNo,
             @RequestParam("pager.pageSize") int pageSize,
             @RequestParam("sort") String orderBy,
             @RequestParam("direction") SortType sortType) {
         try {<#list indexedProperties as indexProperty>
-                ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
-                if (!StringUtils.isEmpty(${indexProperty.name}Val)){
-                    ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+                <#if generator.isDateProperty(indexProperty) >
+                Date start${indexProperty.name?cap_first}Var=null;
+                if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
+                    start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
                 }
+                Date end${indexProperty.name?cap_first}Var=null;
+                if (!StringUtils.isEmpty(end${indexProperty.name?cap_first}Val)){
+                    end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
+                }
+                <#else >
+            ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            if (!StringUtils.isEmpty(${indexProperty.name}Val)){
+                ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+            }
+                </#if>
             </#list>
             Pager pager = new Pager(pageSize, pageNo);
             pager.setTotalRows(${entity.name}Service.countAll(<#list indexedProperties as indexProperty>
-                ${indexProperty.name}Var<#sep>,</#sep></#list>));
-            List<${entity.classInfo.name}> ${entity.name}List = ${entity.name}Service.listAll(${entity.name}Service.countAll(<#list indexedProperties as indexProperty>
-${indexProperty.name}Var,</#list>orderBy, sortType, pager);
-            Grid<entity.classInfo.name> result = new Grid<>(pager, ${entity.name}List, orderBy, sortType)
+                <#if generator.isDateProperty(indexProperty) >
+                    start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
+                <#else >${indexProperty.name}Var</#if><#sep>,</#sep></#list>));
+            List<${entity.classInfo.name}> ${entity.name}List = ${entity.name}Service.findAll(<#list indexedProperties as indexProperty>
+    <#if generator.isDateProperty(indexProperty) >
+    start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
+    <#else >${indexProperty.name}Var</#if>,</#list>orderBy, sortType, pager);
+            Grid<${entity.classInfo.name}> result = new Grid<>(pager, ${entity.name}List, orderBy, sortType);
             return result;
         } catch (RuntimeException e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);

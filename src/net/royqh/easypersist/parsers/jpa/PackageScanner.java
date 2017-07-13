@@ -59,7 +59,7 @@ public class PackageScanner {
         if (psiClass.hasModifierProperty(PsiModifier.ABSTRACT)){
             throw new ParseError(String.format("Class %s is abstract",psiClass.getQualifiedName()));
         }
-        Entity entity=ClassParser.parseEntityClass(psiClass);
+        Entity entity=ClassParser.parseEntityClass(psiClass,false);
         entity.setPackageName(entitiesPackage);
         entity.setPersistorPackageName(persistorPackage);
         mappingRepository.addEntity(entity);

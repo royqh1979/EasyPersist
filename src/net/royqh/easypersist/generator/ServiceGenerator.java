@@ -71,6 +71,10 @@ public class ServiceGenerator {
         return TypeUtils.getObjectType(type);
     }
 
+    public boolean isDateProperty(SingleProperty property){
+        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
+    }
+
     public boolean isRangeTypeProperty(SingleProperty property){
         return TypeUtils.isRangeTypeProperty(property);
     }
