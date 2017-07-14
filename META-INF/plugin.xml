@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.13.1</version>
+  <version>0.13.2</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -54,6 +54,10 @@
       * 0.13.0 change: persist compositor to persistor sublcass <br />
                add: integer/numeric column edit support <br />
       * 0.13.1 add: check for all uppercase names in table/column and change it to proper capitalized form <br />
+      * 0.13.2 add : can parse @SubEntities annotation
+               add : support for non-阿utogenerated id in code editor
+               change: persistor's findAll method now include reference properties
+               add: full editor's query UI
     ]]>
   </change-notes>
 
