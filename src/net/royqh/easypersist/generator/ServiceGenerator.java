@@ -6,6 +6,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.StringWriter;
@@ -33,6 +34,11 @@ public class ServiceGenerator {
         PsiFile psiFile = generateServiceFile(entity, null, psiFileFactory);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
+        if (entity.hasSubEntity()) {
+            for (SubEntityInfo subEntityInfo : entity.getSubEntities()) {
+                generateService(psiFileFactory, facade,codeStyleManager,subEntityInfo.getSubEntity(),psiOutputDir);
+            }
+        }
     }
 
     private static PsiFile generateServiceFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {

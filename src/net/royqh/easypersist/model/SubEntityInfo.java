@@ -5,13 +5,14 @@ package net.royqh.easypersist.model;
  */
 public class SubEntityInfo {
     private String entityClassName;
-    private String subEntityReferenceProperty;
+    private ReferenceSingleProperty subEntityReferenceProperty;
+    private Entity subEntity;
 
     public SubEntityInfo(String entityClassName) {
         this.entityClassName = entityClassName;
     }
 
-    public void setSubEntityReferenceProperty(String subEntityReferenceProperty) {
+    public void setSubEntityReferenceProperty(ReferenceSingleProperty subEntityReferenceProperty) {
         this.subEntityReferenceProperty = subEntityReferenceProperty;
     }
 
@@ -19,7 +20,15 @@ public class SubEntityInfo {
         return entityClassName;
     }
 
-    public String getSubEntityReferenceProperty() {
+    public ReferenceSingleProperty getSubEntityReferenceProperty() {
         return subEntityReferenceProperty;
+    }
+
+    public Entity getSubEntity() {
+        return subEntity;
+    }
+
+    public void setSubEntity(Entity subEntity) {
+        this.subEntity = subEntity;
     }
 }

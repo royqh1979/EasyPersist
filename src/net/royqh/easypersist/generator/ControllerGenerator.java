@@ -51,6 +51,7 @@ public class ControllerGenerator {
         StringBuilder content = new StringBuilder();
         generateEntityPropertySettings(content, entity, false);
         dataModel.put("entityPropertySettings", content);
+
         if (!entity.isAutoGenerateId()) {
             content = new StringBuilder();
             generateEntityPropertySetting(content, entity, entity.getIdProperty());
@@ -66,8 +67,25 @@ public class ControllerGenerator {
                 ControllerForCodeEditorTemplate.process(dataModel, writer);
             }
             dataModel.clear();
+
+            /*
+            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(
+                    new FileOutputStream("f:/test.java"),
+                    "UTF-8"
+            ) ;
+            outputStreamWriter.write(writer.toString());
+            outputStreamWriter.close();
+            */
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+
+        try {
+            Writer fileWriter=new OutputStreamWriter(new FileOutputStream("f:\\test.java"),"UTF-8");
+            fileWriter.write(writer.toString());
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return psiFileFactory.createFileFromText(controllerClassName + ".java", JavaLanguage.INSTANCE,
@@ -92,7 +110,7 @@ public class ControllerGenerator {
 
             content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                     property.getName() + "Val"));
-            if (property.getColumn().isNullable()) {
+            if (property.getColumn().isNullable() && !TypeUtils.isPrimitiveType(property.getType())) {
                 content.append(entity.getName());
                 content.append(".");
                 content.append(property.getSetter());

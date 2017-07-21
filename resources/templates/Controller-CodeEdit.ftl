@@ -34,12 +34,13 @@ public class ${entity.classInfo.name}Controller {
     private ${refEntity.classInfo.name}Service ${refEntity.name}Service;
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
-    private static final String pathPrefix="codes/";
+    private static final String jspPrefix= "";
+    private static final String pathPrefix = "codes/";
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
-        return "${entity.name}";
+        return jspPrefix+"${entity.name}";
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.POST,
@@ -88,9 +89,13 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object create(
-        <#list entity.properties as property><#if entity.idProperty.name != property.name || !entity.isAutoGenerateId()>
-               @RequestParam("${property.name}") String ${property.name}Val<#if property?has_next>,</#if>
-            </#if></#list>) {
+<#assign firstItem=true />
+<#list entity.properties as property>
+    <#if entity.idProperty.name != property.name || !entity.isAutoGenerateId() >
+        <#if !firstItem>,<#else><#assign firstItem=false/></#if>
+    @RequestParam("${property.name}") String ${property.name}Val
+    </#if>
+</#list>) {
         try {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
             <#if !entity.isAutoGenerateId() >

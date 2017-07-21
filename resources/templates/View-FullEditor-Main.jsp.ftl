@@ -141,6 +141,7 @@
         loadGridRenderData("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
     </#list>
     }
+
     <#list entity.properties as property>
         <#if property.isReferenceProperty() >
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
@@ -190,7 +191,7 @@
                     render: function (rowdata, rowindex, value, column) {
                         return '<div class="padding_top4 padding_left5">'
                                 + '<span class="img_list hand" title="查看" onclick="onView(' + rowdata.${entity.idProperty.name} + ')"></span>'
-                                + '<span class="img_edit hand" title="修改" onclick="onEdit(' + rowdata.${entity.idProperty.name}d + ')"></span>'
+                                + '<span class="img_edit hand" title="修改" onclick="onEdit(' + rowdata.${entity.idProperty.name} + ')"></span>'
                                 + '<span class="img_delete hand" title="删除" onclick="onDelete(' + rowdata.${entity.idProperty.name} + ',' + rowindex + ')"></span>'
                                 + '</div>';
                     }
@@ -235,7 +236,7 @@
                     if(result && result.reason) {
                         top.Dialog.alert("读取数据失败, 原因:"+result.reason);
                     } else {
-                        gridData = result;
+                        var gridData = result;
                         //刷新表格
                         grid.loadData(gridData);
                     }
@@ -246,25 +247,32 @@
 
     //新增
     function addUnit() {
+        window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/create");
+        /*
         top.Dialog.open({
-            URL: "/qui_ssh2/sample/unit/user-management-content.jsp",
+            URL: "${"$"}{baseDir}/${"$"}{ctrlUrl}/create",
             Title: "添加", Width: 500, Height: 350
-        });
+        });*/
     }
     //查看
     function onView(rowid) {
+        window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/view/"+rowid);
+        /*
         top.Dialog.open({
-            URL: "/qui_ssh2/getUserDetail.action?userinfor.userId=" + rowid,
-            Title: "查看", Width: 500, Height: 350
-        });
+            URL: "${"$"}{baseDir}/${"$"}{ctrlUrl}/view/"+rowid,
+            Title: "添加", Width: 500, Height: 350
+        });*/
     }
 
     //修改
     function onEdit(rowid) {
+        window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/update/"+rowid);
+        /*
         top.Dialog.open({
-            URL: "/qui_ssh2/preUpdateUser.action?userinfor.userId=" + rowid,
+            URL: "${"$"}{baseDir}/${"$"}{ctrlUrl}/update/"+rowid,
             Title: "修改", Width: 500, Height: 350
         });
+        */
     }
     //删除
     function onDelete(rowid, rowidx) {

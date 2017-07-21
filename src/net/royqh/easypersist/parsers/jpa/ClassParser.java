@@ -259,17 +259,18 @@ public class ClassParser {
             }
             Entity subEntity=doParseEntityClassWithReferences(mappingClass,
                     module,repository,facade,searchScope,checkChineseAlias);
+            subEntityInfo.setSubEntity(subEntity);
             subEntityInfo.setSubEntityReferenceProperty(findReferenceProperty(subEntity,entity.getIdProperty()));
         }
         return entity;
     }
 
-    private static String findReferenceProperty(Entity subEntity, SingleProperty idProperty) {
+    private static ReferenceSingleProperty findReferenceProperty(Entity subEntity, SingleProperty idProperty) {
         for (Property property: subEntity.getProperties()) {
             if (property instanceof ReferenceSingleProperty)  {
                 ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
                 if (referenceSingleProperty.getRefEntityColumnName().equals(idProperty.getColumnName())){
-                    return referenceSingleProperty.getName();
+                    return referenceSingleProperty;
                 }
             }
         }

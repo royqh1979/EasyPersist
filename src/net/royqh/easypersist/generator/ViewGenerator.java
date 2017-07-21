@@ -6,14 +6,15 @@ import com.intellij.psi.PsiFile;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.Property;
 import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.utils.TypeUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,35 +23,23 @@ import java.util.Set;
  */
 public class ViewGenerator {
     private static Template JspViewForCodeEditorTemplate = TemplateLoader.loadTemplate("View-CodeEditor.jsp.ftl");
-    private static Template JspViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Main.jsp.ftl");
+    private static Template JspMainViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Main.jsp.ftl");
+    private static Template JspUpdateViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Update.jsp.ftl");
     private static ViewGenerator generator = new ViewGenerator();
 
-    public static void generateJspViews(Entity entity, PsiDirectory psiOutputDir) {
-        String fileName = entity.getName() + ".jsp";
+    private static void generateJspView(Entity entity, PsiDirectory psiOutputDir, String jspFileName, Template template, Map<String, Object> dataModel) {
+        PsiFile oldFile = psiOutputDir.findFile(jspFileName);
 
-        PsiFile oldFile = psiOutputDir.findFile(fileName);
         //We Only Create compositor when it is not existed;
         if (oldFile != null) {
             oldFile.delete();
         }
         OutputStreamWriter writer = null;
         try {
-            VirtualFile jspViewFile = psiOutputDir.getVirtualFile().createChildData(ViewGenerator.class, fileName);
+            VirtualFile jspViewFile = psiOutputDir.getVirtualFile().createChildData(ViewGenerator.class, jspFileName);
 
             writer = new OutputStreamWriter(jspViewFile.getOutputStream(ViewGenerator.class), "UTF-8");
-            Map<String, Object> dataModel = new HashMap<>();
-            dataModel.put("entity", entity);
-            Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
-            dataModel.put("refEntities", refEntities);
-            dataModel.put("generator", generator);
-            if (entity.hasSubEntity()) {
-                dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
-                JspViewForFullEditorTemplate.process(dataModel, writer);
-            } else {
-                JspViewForCodeEditorTemplate.process(dataModel, writer);
-            }
-
-
+            template.process(dataModel, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (TemplateException e) {
@@ -63,6 +52,32 @@ public class ViewGenerator {
                     e.printStackTrace();
                 }
             }
+        }
+
+    }
+
+    public static void generateJspViews(Entity entity, PsiDirectory psiOutputDir) {
+
+
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("generator", generator);
+        if (entity.hasSubEntity()) {
+            dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+            generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
+            Set<Entity> subEntites=new HashSet<>();
+            for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                Entity subEntity=entity.getMappingRepository().findEntityByClass(subEntityInfo.getEntityClassName());
+                subEntites.add(subEntity);
+                refEntities.addAll(CodeUtils.getRefencingEntities(subEntity));
+            }
+            dataModel.put("subEntities",subEntites);
+            generateJspView(entity, psiOutputDir, entity.getName() + "-update.jsp", JspUpdateViewForFullEditorTemplate, dataModel);
+        } else {
+            String fileName = entity.getName() + ".jsp";
+            generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorTemplate, dataModel);
         }
 
     }
@@ -116,7 +131,7 @@ public class ViewGenerator {
         }
     }
 
-    public boolean isDateProperty(SingleProperty property){
+    public boolean isDateProperty(SingleProperty property) {
         return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
     }
 }

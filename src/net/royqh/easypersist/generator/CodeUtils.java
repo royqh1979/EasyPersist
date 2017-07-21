@@ -6,10 +6,7 @@ import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Roy on 2016/2/18.
@@ -156,6 +153,9 @@ public class CodeUtils {
                     */
             }
         }
+        for (SubEntityInfo subEntityInfo:entity.getSubEntities()){
+            types.add(subEntityInfo.getEntityClassName());
+        }
         for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
             types.add(relationInfo.getMappingEntityFullClassName());
             Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
@@ -171,5 +171,17 @@ public class CodeUtils {
         types.removeAll(Constants.PRIMITIVE_TYPES);
         types.removeAll(Constants.BASIC_TYPES);
         return types;
+    }
+
+    public static List<Entity> getSubEntities(Entity entity) {
+        if (!entity.hasSubEntity()) {
+            return Collections.EMPTY_LIST;
+        }
+        List<Entity> subEntities=new ArrayList<>();
+        for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+            Entity subEntity=entity.getMappingRepository().findEntityByClass(subEntityInfo.getEntityClassName());
+            subEntities.add(subEntity);
+        }
+        return subEntities;
     }
 }

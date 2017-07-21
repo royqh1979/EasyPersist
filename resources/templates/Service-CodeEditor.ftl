@@ -1,6 +1,8 @@
 import ${entity.classInfo.qualifiedName};
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.qui.base.Pager;
+import com.qui.base.SortType;
 
 import java.util.List;
 
@@ -18,6 +20,29 @@ public class ${entity.classInfo.name}Service {
         checkCache();
         return cachedList;
     }
+
+<#list entity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        public int countBy${property.name?cap_first}(
+        ${generator.getObjectType(property.type)} ${property.name}) {
+            return persistor.countBy${property.name?cap_first}(<#if generator.isRangeTypeProperty(property) >
+        ${property.name},${property.name}
+        <#else>
+        ${property.name}
+        </#if>);
+        }
+
+        public List<${entity.classInfo.name}> findBy${property.name?cap_first}(${generator.getObjectType(property.type)} ${property.name},
+            String orderBy, SortType sortType, Pager pager){
+             return persistor.findBy${property.name?cap_first}(<#if generator.isRangeTypeProperty(property) >
+        ${property.name},${property.name}
+        <#else>
+        ${property.name}
+        </#if>,orderBy,sortType==SortType.asc, pager.getStartRow(), pager.getPageSize());
+        }
+        </#if>
+</#list>
 
     public ${idType} create(${entity.classInfo.name} ${entity.name}) {
         dirty=true;

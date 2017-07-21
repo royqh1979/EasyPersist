@@ -210,7 +210,7 @@
                     if(result && result.reason) {
                         top.Dialog.alert("读取数据失败, 原因:"+result.reason);
                     } else {
-                        gridData = result;
+                        var gridData = result;
                         //刷新表格
                         g.loadData(gridData);
                     }
