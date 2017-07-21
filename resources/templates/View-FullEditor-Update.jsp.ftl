@@ -126,9 +126,10 @@
 </div>
 
 <div class="basicTab" id="myTab">
-    <#list subEntities as subEntity>
+    <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
     <div name="${subEntity.chineseAlias}" style="width:98%;">
-        <div id="dataGrid${subEntity?counter}"></div>
+        <div id="dataGrid${subEntityInfo?counter}"></div>
     </div>
     </#list>
 </div>
@@ -173,7 +174,7 @@
 
     function loadAllReferenceData(refresh){
     <#list refEntities as refEntity>
-        loadGridRenderData("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
+        loadReferenceData("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
     </#list>
     }
 
@@ -203,8 +204,9 @@
         if (isUpdate) {
             retrieveEntity();
         }
-    <#list subEntities as subEntity>
-        initGrid${subEntity?counter}();
+    <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
+        initGrid${subEntityInfo?counter}();
     </#list>
 
         $("#updatePanel").bind("stateChange", function (e, state) {
@@ -257,14 +259,15 @@
 
     <!-- end of 公用  -->
 
-    <#list subEntities as subEntity>
-    <#assign gridName="grid"+subEntity?counter >
-    <!-- 子表${subEntity?counter}  -->
+    <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
+    <#assign gridName="grid"+subEntityInfo?counter >
+    <!-- 子表${subEntityInfo?counter}  -->
     //grid1
     var ${gridName} = null;
 
-    function initGrid${subEntity?counter}(){
-        ${gridName} = $("#dataGrid${subEntity?counter}").quiGrid({
+    function initGrid${subEntityInfo?counter}(){
+        ${gridName} = $("#dataGrid${subEntityInfo?counter}").quiGrid({
             columns: [
                 { name: 'id', align: 'left', width: 120,display:'ID'},
                 {display: '备注', name: 'note',align: 'left', width: "120"},
@@ -289,9 +292,9 @@
                     display: '操作', isAllowHide: false, align: 'left', width: 100,
                     render: function (rowdata, rowindex, value, column) {
                         return '<div class="padding_top4 padding_left5">'
-                                + '<span class="img_list hand" title="查看" onclick="onView${subEntity?counter}(' + rowdata.id + ')"></span>'
-                                + '<span class="img_edit hand" title="修改" onclick="onEdit${subEntity?counter}(' + rowdata.idd + ')"></span>'
-                                + '<span class="img_delete hand" title="删除" onclick="onDelete${subEntity?counter}(' + rowdata.id + ',' + rowindex + ')"></span>'
+                                + '<span class="img_list hand" title="查看" onclick="onView${subEntityInfo?counter}(' + rowdata.id + ')"></span>'
+                                + '<span class="img_edit hand" title="修改" onclick="onEdit${subEntityInfo?counter}(' + rowdata.idd + ')"></span>'
+                                + '<span class="img_delete hand" title="删除" onclick="onDelete${subEntityInfo?counter}(' + rowdata.id + ',' + rowindex + ')"></span>'
                                 + '</div>';
                     }
                 }
@@ -301,20 +304,20 @@
 
             toolbar: {
                 items: [
-                    {text: '新增', click: addUnit${subEntity?counter}, iconClass: 'icon_add'},
+                    {text: '新增', click: addUnit${subEntityInfo?counter}, iconClass: 'icon_add'},
                     {line: true},
-                    {text: '批量删除', click: deleteUnit${subEntity?counter}, iconClass: 'icon_delete'}
+                    {text: '批量删除', click: deleteUnit${subEntityInfo?counter}, iconClass: 'icon_delete'}
                 ]
             }
         });
 
         if (isUpdate) {
-            getData${subEntity?counter}(false);
+            getData${subEntityInfo?counter}(false);
         }
 
     }
 
-    function getData${subEntity?counter}(refresh){
+    function getData${subEntityInfo?counter}(refresh){
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${subEntity.classInfo.name}ForGrid",
                 {
                     'pager.pageSize': grid1.options.pageSize,
@@ -336,14 +339,14 @@
     }
 
     //新增
-    function addUnit${subEntity?counter}() {
+    function addUnit${subEntityInfo?counter}() {
         top.Dialog.open({
             URL: "/qui_ssh2/sample/unit/user-management-content.jsp",
             Title: "添加", Width: 500, Height: 350
         });
     }
     //查看
-    function onView${subEntity?counter}(rowid) {
+    function onView${subEntityInfo?counter}(rowid) {
         top.Dialog.open({
             URL: "/qui_ssh2/getUserDetail.action?userinfor.userId=" + rowid,
             Title: "查看", Width: 500, Height: 350
@@ -351,20 +354,20 @@
     }
 
     //修改
-    function onEdit${subEntity?counter}(rowid) {
+    function onEdit${subEntityInfo?counter}(rowid) {
         top.Dialog.open({
             URL: "/qui_ssh2/preUpdateUser.action?userinfor.userId=" + rowid,
             Title: "修改", Width: 500, Height: 350
         });
     }
     //删除
-    function onDelete${subEntity?counter}(rowid, rowidx) {
+    function onDelete${subEntityInfo?counter}(rowid, rowidx) {
         top.Dialog.confirm("确定要删除该记录吗？", function () {
             //删除记录
             $.post("/qui_ssh2/deleteUser.action",
                     {"ids": rowid},
                     function (result) {
-                        handleResult${subEntity?counter}(result.result);
+                        handleResult${subEntityInfo?counter}(result.result);
                     }, "json");
             //刷新表格
             grid1.loadData();
@@ -373,7 +376,7 @@
 
 
     //批量删除
-    function deleteUnit${subEntity?counter}() {
+    function deleteUnit${subEntityInfo?counter}() {
         var rows = ${gridName}.getSelectedRows();
         var rowsLength = rows.length;
 
@@ -386,13 +389,13 @@
                     //获取所有选中行
                     getSelectId(grid1),
                     function (result) {
-                        handleResult${subEntity?counter}(result.status);
+                        handleResult${subEntityInfo?counter}(result.status);
                     },
                     "json");
         });
     }
     //删除后的提示
-    function handleResult${subEntity?counter}(result) {
+    function handleResult${subEntityInfo?counter}(result) {
         if (result == 1) {
             top.Dialog.alert("删除成功！", null, null, null, 1);
             grid1.loadData();
@@ -402,7 +405,7 @@
     }
 
     //刷新表格数据并重置排序和页数
-    function refresh${subEntity?counter}(isUpdate) {
+    function refresh${subEntityInfo?counter}(isUpdate) {
         if (!isUpdate) {
             //重置排序
             ${gridName}.options.sortName = 'userId';

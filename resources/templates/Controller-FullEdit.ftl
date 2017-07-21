@@ -152,6 +152,7 @@ public class ${entity.classInfo.name}Controller {
         model.addAttribute("${entity.name}",${entity.name});
         model.addAttribute("isUpdate",false);
         model.addAttribute("isSeperateMode",true);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-update";
     }
 
@@ -165,6 +166,7 @@ public class ${entity.classInfo.name}Controller {
         model.addAttribute("isUpdate",true);
         model.addAttribute("id",id);
         model.addAttribute("isSeperateMode",true);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-update";
     }
 

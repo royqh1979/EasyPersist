@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.13.2</version>
+  <version>0.13.3</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -58,6 +58,8 @@
                add : support for non-阿utogenerated id in code editor
                change: persistor's findAll method now include reference properties
                add: full editor's query UI
+      * 0.13.3 fixs some bugs.
+               add: full editor's controller can list sub entities
     ]]>
   </change-notes>
 

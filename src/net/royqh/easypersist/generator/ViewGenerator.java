@@ -68,12 +68,6 @@ public class ViewGenerator {
             dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
             generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
             Set<Entity> subEntites=new HashSet<>();
-            for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
-                Entity subEntity=entity.getMappingRepository().findEntityByClass(subEntityInfo.getEntityClassName());
-                subEntites.add(subEntity);
-                refEntities.addAll(CodeUtils.getRefencingEntities(subEntity));
-            }
-            dataModel.put("subEntities",subEntites);
             generateJspView(entity, psiOutputDir, entity.getName() + "-update.jsp", JspUpdateViewForFullEditorTemplate, dataModel);
         } else {
             String fileName = entity.getName() + ".jsp";
