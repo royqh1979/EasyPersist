@@ -224,6 +224,25 @@ public class ${entity.classInfo.name}Controller {
         }
     }
 
+    @RequestMapping(value = "/retrieve/{id}", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object create(@PathVariable("id")  ${entity.idProperty.type} ${entity.idProperty.name}Val) {
+        try {
+            ${entity.classInfo.name} ${entity.name} = ${entity.name}Service.retrieve(${entity.idProperty.name}Val);
+            if (${entity.name} == null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("找不到${entity.idProperty.name}为" + ${entity.idProperty.name}Val + "的${entity.classInfo.name}对象");
+                }
+                return new Result(ProcessingResultType.Fail, "找不到${entity.idProperty.name}为" + ${entity.idProperty.name}Val + "的${entity.classInfo.name}对象");
+            }
+            return new ResultWithEntity<>(ProcessingResultType.Success, ${entity.name});
+        } catch (Exception e) {
+            logger.error("获取${entity.classInfo.name}对象失败:", e);
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
     @RequestMapping(value = "/delete", method = RequestMethod.POST,
     produces = "application/json")
     @ResponseBody

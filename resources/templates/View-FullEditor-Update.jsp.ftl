@@ -76,6 +76,10 @@
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/nav/basicTab.js"></script>
     <!--基本选项卡end-->
 
+    <!-- form js -->
+    <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/form/form.js"></script>
+    <!-- form js -->
+
 </head>
 <c:choose>
     <c:when test="${"$"}{isUpdate}" >
@@ -87,7 +91,7 @@
 </c:choose>
 <div class="box2" panelTitle="${"$"}{title}" id="updatePanel">
     <form id="updateForm">
-        <input type="hidden" id="id" name="id" />
+        <input type="hidden" id="${entity.idProperty.name}" name="${entity.idProperty.name}" />
         <table class="tableStyle" formMode="transparent">
             <#list entity.properties as property>
                     <#if property.name!=entity.idProperty.name>
@@ -144,6 +148,10 @@
     };
     </#list>
 
+    <#list entity.properties as property>
+    var ${property.name}FormCtrl;
+    </#list>
+
     function loadReferenceData(url, list, name, refresh) {
         $.post(url,
                 {refresh:refresh?"y":null},
@@ -182,22 +190,26 @@
         <#if property.isReferenceProperty() >
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
 
-        function render${property.name?cap_first}(item) {
-            if (item==null) {
-                return "未选择";
-            }
-            for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
-                if (${refEntity.name}Data.list[i].value == item.${property.name})
-                    return ${refEntity.name}Data.list[i].key;
-            }
+    function render${property.name?cap_first}(item) {
+        if (item==null) {
             return "未选择";
         }
+        for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
+            if (${refEntity.name}Data.list[i].value == item.${property.name})
+                return ${refEntity.name}Data.list[i].key;
+        }
+        return "未选择";
+    }
         </#if>
     </#list>
 
     function initComplete() {
         //当提交表单刷新本页面时关闭弹窗
         top.Dialog.close();
+
+    <#list entity.properties as property>
+        ${property.name}FormCtrl=$("#updateForm #${property.name}");
+    </#list>
 
         loadAllReferenceData(false);
 
@@ -209,6 +221,8 @@
         initGrid${subEntityInfo?counter}();
     </#list>
 
+        initForm();
+
         $("#updatePanel").bind("stateChange", function (e, state) {
             $("#myTab").resetHeight();
         });
@@ -216,26 +230,18 @@
 
     /* 填写updateForm */
     function retrieveEntity() {
-    <#list entity.properties as property>
-        <#if property.name!=entity.idProperty.name>
-            var ${property.name}Ctrl=$("#${property.name}");
-            ${property.name}Ctrl.attr("readonly",true);
-        </#if>
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/retrieve/${"$"}{id}",
+        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/retrieve/"+${entity.idProperty.name}FormCtrl.val(),
                 { },
                 function(result){
                     if(result && result.reason) {
                         top.Dialog.alert("读取数据失败, 原因:"+result.reason);
                     } else {
                         var obj=result.entity;
-                        <#if property.name!=entity.idProperty.name>
-                            ${property.name}Ctrl.val(obj.${property.name});
-                        </#if>
+                        entityToForm(obj);
                     }
                 },"json").error(function() {
             top.Dialog.alert("读取数据失败")
         });
-    </#list>
     }
 
     //获取所有选中行获取选中行的id 格式为 ids=1 & ids=2
@@ -252,9 +258,41 @@
 
     //查询
     function updateHandler() {
-        /* todo  */
+        var entity=formToEntity(entity);
+        var updateUrl;
+        if (isUpdate) {
+            updateUrl="${"$"}{baseDir}/${"$"}{ctrlUrl}/update"
+        } else {
+            updateUrl="${"$"}{baseDir}/${"$"}{ctrlUrl}/create";
+        }
+        $.post(updateUrl,
+            entity,
+            function(result){
+                if(result && result.reason) {
+                    top.Dialog.alert("数据创建/更新失败, 原因:"+result.reason);
+                } else {
+                    var obj=result.entity;
+                    entityToForm(entity);
+                    isUpdate=true;
+                }
+            },"json").error(function() {
+                top.Dialog.alert("数据创建/更新失败");
+            });
+    }
 
+    function formToEntity() {
+        return {
+    <#list entity.properties as property>
+    ${property.name}: ${property.name}FormCtrl.val()
+        <#sep>,</#sep>
+    </#list>
+        };
+    }
 
+    function entityToForm(entity) {
+        <#list entity.properties as property>
+        ${property.name}FormCtrl.val(entity.${property.name});
+        </#list>
     }
 
     <!-- end of 公用  -->
@@ -266,47 +304,79 @@
     //grid1
     var ${gridName} = null;
 
+        <#list subEntity.properties as property>
+            <#if property.isReferenceProperty() >
+                <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+
+    function render${property.name?cap_first}ForGrid${subEntityInfo?counter}(item) {
+        if (item==null) {
+            return "未选择";
+        }
+        for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
+            if (${refEntity.name}Data.list[i].value == item.${property.name})
+                return ${refEntity.name}Data.list[i].key;
+        }
+        return "未选择";
+    }
+            </#if>
+        </#list>
+
+
     function initGrid${subEntityInfo?counter}(){
         ${gridName} = $("#dataGrid${subEntityInfo?counter}").quiGrid({
             columns: [
-                { name: 'id', align: 'left', width: 120,display:'ID'},
-                {display: '备注', name: 'note',align: 'left', width: "120"},
-                {display: '完工日期', name: 'endDate',align: 'left', width: "120"},
-                {display: '部门', name: 'departmentId',align: 'left', width: "120",render:renderDepartmentId},
-                {display: '营林局审核日期', name: 'approvalDateSilvicultureBureau',align: 'left', width: "120"},
-                {display: '标题', name: 'title',align: 'left', width: "120"},
-                {display: '资源局审批人', name: 'approverResourceBureau',align: 'left', width: "120"},
-                {display: '申请人', name: 'applicant',align: 'left', width: "120"},
-                {display: '审核结果', name: 'approveResult',align: 'left', width: "120"},
-                {display: '申请内容', name: 'applyContent',align: 'left', width: "120"},
-                {display: '驻厂监督站审核人', name: 'approverOnSite',align: 'left', width: "120"},
-                {display: '专员办审核日期', name: 'approvalDateCommissioner',align: 'left', width: "120"},
-                {display: '资源局审核日期', name: 'approvalDateResourceBureau',align: 'left', width: "120"},
-                {display: '营林局审批人', name: 'approverSilvicultureBureau',align: 'left', width: "120"},
-                {display: '驻厂监督站审核日期', name: 'approvalDateOnSite',align: 'left', width: "120"},
-                {display: '专员办审核人', name: 'commissioner',align: 'left', width: "120"},
-                {display: '开工日期', name: 'startDate',align: 'left', width: "120"},
-                {display: '任务id', name: 'taskid',align: 'left', width: "120"},
-                {display: '申请日期', name: 'applicationDate',align: 'left', width: "120"},
-                {
-                    display: '操作', isAllowHide: false, align: 'left', width: 100,
-                    render: function (rowdata, rowindex, value, column) {
-                        return '<div class="padding_top4 padding_left5">'
-                                + '<span class="img_list hand" title="查看" onclick="onView${subEntityInfo?counter}(' + rowdata.id + ')"></span>'
-                                + '<span class="img_edit hand" title="修改" onclick="onEdit${subEntityInfo?counter}(' + rowdata.idd + ')"></span>'
-                                + '<span class="img_delete hand" title="删除" onclick="onDelete${subEntityInfo?counter}(' + rowdata.id + ',' + rowindex + ')"></span>'
-                                + '</div>';
+                <#list subEntity.properties as property>
+                    <#if property == subEntity.idProperty >
+                    <#else>
+                        <#if property.isReferenceProperty()>
+                            <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntityInfo?counter}},
+                        <#elseif property.isTemporal() >
+                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false},
+                        <#else>
+                            <#if generator.isIntProperty(property) >
+                                <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
+                            <#elseif generator.isNumberProperty(property) >
+                                <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
+                            <#else>
+                                <#assign limit="" />
+                            </#if>
+                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false},
+                        </#if>
+                    </#if>
+                </#list>
+                { display: '操作', isSort: false, width: 200, render: function (rowdata, rowindex, value)  {
+                        var h = "";
+                        if (!rowdata._editing)
+                        {
+                            h += "<a onclick='onDelete${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_delete'>删除</span></a> ";
+                            h += "<a onclick='beginEdit${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_edit'>修改</span></a> ";
+
+                        }
+                        else
+                        {
+                            h += "<a onclick='endEdit${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_ok'>提交</span></a> ";
+                            h += "<a onclick='cancelEdit${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_no'>取消</span></a> ";
+
+                        }
+                        return h;
                     }
                 }
             ],
-            data:[], sortName: 'pk_id', rownumbers: true, checkbox: true,
+            data:[], sortName: '${subEntity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
-
+            enabledEdit: true,clickToEdit: false,onDblClickRow:function(rowdata, rowindex){
+                ${gridName}.beginEdit(rowindex);
+            },onBeforeEdit: onBeforeEdit${subEntity.classInfo.name}, onBeforeSubmitEdit: onBeforeSubmitEdit${subEntity.classInfo.name},onAfterSubmitEdit: onAfterSubmitEdit${subEntity.classInfo.name},
             toolbar: {
                 items: [
-                    {text: '新增', click: addUnit${subEntityInfo?counter}, iconClass: 'icon_add'},
+                    {text: '新增', click: add${subEntity.classInfo.name}, iconClass: 'icon_add'},
                     {line: true},
-                    {text: '批量删除', click: deleteUnit${subEntityInfo?counter}, iconClass: 'icon_delete'}
+                    { text: '全部确认修改', click: endAllEdit${subEntity.classInfo.name}, iconClass: 'icon_ok' },
+                    { line: true },
+                    { text: '全部取消修改', click: cancelAllEdit${subEntity.classInfo.name}, iconClass: 'icon_no' },
+                    { line: true},
+                    {text: '批量删除', click: deleteAll${subEntityInfo?counter}, iconClass: 'icon_delete'}
                 ]
             }
         });
@@ -320,10 +390,10 @@
     function getData${subEntityInfo?counter}(refresh){
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${subEntity.classInfo.name}ForGrid",
                 {
-                    'pager.pageSize': grid1.options.pageSize,
-                    'pager.pageNo': grid1.options.page,
-                    'sort': grid1.options.sortName,
-                    'direction': grid1.options.sortOrder
+                    'pager.pageSize': ${gridName}.options.pageSize,
+                    'pager.pageNo': ${gridName}.options.page,
+                    'sort': ${gridName}.options.sortName,
+                    'direction': ${gridName}.options.sortOrder
                 },
                 function(result){
                     if(result && result.reason) {
@@ -338,45 +408,159 @@
         });
     }
 
-    //新增
-    function addUnit${subEntityInfo?counter}() {
-        top.Dialog.open({
-            URL: "/qui_ssh2/sample/unit/user-management-content.jsp",
-            Title: "添加", Width: 500, Height: 350
-        });
-    }
-    //查看
-    function onView${subEntityInfo?counter}(rowid) {
-        top.Dialog.open({
-            URL: "/qui_ssh2/getUserDetail.action?userinfor.userId=" + rowid,
-            Title: "查看", Width: 500, Height: 350
+    function onDelete${subEntity.classInfo.name}(rowidx){
+        top.Dialog.confirm("确定要删除该记录吗？",function(){
+            //删除记录
+            var row = g.getRow(rowidx)
+            $.post("/qui_ssh2/deleteUserdb.action",
+                    {"ids":row.userId},
+                    function(result){
+                        handleResult(result);
+                    },"json");
+            //刷新表格
+            g.loadData();
         });
     }
 
-    //修改
-    function onEdit${subEntityInfo?counter}(rowid) {
-        top.Dialog.open({
-            URL: "/qui_ssh2/preUpdateUser.action?userinfor.userId=" + rowid,
-            Title: "修改", Width: 500, Height: 350
-        });
+    //开始编辑
+    function beginEdit${subEntity.classInfo.name}(rowid) {
+        ${gridName}.beginEdit(rowid);
+    }
+
+    //取消编辑
+    function cancelEdit${subEntity.classInfo.name}(rowid) {
+        ${gridName}.cancelEdit(rowid);
+    }
+
+    //结束编辑
+    function endEdit${subEntity.classInfo.name}(rowid)
+    {
+        ${gridName}.endEdit(rowid);
+    }
+
+    //全部确认修改
+    function endAllEdit${subEntity.classInfo.name}(){
+        ${gridName}.endEdit();
+    }
+
+
+    //全部取消修改
+    function cancelAllEdit${subEntity.classInfo.name}()
+    {
+        ${gridName}.cancelEdit();
+    }
+
+
+
+
+
+        //新增
+    function add${subEntity.classInfo.name}() {
+        var row = g.getRow(0);
+        var rowData={
+            userName:"新增",
+            userLoginName:"guest",
+            userPassword:"123456",
+            userSex:1,
+            userAge:18,
+            userId:'',
+            userEmployTime:"",
+            orgName:"",
+            userEducation:""
+        }
+        g.addEditRow(rowData, row, true);
+        //在这里做新增处理
+        $.post("/qui_ssh2/saveUserdb.action",rowToBO(rowData),function(result){
+            if(result.id ==0 || result.id == ''){
+                top.Dialog.alert(result.message);
+            }
+            g.getRow(0).userId = result.id;
+        },"json");
+
+    }
+
+    //编辑前事件
+    function onBeforeEdit${subEntity.classInfo.name}(e)
+    {
+        var str="编辑前事件，可阻止某些行或列进行编辑。列名："+e.column.name+"；行号："+e.rowindex+"；编辑前的值："+e.value+"\n";
+        //if(e.record.id=="121"){
+        //top.Dialog.alert("此行不可编辑",null,null,null,2);
+        // return false;
+        //}
+    }
+
+
+    //编辑提交前事件
+    function onBeforeSubmitEdit${subEntity.classInfo.name}(e){
+        if(e.newdata.userName==""){
+            top.Dialog.alert("姓名不能为空！",null,null,null,2);
+            return false;
+        }
+        else if (!validateInput(e.newdata.userName, "^[\u4e00-\u9fa5]+$")){
+            top.Dialog.alert("姓名需要是中文！",null,null,null,2);
+            return false;
+        }
+
+        if(e.newdata.userLoginName==""){
+            top.Dialog.alert("用户名不能为空！",null,null,null,2);
+            return false;
+        }
+        else if (!validateInput(e.newdata.userLoginName, "^[0-9a-zA-Z]+$")){
+            top.Dialog.alert("用户名需要是字母或数字！",null,null,null,2);
+            return false;
+        }
+
+        if(e.newdata.userPassword==""){
+            top.Dialog.alert("密码不能为空！",null,null,null,2);
+            return false;
+        }
+        else if (e.newdata.userPassword.length<6||e.newdata.userPassword.length>11){
+            top.Dialog.alert("密码需要是6-11位！",null,null,null,2);
+            return false;
+        }
+        else if (!validateInput(e.newdata.userPassword, "^[0-9a-zA-Z]+$")){
+            top.Dialog.alert("密码需要是字母或数字！",null,null,null,2);
+            return false;
+        }
+
+
+
+    }
+
+    //编辑后事件
+    function onAfterSubmitEdit${subEntity.classInfo.name}(e)
+    {
+        //在这里一律作修改处理
+        var rowData = e.newdata;
+        rowData.userId = e.record.userId;
+        //ajax方式提交数据到数据库
+        $.post("/qui_ssh2/saveUserdb.action",rowToBO(rowData),function(result){
+            if(result.id ==0 || result.id == ''){
+                top.Dialog.alert(result.message);
+            }
+        },"json");
+        //var row =certInfoGrid.getRow(e.rowindex);
+        //$.post("/material/certInfo/saveCertInfo.do?",rowToBO(row),function(){},"json");
     }
     //删除
-    function onDelete${subEntityInfo?counter}(rowid, rowidx) {
-        top.Dialog.confirm("确定要删除该记录吗？", function () {
+    function onDelete${subEntity.classInfo.name}(rowidx){
+        top.Dialog.confirm("确定要删除该记录吗？",function(){
             //删除记录
-            $.post("/qui_ssh2/deleteUser.action",
-                    {"ids": rowid},
-                    function (result) {
-                        handleResult${subEntityInfo?counter}(result.result);
-                    }, "json");
+            var row = g.getRow(rowidx)
+            $.post("/qui_ssh2/deleteUserdb.action",
+                    {"ids":row.userId},
+                    function(result){
+                        handleResult(result);
+                    },"json");
             //刷新表格
-            grid1.loadData();
+            g.loadData();
         });
     }
+
 
 
     //批量删除
-    function deleteUnit${subEntityInfo?counter}() {
+    function deleteAll${subEntity.classInfo.name}() {
         var rows = ${gridName}.getSelectedRows();
         var rowsLength = rows.length;
 
@@ -405,7 +589,7 @@
     }
 
     //刷新表格数据并重置排序和页数
-    function refresh${subEntityInfo?counter}(isUpdate) {
+    function refresh${subEntity.classInfo.name}(isUpdate) {
         if (!isUpdate) {
             //重置排序
             ${gridName}.options.sortName = 'userId';

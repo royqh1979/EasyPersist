@@ -67,7 +67,15 @@ public class ViewGenerator {
         if (entity.hasSubEntity()) {
             dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
             generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
+
             Set<Entity> subEntites=new HashSet<>();
+            if (entity.hasSubEntity()) {
+                for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                    Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
+                    refEntities.addAll(subRefEntities);
+                }
+            }
+            refEntities.remove(entity);
             generateJspView(entity, psiOutputDir, entity.getName() + "-update.jsp", JspUpdateViewForFullEditorTemplate, dataModel);
         } else {
             String fileName = entity.getName() + ".jsp";

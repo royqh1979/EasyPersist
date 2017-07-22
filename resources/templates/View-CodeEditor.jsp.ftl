@@ -148,14 +148,17 @@
             <#else>
                 { name: '${entity.idProperty.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${entity.idProperty.chineseAlias}")},
             </#if>
+            <#assign firstColumn=true >
             <#list entity.properties as property>
                 <#if property == entity.idProperty >
-                <#elseif property.isReferenceProperty()>
+                <#else>
+                    <#if !firstColumn>,<#else><#assign firstColumn=false ></#if>
+                    <#if property.isReferenceProperty()>
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
-                            headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
+                            headerRender:genHeaderRender("${property.chineseAlias}")}
                 <#elseif property.isTemporal() >
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
                 <#else>
                     <#if generator.isIntProperty(property) >
                       <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
@@ -164,7 +167,8 @@
                     <#else>
                         <#assign limit="" />
                     </#if>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}<#if property?has_next>,</#if>
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
+                </#if>
                 </#if>
             </#list>
             ],
