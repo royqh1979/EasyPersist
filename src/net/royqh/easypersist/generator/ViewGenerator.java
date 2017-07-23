@@ -133,6 +133,16 @@ public class ViewGenerator {
         }
     }
 
+    public boolean isBooleanProperty(SingleProperty property) {
+        switch (TypeUtils.getShortTypeName(property.getType())) {
+            case "Boolean":
+            case "boolean":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public boolean isDateProperty(SingleProperty property) {
         return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
     }

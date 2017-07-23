@@ -101,6 +101,7 @@
     var noeditArray = [];
     //grid
     var grid = null;
+    var booleanData={list:[{key:"是",value:true},{key:"否",value:false}]}
 
     <#list refEntities as refEntity>
     var ${refEntity.name}Data={
@@ -146,16 +147,26 @@
         <#if property.isReferenceProperty() >
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
 
-        function render${property.name?cap_first}(item) {
-            if (item==null) {
-                return "未选择";
-            }
-            for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
-                if (${refEntity.name}Data.list[i].value == item.${property.name})
-                    return ${refEntity.name}Data.list[i].key;
-            }
+    function render${property.name?cap_first}(item) {
+        if (item==null) {
             return "未选择";
         }
+        for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
+            if (${refEntity.name}Data.list[i].value == item.${property.name})
+                return ${refEntity.name}Data.list[i].key;
+        }
+        return "未选择";
+    }
+        <#elseif generator.isBooleanProperty(property)>
+    function render${property.name?cap_first}(item) {
+        if (item==null) {
+            return "未选择";
+        }
+        if (item.${property.name}.toString()=="true") {
+            return "是";
+        }
+        return "否";
+    }
         </#if>
     </#list>
 
@@ -181,6 +192,8 @@
                     <#if property.isReferenceProperty()>
                         <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                         {display: '${property.chineseAlias}', name: '${property.name}',align: 'left', width: "120",render:render${property.name?cap_first}},
+                    <#elseif generator.isBooleanProperty(property) >
+                        { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,render:render${property.name?cap_first}},
                     <#else >
                         {display: '${property.chineseAlias}', name: '${property.name}',align: 'left', width: "120"},
                     </#if>

@@ -102,6 +102,10 @@
                                 <td>
                                     <select prompt="请选择${refEntity.chineseAlias}" id="${property.name}" name="${property.name}" ></select>
                                 </td>
+                            <#elseif generator.isBooleanProperty(property) >
+                                <td>
+                                    <select prompt="${property.chineseAlias}" id="${property.name}" name="${property.name}" ></select>
+                                </td>
                             <#elseif generator.isIntProperty(property) >
                                 <td>
                                     <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
@@ -141,7 +145,7 @@
 <script type="text/javascript">
     <!-- 对主实体对象 和 公用 -->
     var isUpdate=${"$"}{isUpdate?"true":"false"};
-
+    var booleanData={list:[{key:"是",value:true},{key:"否",value:false}]}
     <#list refEntities as refEntity>
     var ${refEntity.name}Data={
         list:[]
@@ -200,8 +204,26 @@
         }
         return "未选择";
     }
+        <#elseif generator.isBooleanProperty(property)>
+    function render${property.name?cap_first}(item) {
+        if (item==null) {
+            return "未选择";
+        }
+        if (item.${property.name}.toString()=="true") {
+            return "是";
+        }
+        return "否";
+    }
         </#if>
     </#list>
+
+    function initBooleans() {
+        <#list entity.properties as property>
+            <#if generator.isBooleanProperty(property) >
+                ${property.name}FormCtrl[0].data=booleanData;
+            </#if>
+        </#list>
+    }
 
     function initComplete() {
         //当提交表单刷新本页面时关闭弹窗
@@ -212,6 +234,7 @@
     </#list>
 
         loadAllReferenceData(false);
+        initBooleans();
 
         if (isUpdate) {
             retrieveEntity();
@@ -272,7 +295,7 @@
                     top.Dialog.alert("数据创建/更新失败, 原因:"+result.reason);
                 } else {
                     var obj=result.entity;
-                    entityToForm(entity);
+                    entityToForm(obj);
                     isUpdate=true;
                 }
             },"json").error(function() {
@@ -283,7 +306,11 @@
     function formToEntity() {
         return {
     <#list entity.properties as property>
+        <#if generator.isBooleanProperty(property)>
+        ${property.name}:${property.name}FormCtrl.val().toString()=="true" ? "y": "n"
+        <#else>
     ${property.name}: ${property.name}FormCtrl.val()
+        </#if>
         <#sep>,</#sep>
     </#list>
         };
@@ -318,6 +345,16 @@
         }
         return "未选择";
     }
+            <#elseif generator.isBooleanProperty(property)>
+    function render${property.name?cap_first}ForGrid${subEntityInfo?counter}(item) {
+        if (item==null) {
+            return "未选择";
+        }
+        if (item.${property.name}.toString()=="true") {
+            return "是";
+        }
+        return "否";
+    }
             </#if>
         </#list>
 
@@ -331,6 +368,8 @@
                         <#if property.isReferenceProperty()>
                             <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                             { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntityInfo?counter}},
+                        <#elseif generator.isBooleanProperty(property) >
+                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntityInfo?counter}},
                         <#elseif property.isTemporal() >
                             { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false},
                         <#else>

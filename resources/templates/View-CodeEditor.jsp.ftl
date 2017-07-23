@@ -76,6 +76,7 @@
     var g;
     var menu;
     var currentRow;
+    var booleanData={list:[{key:"是",value:true},{key:"否",value:false}]};
     <#list refEntities as refEntity>
     var ${refEntity.name}Data={
         list:[]
@@ -126,15 +127,25 @@
               <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
 
     function render${property.name?cap_first}(item) {
-            if (item==null) {
-                return "未选择";
-            }
-            for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
-                if (${refEntity.name}Data.list[i].value == item.${property.name})
-                    return ${refEntity.name}Data.list[i].key;
-            }
+        if (item==null) {
             return "未选择";
         }
+        for (var i = 0; i < ${refEntity.name}Data.list.length; i++) {
+            if (${refEntity.name}Data.list[i].value == item.${property.name})
+                return ${refEntity.name}Data.list[i].key;
+        }
+        return "未选择";
+    }
+        <#elseif generator.isBooleanProperty(property)>
+    function render${property.name?cap_first}(item) {
+        if (item==null) {
+            return "未选择";
+        }
+        if (item.${property.name}.toString()=="true") {
+            return "是";
+        }
+        return "否";
+    }
         </#if>
     </#list>
 
@@ -157,16 +168,19 @@
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
                             headerRender:genHeaderRender("${property.chineseAlias}")}
-                <#elseif property.isTemporal() >
+                    <#elseif generator.isBooleanProperty(property) >
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first},
+                            headerRender:genHeaderRender("${property.chineseAlias}")}
+                    <#elseif property.isTemporal() >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
-                <#else>
-                    <#if generator.isIntProperty(property) >
-                      <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
-                    <#elseif generator.isNumberProperty(property) >
-                        <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
                     <#else>
-                        <#assign limit="" />
-                    </#if>
+                        <#if generator.isIntProperty(property) >
+                            <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
+                        <#elseif generator.isNumberProperty(property) >
+                            <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
+                        <#else>
+                            <#assign limit="" />
+                        </#if>
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
                 </#if>
                 </#if>
@@ -358,7 +372,11 @@
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update",{
             <#if !entity.isAutoGenerateId() >idForUpdate: editId ,</#if>
     <#list entity.properties as property>
-            ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""
+        <#if generator.isBooleanProperty(property)>
+        ${property.name}:obj.${property.name}.toString()=="true" ? "y": "n"
+        <#else>
+        ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""
+        </#if>
         <#sep>,</#sep>
     </#list>
         },function(result){
