@@ -156,7 +156,7 @@ public class ${entity.classInfo.name}Controller {
         return  jspPrefix+"${entity.name}-update";
     }
 
-    @RequestMapping(value="/update/$id", method = RequestMethod.GET)
+    @RequestMapping(value="/update/{id}", method = RequestMethod.GET)
     public String updateUI(Model model, @PathVariable("id")int id) {
         ${entity.classInfo.name} ${entity.name}=${entity.name}Service.retrieve(id);
         if (${entity.name}==null) {

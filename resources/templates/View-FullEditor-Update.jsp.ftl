@@ -137,15 +137,20 @@
     <#list entity.subEntities as subEntityInfo>
         <#assign subEntity=subEntityInfo.subEntity >
     <div name="${subEntity.chineseAlias}" style="width:98%;">
-        <div id="dataGrid${subEntityInfo?counter}"></div>
+        <div id="dataGrid${subEntity.classInfo.name}"></div>
     </div>
     </#list>
 </div>
 
 <script type="text/javascript">
-    <!-- 对主实体对象 和 公用 -->
+    /* 对主实体对象和公用 */
     var isUpdate=${"$"}{isUpdate?"true":"false"};
-    var booleanData={list:[{key:"是",value:true},{key:"否",value:false}]}
+
+    var id;
+    <c:if test="${"$"}{isUpdate}">
+    id=${"$"}{id};
+    </c:if>
+    var booleanData={list:[{key:"是",value:true},{key:"否",value:false}]};
     <#list refEntities as refEntity>
     var ${refEntity.name}Data={
         list:[]
@@ -237,14 +242,12 @@
         initBooleans();
 
         if (isUpdate) {
-            retrieveEntity();
+            retrieveEntity(${"$"}{id});
         }
     <#list entity.subEntities as subEntityInfo>
         <#assign subEntity=subEntityInfo.subEntity >
-        initGrid${subEntityInfo?counter}();
+        initGrid${subEntity.classInfo.name}();
     </#list>
-
-        initForm();
 
         $("#updatePanel").bind("stateChange", function (e, state) {
             $("#myTab").resetHeight();
@@ -252,8 +255,8 @@
     }
 
     /* 填写updateForm */
-    function retrieveEntity() {
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/retrieve/"+${entity.idProperty.name}FormCtrl.val(),
+    function retrieveEntity(id) {
+        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/retrieve/"+id,
                 { },
                 function(result){
                     if(result && result.reason) {
@@ -317,25 +320,25 @@
     }
 
     function entityToForm(entity) {
+        id=entity.${entity.idProperty.name};
         <#list entity.properties as property>
         ${property.name}FormCtrl.val(entity.${property.name});
         </#list>
     }
 
-    <!-- end of 公用  -->
+    /* end of 公用  */
 
     <#list entity.subEntities as subEntityInfo>
         <#assign subEntity=subEntityInfo.subEntity >
-    <#assign gridName="grid"+subEntityInfo?counter >
-    <!-- 子表${subEntityInfo?counter}  -->
-    //grid1
+    <#assign gridName="grid"+subEntity.classInfo.name >
+    /* 子表 ${gridName} */
     var ${gridName} = null;
 
         <#list subEntity.properties as property>
             <#if property.isReferenceProperty() >
                 <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
 
-    function render${property.name?cap_first}ForGrid${subEntityInfo?counter}(item) {
+    function render${property.name?cap_first}ForGrid${subEntity.classInfo.name}(item) {
         if (item==null) {
             return "未选择";
         }
@@ -346,7 +349,7 @@
         return "未选择";
     }
             <#elseif generator.isBooleanProperty(property)>
-    function render${property.name?cap_first}ForGrid${subEntityInfo?counter}(item) {
+    function render${property.name?cap_first}ForGrid${subEntity.classInfo.name}(item) {
         if (item==null) {
             return "未选择";
         }
@@ -359,17 +362,19 @@
         </#list>
 
 
-    function initGrid${subEntityInfo?counter}(){
-        ${gridName} = $("#dataGrid${subEntityInfo?counter}").quiGrid({
+    function initGrid${subEntity.classInfo.name}(){
+        ${gridName} = $("#dataGrid${subEntity.classInfo.name}").quiGrid({
             columns: [
                 <#list subEntity.properties as property>
-                    <#if property == subEntity.idProperty >
+                    <#if property == subEntity.idProperty  >
                     <#else>
                         <#if property.isReferenceProperty()>
                             <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntityInfo?counter}},
+                            <#if refEntity!=entity>
+                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                            </#if>
                         <#elseif generator.isBooleanProperty(property) >
-                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntityInfo?counter}},
+                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
                         <#elseif property.isTemporal() >
                             { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false},
                         <#else>
@@ -402,7 +407,7 @@
                     }
                 }
             ],
-            data:[], sortName: '${subEntity.idProperty.name}', rownumbers: true, checkbox: true,
+            data:[], sortName: '${subEntity.idProperty.column.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
             enabledEdit: true,clickToEdit: false,onDblClickRow:function(rowdata, rowindex){
                 ${gridName}.beginEdit(rowindex);
@@ -415,20 +420,21 @@
                     { line: true },
                     { text: '全部取消修改', click: cancelAllEdit${subEntity.classInfo.name}, iconClass: 'icon_no' },
                     { line: true},
-                    {text: '批量删除', click: deleteAll${subEntityInfo?counter}, iconClass: 'icon_delete'}
+                    {text: '批量删除', click: deleteAll${subEntity.classInfo.name}, iconClass: 'icon_delete'}
                 ]
             }
         });
 
         if (isUpdate) {
-            getData${subEntityInfo?counter}(false);
+            getData${subEntity.classInfo.name}(false);
         }
 
     }
 
-    function getData${subEntityInfo?counter}(refresh){
+    function getData${subEntity.classInfo.name}(refresh){
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${subEntity.classInfo.name}ForGrid",
                 {
+                    '${subEntityInfo.subEntityReferenceProperty.name}':id,
                     'pager.pageSize': ${gridName}.options.pageSize,
                     'pager.pageNo': ${gridName}.options.page,
                     'sort': ${gridName}.options.sortName,
@@ -447,21 +453,7 @@
         });
     }
 
-    function onDelete${subEntity.classInfo.name}(rowidx){
-        top.Dialog.confirm("确定要删除该记录吗？",function(){
-            //删除记录
-            var row = g.getRow(rowidx)
-            $.post("/qui_ssh2/deleteUserdb.action",
-                    {"ids":row.userId},
-                    function(result){
-                        handleResult(result);
-                    },"json");
-            //刷新表格
-            g.loadData();
-        });
-    }
-
-    //开始编辑
+        //开始编辑
     function beginEdit${subEntity.classInfo.name}(rowid) {
         ${gridName}.beginEdit(rowid);
     }
@@ -612,13 +604,13 @@
                     //获取所有选中行
                     getSelectId(grid1),
                     function (result) {
-                        handleResult${subEntityInfo?counter}(result.status);
+                        handleResult${subEntity.classInfo.name}(result.status);
                     },
                     "json");
         });
     }
     //删除后的提示
-    function handleResult${subEntityInfo?counter}(result) {
+    function handleResult${subEntity.classInfo.name}(result) {
         if (result == 1) {
             top.Dialog.alert("删除成功！", null, null, null, 1);
             grid1.loadData();
@@ -639,7 +631,7 @@
 
         getData${gridName}();
     }
-    <!-- end of 子表${gridName} -->
+    /* end of 子表 ${gridName} */
     </#list>
 </script>
 </body>
