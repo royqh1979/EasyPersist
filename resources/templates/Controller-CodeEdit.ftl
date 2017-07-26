@@ -98,10 +98,11 @@ public class ${entity.classInfo.name}Controller {
 </#list>) {
         try {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
-            <#if !entity.isAutoGenerateId() >
-            ${entityIdPropertySetting}
-            </#if>
-            ${entityPropertySettings}
+            <#list entity.properties as property>
+                <#if property!=entity.idProperty || !entity.isAutoGenerateId() >
+                ${generator.generateEntityPropertySetting(entity,property)}
+                </#if>
+            </#list>
             ${entity.name}Service.create(${entity.name});
             return new ResultWithEntity<>(ProcessingResultType.Success, ${entity.name});
         } catch (Exception e) {
@@ -133,7 +134,11 @@ public class ${entity.classInfo.name}Controller {
                 }
                 return new Result(ProcessingResultType.Fail, "找不到${entity.idProperty.name}为" + ${entity.idProperty.name}Val + "的${entity.classInfo.name}对象");
             }
-            ${entityPropertySettings}
+        <#list entity.properties as property>
+            <#if property!=entity.idProperty>
+            ${generator.generateEntityPropertySetting(entity,property)}
+            </#if>
+        </#list>
 <#if entity.isAutoGenerateId() >
             ${entity.name}Service.update(${entity.name});
 <#else>

@@ -206,6 +206,7 @@ public class PersistorsGenerator {
             methodGenerator.createCountXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createFindXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createFindXXXMappingWithSortMethod(entity, relationInfo, content);
+            methodGenerator.createCheckXXXColumnNameMethod(entity,relationInfo,content);
         }
     }
 

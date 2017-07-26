@@ -186,7 +186,6 @@
     function initGrid(){
         grid = $("#dataGrid").quiGrid({
             columns: [
-                { name: '${entity.idProperty.name}', align: 'left', width: 120,display:'${entity.idProperty.chineseAlias}'},
             <#list entity.properties as property>
                 <#if ! (property.name == entity.idProperty.name) >
                     <#if property.isReferenceProperty()>

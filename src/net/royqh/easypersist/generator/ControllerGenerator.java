@@ -4,8 +4,11 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
-import net.royqh.easypersist.model.*;
-import net.royqh.easypersist.model.jpa.Constants;
+import freemarker.template.TemplateMethodModelEx;
+import freemarker.template.TemplateModelException;
+import net.royqh.easypersist.model.Entity;
+import net.royqh.easypersist.model.SingleProperty;
+import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.*;
@@ -48,25 +51,19 @@ public class ControllerGenerator {
         dataModel.put("typeList", types);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
-        StringBuilder content = new StringBuilder();
-        generateEntityPropertySettings(content, entity, false);
-        dataModel.put("entityPropertySettings", content);
-
-        if (!entity.isAutoGenerateId()) {
-            content = new StringBuilder();
-            generateEntityPropertySetting(content, entity, entity.getIdProperty());
-            dataModel.put("entityIdPropertySetting", content);
-        }
         dataModel.put("generator",generator);
-
+        
         try {
             if (entity.hasSubEntity()) {
                 dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
                 Set<Entity> subEntites=new HashSet<>();
                 if (entity.hasSubEntity()) {
                     for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                        //add entities referenced by subEntity
                         Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
                         refEntities.addAll(subRefEntities);
+                        //add import types used by subEntity
+                        types.addAll(CodeUtils.getTypeList(subEntityInfo.getSubEntity(), true));
                     }
                 }
                 refEntities.remove(entity);
@@ -100,20 +97,7 @@ public class ControllerGenerator {
                 writer.toString());
     }
 
-
-    private static void generateEntityPropertySettings(StringBuilder content, Entity entity, boolean withIdProperty) {
-        for (Property property : entity.getProperties()) {
-            if (property == entity.getIdProperty() && !withIdProperty) {
-                continue;
-            }
-            if (property.getPropertyType() == PropertyType.Column) {
-                generateEntityPropertySetting(content, entity, (SingleProperty) property);
-            }
-        }
-
-    }
-
-    private static void generateEntityPropertySetting(StringBuilder content, Entity entity, SingleProperty property) {
+    public  void generateEntityPropertySetting(StringBuilder content, Entity entity, SingleProperty property) {
             String shortTypeName = TypeUtils.getShortTypeName(property.getType());
 
             content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
@@ -146,6 +130,12 @@ public class ControllerGenerator {
             content.append("}\n");
     }
 
+    public String generateEntityPropertySetting(Entity entity, SingleProperty property) {
+        StringBuilder builder=new StringBuilder();
+        generateEntityPropertySetting(builder,entity, property);
+        return builder.toString();
+    }
+
     public String getObjectType(String type) {
         return TypeUtils.getObjectType(type);
     }
@@ -156,7 +146,7 @@ public class ControllerGenerator {
         return builder.toString();
     }
 
-    private static void generateConvertParameterStatement(SingleProperty property, StringBuilder builder) {
+    public void generateConvertParameterStatement(SingleProperty property, StringBuilder builder) {
         String shortTypeName = TypeUtils.getObjectType(property.getType());
         if (property.getEnumType() != null) {
             builder.append(String.format("%s.values()[%s]",

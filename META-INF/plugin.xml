@@ -60,7 +60,9 @@
                add: full editor's query UI <br />
       * 0.13.3 fixs some bugs. <br />
                add: full editor's controller can list sub <br />
-        0.13.4 add: boolean support in editors <br />
+      * 0.13.4 add: boolean support in editors <br />
+      * 0.13.5 fix: checkOrderColumn for mapping entity <br />
+               fix: create/update method for editor controller <br />
     ]]>
   </change-notes>
 

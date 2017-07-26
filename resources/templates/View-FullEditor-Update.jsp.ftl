@@ -487,26 +487,31 @@
 
         //新增
     function add${subEntity.classInfo.name}() {
-        var row = g.getRow(0);
-        var rowData={
-            userName:"新增",
-            userLoginName:"guest",
-            userPassword:"123456",
-            userSex:1,
-            userAge:18,
-            userId:'',
-            userEmployTime:"",
-            orgName:"",
-            userEducation:""
+        var obj={
+        <#list entity.properties as property>
+            <#if property.isReferenceProperty()>
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+            ${property.name}: ${refEntity.name}Data.list[0].value
+            <#else>
+            ${property.name}: ${generator.getDefaultValue(property.type)}
+            </#if>
+            <#sep>,</#sep>
+        </#list>
         }
-        g.addEditRow(rowData, row, true);
+
         //在这里做新增处理
-        $.post("/qui_ssh2/saveUserdb.action",rowToBO(rowData),function(result){
-            if(result.id ==0 || result.id == ''){
-                top.Dialog.alert(result.message);
+        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/create${subEntity.classInfo.name}",obj,function(result){
+            if(result && result.result && result.result=="Success"){
+                var row = ${gridName}.getRow(0);
+                ${gridName}.addEditRow(result.entity, row, true);
+            } else if (result && result.reason) {
+                top.Dialog.alert("添加失败，原因:"+result.reason);
+            } else {
+                top.Dialog.alert("添加失败");
             }
-            g.getRow(0).userId = result.id;
-        },"json");
+        },"json").error(function() {
+            top.Dialog.alert("添加失败")
+        });
 
     }
 

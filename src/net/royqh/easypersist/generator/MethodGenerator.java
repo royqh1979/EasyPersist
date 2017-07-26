@@ -891,7 +891,8 @@ public class MethodGenerator {
         content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
         content.append(";\n");
         content.append("}else{\n");
-        content.append("Preconditions.checkArgument(checkColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
+        content.append(String.format("Preconditions.checkArgument(check%sColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n",
+                mappingEntity.getClassInfo().getName()));
         content.append("String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
@@ -1088,6 +1089,12 @@ public class MethodGenerator {
         content.append("if (columnName==null) { \n");
         content.append(" return false;\n");
         content.append("}\n");
+        generateColumnCheckStatements(entity, content);
+        content.append("return false;\n");
+        content.append("}\n");
+    }
+
+    private void generateColumnCheckStatements(Entity entity, StringBuilder content) {
         for (Property property:entity.getProperties()) {
             if (property.getPropertyType()== PropertyType.Column) {
                 SingleProperty singleProperty=(SingleProperty)property;
@@ -1098,6 +1105,18 @@ public class MethodGenerator {
                 content.append("}\n");
             }
         }
+    }
+
+    public void createCheckXXXColumnNameMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity refEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName()) ;
+        content.append(String.format("public boolean check%sColumnName(",
+                refEntity.getClassInfo().getName()));
+        content.append("String columnName");
+        content.append(") {\n");
+        content.append("if (columnName==null) { \n");
+        content.append(" return false;\n");
+        content.append("}\n");
+        generateColumnCheckStatements(refEntity, content);
         content.append("return false;\n");
         content.append("}\n");
     }

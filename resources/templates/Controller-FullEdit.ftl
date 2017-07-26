@@ -91,35 +91,6 @@ public class ${entity.classInfo.name}Controller {
         }
     }
 
-    <#list entity.subEntities as subEntityInfo>
-    <#assign subEntity=subEntityInfo.subEntity >
-    <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
-    @RequestMapping(value = "/list${subEntity.classInfo.name}ForGrid", method = RequestMethod.POST,
-    produces = "application/json")
-    @ResponseBody
-    public Object list${subEntity.classInfo.name}ForGrid(
-        @RequestParam("${subRefProperty.name}") String ${subRefProperty.name}Val,
-        @RequestParam("pager.pageNo") int pageNo,
-        @RequestParam("pager.pageSize") int pageSize,
-        @RequestParam("sort") String orderBy,
-        @RequestParam("direction") SortType sortType) {
-        try {
-             ${generator.getObjectType(subRefProperty.type)} ${subRefProperty.name}Var=null;
-            if (!StringUtils.isEmpty(${subRefProperty.name}Val)){
-                ${subRefProperty.name}Var = ${generator.getConvertParameterStatement(subRefProperty)};
-            }
-            Pager pager = new Pager(pageSize, pageNo);
-            pager.setTotalRows(${subEntity.name}Service.countBy${subRefProperty.name?cap_first}(${subRefProperty.name}Var));
-            List<${subEntity.classInfo.name}> ${subEntity.name}List = ${subEntity.name}Service.findBy${subRefProperty.name?cap_first}(${subRefProperty.name}Var,orderBy, sortType, pager);
-            Grid<${subEntity.classInfo.name}> result = new Grid<>(pager, ${subEntity.name}List, orderBy, sortType);
-            return result;
-        } catch (RuntimeException e) {
-             logger.error("获取${subEntity.classInfo.name}对象列表失败:", e);
-            return new Result(ProcessingResultType.Fail, e.getMessage());
-        }
-    }
-    </#list>
-
 <#list refEntities as refEntity>
     @RequestMapping(value = "/list${refEntity.classInfo.name}", method = RequestMethod.POST,
             produces = "application/json")
@@ -183,7 +154,11 @@ public class ${entity.classInfo.name}Controller {
 </#list>) {
         try {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
-            ${entityPropertySettings}
+            <#list entity.properties as property>
+                <#if property!=entity.idProperty>
+            ${generator.generateEntityPropertySetting(entity,property)}
+                </#if>
+            </#list>
             ${entity.name}Service.create(${entity.name});
             return new ResultWithEntity<>(ProcessingResultType.Success, ${entity.name});
         } catch (Exception e) {
@@ -200,8 +175,8 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object update(<#list entity.properties as property><#if entity.idProperty.name != property.name>
-        @RequestParam("${property.name}") String ${property.name}Val,</#if></#list>
-        @RequestParam("${entity.idProperty.name}") ${entity.idProperty.type} ${entity.idProperty.name}Val) {
+@RequestParam("${property.name}") String ${property.name}Val,</#if></#list>
+@RequestParam("${entity.idProperty.name}") ${entity.idProperty.type} ${entity.idProperty.name}Val) {
         try {
             ${entity.classInfo.name} ${entity.name} = ${entity.name}Service.retrieve(${entity.idProperty.name}Val);
             if (${entity.name} == null) {
@@ -210,7 +185,11 @@ public class ${entity.classInfo.name}Controller {
                 }
                 return new Result(ProcessingResultType.Fail, "找不到${entity.idProperty.name}为" + ${entity.idProperty.name}Val + "的${entity.classInfo.name}对象");
             }
-            ${entityPropertySettings}
+            <#list entity.properties as property>
+                <#if property!=entity.idProperty>
+                ${generator.generateEntityPropertySetting(entity,property)}
+                </#if>
+            </#list>
             ${entity.name}Service.update(${entity.name});
             return new ResultWithEntity<>(ProcessingResultType.Success, ${entity.name});
         } catch (Exception e){
@@ -227,7 +206,7 @@ public class ${entity.classInfo.name}Controller {
     @RequestMapping(value = "/retrieve/{id}", method = RequestMethod.POST,
     produces = "application/json")
     @ResponseBody
-    public Object create(@PathVariable("id")  ${entity.idProperty.type} ${entity.idProperty.name}Val) {
+    public Object retrieve(@PathVariable("id")  ${entity.idProperty.type} ${entity.idProperty.name}Val) {
         try {
             ${entity.classInfo.name} ${entity.name} = ${entity.name}Service.retrieve(${entity.idProperty.name}Val);
             if (${entity.name} == null) {
@@ -270,4 +249,97 @@ public class ${entity.classInfo.name}Controller {
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
     }
+
+
+<#list entity.subEntities as subEntityInfo>
+    <#assign subEntity=subEntityInfo.subEntity >
+    <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
+    @RequestMapping(value = "/list${subEntity.classInfo.name}ForGrid", method = RequestMethod.POST,
+        produces = "application/json")
+    @ResponseBody
+    public Object list${subEntity.classInfo.name}ForGrid(
+        @RequestParam("${subRefProperty.name}") String ${subRefProperty.name}Val,
+        @RequestParam("pager.pageNo") int pageNo,
+        @RequestParam("pager.pageSize") int pageSize,
+        @RequestParam("sort") String orderBy,
+        @RequestParam("direction") SortType sortType) {
+        try {
+            ${generator.getObjectType(subRefProperty.type)} ${subRefProperty.name}Var=null;
+            if (!StringUtils.isEmpty(${subRefProperty.name}Val)){
+                ${subRefProperty.name}Var = ${generator.getConvertParameterStatement(subRefProperty)};
+            }
+            Pager pager = new Pager(pageSize, pageNo);
+            pager.setTotalRows(${subEntity.name}Service.countBy${subRefProperty.name?cap_first}(${subRefProperty.name}Var));
+            List<${subEntity.classInfo.name}> ${subEntity.name}List = ${subEntity.name}Service.findBy${subRefProperty.name?cap_first}(${subRefProperty.name}Var,orderBy, sortType, pager);
+            Grid<${subEntity.classInfo.name}> result = new Grid<>(pager, ${subEntity.name}List, orderBy, sortType);
+            return result;
+        } catch (RuntimeException e) {
+            logger.error("获取${subEntity.classInfo.name}对象列表失败:", e);
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+
+    @RequestMapping(value = "/create${subEntity.classInfo.name}", method = RequestMethod.POST,
+        produces = "application/json")
+    @ResponseBody
+    public Object create${subEntity.classInfo.name}(
+        <#assign firstItem=true />
+        <#list subEntity.properties as property>
+            <#if subEntity.idProperty.name != property.name >
+                <#if !firstItem>,<#else><#assign firstItem=false/></#if>
+        @RequestParam("${property.name}") String ${property.name}Val
+            </#if>
+</#list>) {
+        try {
+            ${subEntity.classInfo.name} ${subEntity.name} = new ${subEntity.classInfo.name}();
+            <#list subEntity.properties as property>
+                <#if property!=subEntity.idProperty>
+                    ${generator.generateEntityPropertySetting(subEntity,property)}
+                </#if>
+            </#list>
+            ${subEntity.name}Service.create(${subEntity.name});
+            return new ResultWithEntity<>(ProcessingResultType.Success, ${subEntity.name});
+        } catch (Exception e) {
+            logger.error("创建${subEntity.classInfo.name}对象失败:", e);
+            if (logger.isDebugEnabled()) {<#list subEntity.properties as property> <#if subEntity.idProperty.name != property.name>
+                logger.debug("${subEntity.classInfo.name}.${property.name}:" + ${property.name}Val);
+            </#if></#list>
+            }
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/update${subEntity.classInfo.name}", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object update${subEntity.classInfo.name}(<#list subEntity.properties as property><#if subEntity.idProperty.name != property.name>
+    @RequestParam("${property.name}") String ${property.name}Val,</#if></#list>
+    @RequestParam("${subEntity.idProperty.name}") ${subEntity.idProperty.type} ${subEntity.idProperty.name}Val) {
+        try {
+            ${subEntity.classInfo.name} ${subEntity.name} = ${subEntity.name}Service.retrieve(${entity.idProperty.name}Val);
+            if (${subEntity.name} == null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("找不到${subEntity.idProperty.name}为" + ${subEntity.idProperty.name}Val + "的${subEntity.classInfo.name}对象");
+                }
+                return new Result(ProcessingResultType.Fail, "找不到${subEntity.idProperty.name}为" + ${subEntity.idProperty.name}Val + "的${subEntity.classInfo.name}对象");
+            }
+    <#list subEntity.properties as property>
+        <#if property!=subEntity.idProperty>
+            ${generator.generateEntityPropertySetting(subEntity,property)}
+        </#if>
+    </#list>
+            ${subEntity.name}Service.update(${subEntity.name});
+            return new ResultWithEntity<>(ProcessingResultType.Success, ${subEntity.name});
+        } catch (Exception e){
+            logger.error("更新${subEntity.classInfo.name}对象失败:", e);
+            if (logger.isDebugEnabled()) {
+            <#list subEntity.properties as property>
+                logger.debug("${subEntity.classInfo.name}.${subEntity.name}:" + ${property.name}Val);
+            </#list>
+            }
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+</#list>
 }
