@@ -30,8 +30,8 @@ import java.io.IOException;
 /**
  * Created by Roy on 2017/6/12.
  */
-public class GenerateEditorAction extends AnAction {
-    private static Logger logger = Logger.getInstance(GenerateEditorAction.class);
+public class GenerateExcelStyleEditorAction extends AnAction {
+    private static Logger logger = Logger.getInstance(GenerateExcelStyleEditorAction.class);
 
     @Override
     public void actionPerformed(AnActionEvent e) {
@@ -80,9 +80,9 @@ public class GenerateEditorAction extends AnAction {
 
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
-                                ServiceGenerator.generateService(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
-                                ControllerGenerator.generateController(psiFileFactory, facade, codeStyleManager,entity,psiOutputDir);
-                                ViewGenerator.generateJspViews(entity,psiOutputDir);
+                                ServiceGenerator.generateService(EditorStyle.ExcelStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir);
+                                ControllerGenerator.generateController(EditorStyle.ExcelStyle, psiFileFactory, codeStyleManager,entity,psiOutputDir);
+                                ViewGenerator.generateJspViews(EditorStyle.ExcelStyle,entity,psiOutputDir);
                                 Notification notification = new Notification(
                                         "Easy Persist",
                                         "Success",

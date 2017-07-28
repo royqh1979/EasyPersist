@@ -22,7 +22,7 @@ public class ControllerGenerator {
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
     private static ControllerGenerator generator=new ControllerGenerator();
 
-    public static void generateController(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
+    public static void generateController(EditorStyle editorStyle, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         String fileName = controllerClassName + ".java";
 
@@ -31,12 +31,12 @@ public class ControllerGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateControllerFile(entity, null, psiFileFactory);
+        PsiFile psiFile = generateControllerFile(editorStyle,entity, null, psiFileFactory);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
     }
 
-    private static PsiFile generateControllerFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+    private static PsiFile generateControllerFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
@@ -54,7 +54,7 @@ public class ControllerGenerator {
         dataModel.put("generator",generator);
         
         try {
-            if (entity.hasSubEntity()) {
+            if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
                 Set<Entity> subEntites=new HashSet<>();
                 if (entity.hasSubEntity()) {

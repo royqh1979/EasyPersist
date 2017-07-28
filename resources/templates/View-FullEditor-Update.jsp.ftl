@@ -280,22 +280,34 @@
         });
     }
 
-    //获取所有选中行获取选中行的id 格式为 ids=1 & ids=2
-    function getSelectId(grid) {
-        var selectedRows = grid.getSelectedRows();
-        var selectedRowsLength = selectedRows.length;
-        var ids = "";
-
-        for (var i = 0; i < selectedRowsLength; i++) {
-            ids += selectedRows[i].userId + ",";
-        }
-        return {"ids": ids};
+    function validateEntity(e){
+    <#list entity.properties as property>
+        <#if property!=entity.idProperty>
+            <#if property.isReferenceProperty()>
+                if (render${property.name?cap_first}(e)=="未选择"){
+                    top.Dialog.alert("${property.chineseAlias}必须选择！",null,null,null,2);
+                    return false;
+                }
+            <#else>
+                <#if !(property.column.nullable) >
+                    if(e.${property.name}==""){
+                        top.Dialog.alert("${property.chineseAlias}不能为空！",null,null,null,2);
+                        return false;
+                    }
+                </#if>
+            </#if>
+        </#if>
+    </#list>
+        return true;
     }
 
     //查询
     function updateHandler() {
         var entity=formToEntity(entity);
         var updateUrl;
+        if (!validateEntity(entity)){
+             return;
+        }
         if (isUpdate) {
             updateUrl="${"$"}{baseDir}/${"$"}{ctrlUrl}/update"
         } else {
@@ -310,7 +322,7 @@
                     var obj=result.entity;
                     entityToForm(obj);
                     isUpdate=true;
-                    parent.top.frmright.window.location.reload();
+                    top.Dialog.alert("创建/更新成功",null,null,null,2)
                 }
             },"json").error(function() {
                 top.Dialog.alert("数据创建/更新失败");
@@ -333,7 +345,11 @@
     function entityToForm(entity) {
         id=entity.${entity.idProperty.name};
         <#list entity.properties as property>
-        ${property.name}FormCtrl.val(entity.${property.name});
+            <#if generator.isBooleanProperty(property) || property.isReferenceProperty() >
+                ${property.name}FormCtrl.setValue(entity.${property.name});
+            <#else>
+                ${property.name}FormCtrl.val(entity.${property.name});
+            </#if>
         </#list>
     }
 
@@ -437,8 +453,9 @@
         });
 
         
-
-        getData${subEntity.classInfo.name}(false);
+        if (isUpdate) {
+            getData${subEntity.classInfo.name}(false);
+        }
 
     }
 

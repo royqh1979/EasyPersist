@@ -121,9 +121,18 @@
     <add-to-group group-id="EditorTabPopupMenu" />
   </action>
     <action
-            id="net.royqh.easypersist.actions.GenerateEditorAction"
-            class="net.royqh.easypersist.actions.GenerateEditorAction"
-            text="Generate Entity Editor" >
+            id="net.royqh.easypersist.actions.GenerateNormalStyleEditorAction"
+            class="net.royqh.easypersist.actions.GenerateNormalStyleEditorAction"
+            text="Generate Entity Editor (Normal Style)" >
+      <add-to-group group-id="ToolsMenu" anchor="first"/>
+      <add-to-group group-id="EditorPopupMenu" />
+      <add-to-group group-id="ProjectViewPopupMenu" />
+      <add-to-group group-id="EditorTabPopupMenu" />
+    </action>
+    <action
+            id="net.royqh.easypersist.actions.GenerateExcelStyleEditorAction"
+            class="net.royqh.easypersist.actions.GenerateExcelStyleEditorAction"
+            text="Generate Entity Editor (Excel Style)" >
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="ProjectViewPopupMenu" />

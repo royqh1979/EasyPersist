@@ -22,7 +22,7 @@ public class ServiceGenerator {
     private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
     private static ServiceGenerator generator=new ServiceGenerator();
 
-    public static void generateService(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
+    public static void generateService(EditorStyle editorStyle,PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
         String serviceClassName = CodeUtils.getServiceName(entity);
         String fileName = serviceClassName + ".java";
 
@@ -31,17 +31,19 @@ public class ServiceGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateServiceFile(entity, null, psiFileFactory);
+        PsiFile psiFile = generateServiceFile(editorStyle, entity, null, psiFileFactory);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
-        if (entity.hasSubEntity()) {
+        if (editorStyle==EditorStyle.NormalStyle) {
             for (SubEntityInfo subEntityInfo : entity.getSubEntities()) {
-                generateService(psiFileFactory, facade,codeStyleManager,subEntityInfo.getSubEntity(),psiOutputDir);
+                generateService(editorStyle, psiFileFactory, codeStyleManager, subEntityInfo.getSubEntity(), psiOutputDir);
             }
         }
     }
 
-    private static PsiFile generateServiceFile(Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+
+
+    private static PsiFile generateServiceFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
         String className = CodeUtils.getServiceName(entity);
         String persistorName=CodeUtils.getPersistorCompositorName(entity);
         StringWriter writer = new StringWriter();
@@ -57,7 +59,7 @@ public class ServiceGenerator {
         dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         dataModel.put("generator", generator);
         try {
-            if (entity.hasSubEntity()) {
+            if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             } else {

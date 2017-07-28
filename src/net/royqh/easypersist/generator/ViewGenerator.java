@@ -56,24 +56,20 @@ public class ViewGenerator {
 
     }
 
-    public static void generateJspViews(Entity entity, PsiDirectory psiOutputDir) {
-
-
+    public static void generateJspViews(EditorStyle editorStyle, Entity entity, PsiDirectory psiOutputDir) {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("generator", generator);
-        if (entity.hasSubEntity()) {
+        if (editorStyle==EditorStyle.NormalStyle) {
             dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
             generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
 
             Set<Entity> subEntites=new HashSet<>();
-            if (entity.hasSubEntity()) {
-                for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
-                    Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
-                    refEntities.addAll(subRefEntities);
-                }
+            for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
+                refEntities.addAll(subRefEntities);
             }
             refEntities.remove(entity);
             generateJspView(entity, psiOutputDir, entity.getName() + "-update.jsp", JspUpdateViewForFullEditorTemplate, dataModel);
