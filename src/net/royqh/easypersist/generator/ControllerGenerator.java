@@ -7,6 +7,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 import net.royqh.easypersist.model.Entity;
+import net.royqh.easypersist.model.MapRelationInfo;
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -56,17 +57,25 @@ public class ControllerGenerator {
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
-                Set<Entity> subEntites=new HashSet<>();
-                if (entity.hasSubEntity()) {
-                    for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
-                        //add entities referenced by subEntity
-                        Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
-                        refEntities.addAll(subRefEntities);
-                        //add import types used by subEntity
-                        types.addAll(CodeUtils.getTypeList(subEntityInfo.getSubEntity(), true));
-                    }
+                Set<Entity> serviceEntities=new HashSet<>();
+                for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                    //add entities referenced by subEntity
+                    Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
+                    refEntities.addAll(subRefEntities);
+                    //add import types used by subEntity
+                    types.addAll(CodeUtils.getTypeList(subEntityInfo.getSubEntity(), true));
+                    serviceEntities.add(subEntityInfo.getSubEntity());
+                }
+                for (MapRelationInfo mapRelationInfo:entity.getMapRelationInfos()){
+                    Entity mapEntity=entity.getMappingRepository().findEntityByClass(mapRelationInfo.getMappingEntityFullClassName());
+                    Set<Entity> mapRefEntities=CodeUtils.getRefencingEntities(mapEntity);
+                    refEntities.addAll(mapRefEntities);
+                    types.addAll(CodeUtils.getTypeList(mapEntity,true));
+                    serviceEntities.add(mapEntity);
                 }
                 refEntities.remove(entity);
+                serviceEntities.addAll(refEntities);
+                dataModel.put("serviceEntities",serviceEntities);
                 ControllerForFullEditorTemplate.process(dataModel, writer);
             } else {
                 ControllerForCodeEditorTemplate.process(dataModel, writer);

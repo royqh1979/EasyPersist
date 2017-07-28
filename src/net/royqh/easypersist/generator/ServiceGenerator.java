@@ -58,9 +58,11 @@ public class ServiceGenerator {
         dataModel.put("entity",entity);
         dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         dataModel.put("generator", generator);
+
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
+                dataModel.put("typeList",CodeUtils.getMappedTypeList(entity));
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             } else {
                 ServiceForCodeEditorTemplate.process(dataModel, writer);

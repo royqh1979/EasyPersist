@@ -201,6 +201,7 @@ public class PersistorsGenerator {
     private void createMappingListMethods(Entity entity, StringBuilder content) {
         for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
             methodGenerator.createCreateXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createBatchCreateXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createDeleteXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createBatchDeleteXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createCountXXXMappingMethod(entity, relationInfo, content);

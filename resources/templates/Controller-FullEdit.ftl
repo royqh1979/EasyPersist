@@ -27,14 +27,9 @@ import ${type};
 public class ${entity.classInfo.name}Controller {
     @Autowired
     private ${entity.classInfo.name}Service ${entity.name}Service;
-    <#list refEntities as refEntity>
+    <#list serviceEntities as servEntity>
     @Autowired
-    private ${refEntity.classInfo.name}Service ${refEntity.name}Service;
-    </#list>
-    <#list entity.subEntities as subEntityInfo>
-        <#assign subEntity=subEntityInfo.subEntity >
-    @Autowired
-    private ${subEntity.classInfo.name}Service ${subEntity.name}Service;
+    private ${servEntity.classInfo.name}Service ${servEntity.name}Service;
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
     private static final String jspPrefix= "";
@@ -368,6 +363,79 @@ public class ${entity.classInfo.name}Controller {
         logger.error("批量删除${subEntity.classInfo.name}对象失败:", e);
         return new Result(ProcessingResultType.Fail, e.getMessage());
     }
+    }
+</#list>
+
+<#list entity.mapRelationInfos as relationInfo>
+    <#assign mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.mappingEntityFullClassName) >
+    @RequestMapping(value = "/list${mapEntity.classInfo.name}ForGrid", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object list${mapEntity.classInfo.name}ForGrid(
+    @RequestParam("id") String idVal,
+    @RequestParam("pager.pageNo") int pageNo,
+    @RequestParam("pager.pageSize") int pageSize,
+    @RequestParam("sort") String orderBy,
+    @RequestParam("direction") SortType sortType) {
+        try {
+            int id;
+            if (!StringUtils.isEmpty(idVal)){
+                throw new RuntimeException("id为空!");
+            } else {
+                id=Integer.parseInt(idVal);
+            }
+            Pager pager = new Pager(pageSize, pageNo);
+            pager.setTotalRows(${entity.name}Service.count${mapEntity.classInfo.name}(id));
+            List<${mapEntity.classInfo.name}> ${mapEntity.name}List = ${entity.name}Service.find${mapEntity.classInfo.name}(id,orderBy, sortType, pager);
+            Grid<${mapEntity.classInfo.name}> result = new Grid<>(pager, ${mapEntity.name}List, orderBy, sortType);
+            return result;
+        } catch (RuntimeException e) {
+            logger.error("获取${mapEntity.classInfo.name}对象列表失败:", e);
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+
+    @RequestMapping(value = "/add${mapEntity.classInfo.name}", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object add${mapEntity.classInfo.name}(
+        @RequestParam("id") int id,
+        @RequestParam("${mapEntity.name}Ids") List<Integer> ${mapEntity.name}Ids
+    ) {
+        try {
+            ${entity.name}Service.add${mapEntity.classInfo.name}sTo${entity.classInfo.name}(id,${mapEntity.name}Ids);
+            return new Result(ProcessingResultType.Success, "添加成功");
+        } catch (Exception e) {
+            logger.error("添加${mapEntity.classInfo.name}对象到${entity.classInfo.name}失败:", e);
+            if (logger.isDebugEnabled()) {
+                for (Integer ${mapEntity.name}Id:${mapEntity.name}Ids) {
+                    logger.debug("add ${mapEntity.classInfo.name}.${mapEntity.idProperty.name}:" + ${mapEntity.name}Id+" to ${entity.classInfo.name}.${entity.idProperty.name}:"+id);
+                }
+            }
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+
+
+    @RequestMapping(value = "/delete${mapEntity.classInfo.name}", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object delete${mapEntity.classInfo.name}(@RequestParam("id") int id,
+        @RequestParam("${mapEntity.name}Ids") List<Integer> ${mapEntity.name}Ids) {
+        try {
+            ${entity.name}Service.delete${mapEntity.classInfo.name}sFrom${entity.classInfo.name}(id,${mapEntity.name}Ids);
+            return new Result(ProcessingResultType.Success, "删除成功");
+        } catch (Exception e) {
+            logger.error("从${entity.classInfo.name}中删除${mapEntity.classInfo.name}对象失败:", e);
+            if (logger.isDebugEnabled()) {
+                for (Integer ${mapEntity.name}Id:${mapEntity.name}Ids) {
+                    logger.debug("delete ${mapEntity.classInfo.name}.${mapEntity.idProperty.name}:" + ${mapEntity.name}Id+" from ${entity.classInfo.name}.${entity.idProperty.name}:"+id);
+                }
+            }
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
     }
 </#list>
 }

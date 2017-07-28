@@ -947,6 +947,46 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
+    public  void createBatchCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+        String mappingEntityId=mappingEntity.getName()+"Id";
+        String mappingEntityIds=mappingEntity.getName()+"Ids";
+        content.append("public void add");
+        content.append(StringUtils.capitalize(mappingEntity.getName()));
+        content.append("sTo");
+        content.append(StringUtils.capitalize(entity.getName())+  "(");
+
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,Iterable<");
+        content.append(TypeUtils.getObjectType(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType())));
+        content.append("> ");
+        content.append(mappingEntityIds);
+        content.append(") {\n");
+
+        content.append("String sql=\"");
+        content.append(sqlGenerator.generateCreateXXXMappingSQL(entity, relationInfo));
+        content.append("\";\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append("for (");
+        content.append(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType()));
+        content.append(" ");
+        content.append(mappingEntityId);
+        content.append(":");
+        content.append(mappingEntityIds);
+        content.append("){\n");
+        content.append(String.format("stmt.%s(1,id);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty())));
+        content.append(String.format("stmt.%s(2,%s);\n",
+                JdbcUtils.getColumnSetter(entity.getIdProperty()),
+                mappingEntityId));
+        content.append("stmt.addBatch();\n");
+        content.append("}\n");
+        content.append("stmt.executeBatch();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
     public  void createDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         String mappingEntityId=mappingEntity.getName()+"Id";
@@ -986,7 +1026,7 @@ public class MethodGenerator {
         content.append(StringUtils.capitalize(entity.getName())+  "(");
 
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" id,List<");
+        content.append(" id,Iterable<");
         content.append(TypeUtils.getObjectType(TypeUtils.getShortTypeName(mappingEntity.getIdProperty().getType())));
         content.append("> ");
         content.append(mappingEntityIds);

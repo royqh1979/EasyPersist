@@ -156,18 +156,8 @@ public class CodeUtils {
         for (SubEntityInfo subEntityInfo:entity.getSubEntities()){
             types.add(subEntityInfo.getEntityClassName());
         }
-        for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
-            types.add(relationInfo.getMappingEntityFullClassName());
-            Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-            if (mappingEntity==null) {
-                throw new RuntimeException("Not found entity definition for class "+relationInfo.getMappingEntityFullClassName());
-            }
-            /* 如果单独为某一个Entity生成Persistor, 这时我们不知道Persistor应该放在哪个包里 */
-            if (mappingEntity.getPersistorPackageName()!=null) {
-                types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(), ".")
-                        + "." + getPersistorName(mappingEntity));
-            }
-        }
+
+        getMappedTypeList(entity, types);
         types.removeAll(Constants.PRIMITIVE_TYPES);
         types.removeAll(Constants.BASIC_TYPES);
         return types;
@@ -183,5 +173,28 @@ public class CodeUtils {
             subEntities.add(subEntity);
         }
         return subEntities;
+    }
+
+
+
+    public static Set<String> getMappedTypeList(Entity entity) {
+        Set<String> types = new HashSet<>();
+        getMappedTypeList(entity, types);
+        return types;
+    }
+
+    private static void getMappedTypeList(Entity entity, Set<String> types) {
+        for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
+            types.add(relationInfo.getMappingEntityFullClassName());
+            Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+            if (mappingEntity==null) {
+                throw new RuntimeException("Not found entity definition for class "+relationInfo.getMappingEntityFullClassName());
+            }
+            /* 如果单独为某一个Entity生成Persistor, 这时我们不知道Persistor应该放在哪个包里 */
+            if (mappingEntity.getPersistorPackageName()!=null) {
+                types.add(mappingEntity.getPersistorPackageName().replaceAll(System.lineSeparator(), ".")
+                        + "." + getPersistorName(mappingEntity));
+            }
+        }
     }
 }
