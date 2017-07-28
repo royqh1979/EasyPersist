@@ -202,7 +202,6 @@
                     display: '操作', isAllowHide: false, align: 'left', width: 100,
                     render: function (rowdata, rowindex, value, column) {
                         return '<div class="padding_top4 padding_left5">'
-                                + '<span class="img_list hand" title="查看" onclick="onView(' + rowdata.${entity.idProperty.name} + ')"></span>'
                                 + '<span class="img_edit hand" title="修改" onclick="onEdit(' + rowdata.${entity.idProperty.name} + ')"></span>'
                                 + '<span class="img_delete hand" title="删除" onclick="onDelete(' + rowdata.${entity.idProperty.name} + ',' + rowindex + ')"></span>'
                                 + '</div>';
@@ -216,7 +215,7 @@
                 items: [
                     {text: '新增', click: addUnit, iconClass: 'icon_add'},
                     {line: true},
-                    {text: '批量删除', click: deleteUnit, iconClass: 'icon_delete'}
+                    {text: '批量删除', click: onBatchDelete, iconClass: 'icon_delete'}
                 ]
             }
         });
@@ -266,15 +265,6 @@
             Title: "添加", Width: 500, Height: 350
         });*/
     }
-    //查看
-    function onView(rowid) {
-        window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/view/"+rowid);
-        /*
-        top.Dialog.open({
-            URL: "${"$"}{baseDir}/${"$"}{ctrlUrl}/view/"+rowid,
-            Title: "添加", Width: 500, Height: 350
-        });*/
-    }
 
     //修改
     function onEdit(rowid) {
@@ -290,10 +280,11 @@
     function onDelete(rowid, rowidx) {
         top.Dialog.confirm("确定要删除该记录吗？", function () {
             //删除记录
-            $.post("/qui_ssh2/deleteUser.action",
-                    {"ids": rowid},
+            var row = grid.getRow(rowidx)
+            $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/delete",
+                    {"${entity.idProperty.name}": row.${entity.idProperty.name}},
                     function (result) {
-                        handleResult(result.status);
+                        handleResult(result);
                     }, "json");
             //刷新表格
             grid.loadData();
@@ -302,7 +293,7 @@
 
 
     //批量删除
-    function deleteUnit() {
+    function onBatchDelete() {
         var rows = grid.getSelectedRows();
         var rowsLength = rows.length;
 
@@ -310,10 +301,14 @@
             top.Dialog.alert("请选中要删除的记录!");
             return;
         }
+        var ${entity.idProperty.name}s=[];
+        for(var index in rows){
+            ${entity.idProperty.name}s.push(rows[index].${entity.idProperty.name});
+        }
         top.Dialog.confirm("确定要删除吗？", function () {
-            $.post("/qui_ssh2/deleteUser.action",
+            $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/batchDelete",
                     //获取所有选中行
-                    getSelectId(grid),
+                    {"${entity.idProperty.name}s":${entity.idProperty.name}s},
                     function (result) {
                         handleResult(result.status);
                     },
@@ -322,24 +317,14 @@
     }
     //删除后的提示
     function handleResult(result) {
-        if (result == 1) {
-            top.Dialog.alert("删除成功！", null, null, null, 1);
-            grid.loadData();
+        if(result && result.result && result.result=="Success"){
+            //成功
+            getData(false);
+        } else if (result && result.reason) {
+            top.Dialog.alert("删除失败，原因:"+result.reason);
         } else {
-            top.Dialog.alert("删除失败！");
+            top.Dialog.alert("删除失败");
         }
-    }
-
-    //获取所有选中行获取选中行的id 格式为 ids=1 & ids=2
-    function getSelectId(grid) {
-        var selectedRows = grid.getSelectedRows();
-        var selectedRowsLength = selectedRows.length;
-        var ids = "";
-
-        for (var i = 0; i < selectedRowsLength; i++) {
-            ids += selectedRows[i].userId + ",";
-        }
-        return {"ids": ids};
     }
 
     //查询

@@ -83,17 +83,19 @@
 </head>
 <c:choose>
     <c:when test="${"$"}{isUpdate}" >
-        <c:set var="title" value="更新开工申请表" />
+        <c:set var="title" value="更新${entity.chineseAlias}" />
     </c:when>
     <c:otherwise>
-        <c:set var="title" value="新建开工申请表" />
+        <c:set var="title" value="新建${entity.chineseAlias}" />
     </c:otherwise>
 </c:choose>
-<div class="box2" panelTitle="${"$"}{title}" id="updatePanel">
-    <form id="updateForm">
-        <input type="hidden" id="${entity.idProperty.name}" name="${entity.idProperty.name}" />
-        <table class="tableStyle" formMode="transparent">
-            <#list entity.properties as property>
+<div class="basicTab" id="myTab">
+    <div name="${entity.chineseAlias}" style="width:98%;">
+        <div class="box2" panelTitle="${"$"}{title}" id="updatePanel">
+            <form id="updateForm">
+                <input type="hidden" id="${entity.idProperty.name}" name="${entity.idProperty.name}" />
+                <table class="tableStyle" formMode="transparent">
+                <#list entity.properties as property>
                     <#if property.name!=entity.idProperty.name>
                         <tr>
                             <td>${property.chineseAlias}：</td>
@@ -123,24 +125,24 @@
                             </#if>
                         </tr>
                     </#if>
-            </#list>
-            <tr>
-                <td colspan="2">
-                    <button id="update" type="button" onclick="updateHandler()"><span class="icon_find">保存</span></button>
-                </td>
-            </tr>
-        </table>
-    </form>
-</div>
-
-<div class="basicTab" id="myTab">
-    <#list entity.subEntities as subEntityInfo>
-        <#assign subEntity=subEntityInfo.subEntity >
+                </#list>
+                    <tr>
+                        <td colspan="2">
+                            <button id="update" type="button" onclick="updateHandler()"><span class="icon_find">保存</span></button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+<#list entity.subEntities as subEntityInfo>
+    <#assign subEntity=subEntityInfo.subEntity >
     <div name="${subEntity.chineseAlias}" style="width:98%;">
         <div id="dataGrid${subEntity.classInfo.name}"></div>
     </div>
-    </#list>
+</#list>
 </div>
+
 
 <script type="text/javascript">
     /* 对主实体对象和公用 */
@@ -252,6 +254,14 @@
         $("#updatePanel").bind("stateChange", function (e, state) {
             $("#myTab").resetHeight();
         });
+
+        $("#myTab").bind("actived",function(e,i){
+        <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
+        <#assign gridName="grid"+subEntity.classInfo.name >
+            grid${subEntity.classInfo.name}.loadData();
+        </#list>
+        })
     }
 
     /* 填写updateForm */
@@ -300,6 +310,7 @@
                     var obj=result.entity;
                     entityToForm(obj);
                     isUpdate=true;
+                    parent.top.frmright.window.location.reload();
                 }
             },"json").error(function() {
                 top.Dialog.alert("数据创建/更新失败");
@@ -425,9 +436,9 @@
             }
         });
 
-        if (isUpdate) {
-            getData${subEntity.classInfo.name}(false);
-        }
+        
+
+        getData${subEntity.classInfo.name}(false);
 
     }
 
@@ -488,10 +499,14 @@
         //新增
     function add${subEntity.classInfo.name}() {
         var obj={
-        <#list entity.properties as property>
+        <#list subEntity.properties as property>
             <#if property.isReferenceProperty()>
-                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                <#if refEntity==entity>
+            ${property.name} : id
+                <#else>
             ${property.name}: ${refEntity.name}Data.list[0].value
+                </#if>
             <#else>
             ${property.name}: ${generator.getDefaultValue(property.type)}
             </#if>
@@ -528,68 +543,76 @@
 
     //编辑提交前事件
     function onBeforeSubmitEdit${subEntity.classInfo.name}(e){
-        if(e.newdata.userName==""){
-            top.Dialog.alert("姓名不能为空！",null,null,null,2);
+        <#list subEntity.properties as property>
+            <#if property!=subEntity.idProperty>
+                <#if property.isReferenceProperty()>
+                <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    <#if refEntity!=entity>
+        if (render${property.name?cap_first}ForGrid${subEntity.classInfo.name}(e.newdata)=="未选择"){
+            top.Dialog.alert("${property.chineseAlias}必须选择！",null,null,null,2);
             return false;
         }
-        else if (!validateInput(e.newdata.userName, "^[\u4e00-\u9fa5]+$")){
-            top.Dialog.alert("姓名需要是中文！",null,null,null,2);
+                    </#if>
+                <#else>
+                    <#if !(property.column.nullable) >
+        if(e.newdata.${property.name}==""){
+            top.Dialog.alert("${property.chineseAlias}不能为空！",null,null,null,2);
             return false;
         }
-
-        if(e.newdata.userLoginName==""){
-            top.Dialog.alert("用户名不能为空！",null,null,null,2);
-            return false;
-        }
-        else if (!validateInput(e.newdata.userLoginName, "^[0-9a-zA-Z]+$")){
-            top.Dialog.alert("用户名需要是字母或数字！",null,null,null,2);
-            return false;
-        }
-
-        if(e.newdata.userPassword==""){
-            top.Dialog.alert("密码不能为空！",null,null,null,2);
-            return false;
-        }
-        else if (e.newdata.userPassword.length<6||e.newdata.userPassword.length>11){
-            top.Dialog.alert("密码需要是6-11位！",null,null,null,2);
-            return false;
-        }
-        else if (!validateInput(e.newdata.userPassword, "^[0-9a-zA-Z]+$")){
-            top.Dialog.alert("密码需要是字母或数字！",null,null,null,2);
-            return false;
-        }
-
-
-
+                    </#if>
+                </#if>
+            </#if>
+        </#list>
     }
 
     //编辑后事件
     function onAfterSubmitEdit${subEntity.classInfo.name}(e)
     {
         //在这里一律作修改处理
-        var rowData = e.newdata;
-        rowData.userId = e.record.userId;
+        var obj = e.record;
+        console.log(e.newdata);
+
+        obj.${subEntityInfo.subEntityReferenceProperty.name} = id;
         //ajax方式提交数据到数据库
-        $.post("/qui_ssh2/saveUserdb.action",rowToBO(rowData),function(result){
-            if(result.id ==0 || result.id == ''){
-                top.Dialog.alert(result.message);
-            }
-        },"json");
-        //var row =certInfoGrid.getRow(e.rowindex);
-        //$.post("/material/certInfo/saveCertInfo.do?",rowToBO(row),function(){},"json");
+        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update${subEntity.classInfo.name}",
+                formToEntity${subEntity.classInfo.name}(obj),function(result){
+                    if(result && result.reason) {
+                        top.Dialog.alert("数据创建/更新失败, 原因:"+result.reason);
+                    }
+                    getData${subEntity.classInfo.name}(false);
+                },"json").error(function() {
+            top.Dialog.alert("数据创建/更新失败");
+        });
     }
+
+    function formToEntity${subEntity.classInfo.name}(obj) {
+        return {
+        <#list subEntity.properties as property>
+            <#if property.name == subEntityInfo.subEntityReferenceProperty.name>
+            ${property.name}:id
+            <#elseif generator.isBooleanProperty(property)>
+            ${property.name}:obj.${property.name}.toString()=="true" ? "y": "n"
+            <#else>
+            ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""
+            </#if>
+            <#sep>,</#sep>
+        </#list>
+        };
+    }
+
     //删除
     function onDelete${subEntity.classInfo.name}(rowidx){
         top.Dialog.confirm("确定要删除该记录吗？",function(){
             //删除记录
-            var row = g.getRow(rowidx)
-            $.post("/qui_ssh2/deleteUserdb.action",
-                    {"ids":row.userId},
+            var row = ${gridName}.getRow(rowidx)
+            $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/delete${subEntity.classInfo.name}",
+                    {"${subEntity.idProperty.name}":row.${subEntity.idProperty.name}},
                     function(result){
-                        handleResult(result);
-                    },"json");
-            //刷新表格
-            g.loadData();
+                        handleResult${subEntity.classInfo.name}(result);
+                    },"json").error(function() {
+                top.Dialog.alert("数据创建/更新失败");
+            });
+
         });
     }
 
@@ -604,38 +627,46 @@
             top.Dialog.alert("请选中要删除的记录!");
             return;
         }
+        var ${subEntity.idProperty.name}s=[];
+        for(var index in rows){
+            ${subEntity.idProperty.name}s.push(rows[index].${subEntity.idProperty.name});
+        }
         top.Dialog.confirm("确定要删除吗？", function () {
-            $.post("/qui_ssh2/deleteUser.action",
+            $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/batchDelete${subEntity.classInfo.name}",
                     //获取所有选中行
-                    getSelectId(grid1),
+                    {"${subEntity.idProperty.name}s":${subEntity.idProperty.name}s},
                     function (result) {
-                        handleResult${subEntity.classInfo.name}(result.status);
+                        handleResult${subEntity.classInfo.name}(result);
                     },
                     "json");
         });
     }
     //删除后的提示
     function handleResult${subEntity.classInfo.name}(result) {
-        if (result == 1) {
-            top.Dialog.alert("删除成功！", null, null, null, 1);
-            grid1.loadData();
+        if(result && result.result && result.result=="Success"){
+            //成功
+            getData${subEntity.classInfo.name}(false);
+        } else if (result && result.reason) {
+            top.Dialog.alert("删除失败，原因:"+result.reason);
         } else {
-            top.Dialog.alert("删除失败！");
+            top.Dialog.alert("删除失败");
         }
     }
 
     //刷新表格数据并重置排序和页数
+    /*
     function refresh${subEntity.classInfo.name}(isUpdate) {
         if (!isUpdate) {
             //重置排序
-            ${gridName}.options.sortName = 'userId';
+            ${gridName}.options.sortName = "${subEntity.idProperty.column.name}";
             ${gridName}.options.sortOrder = "asc";
             //页号重置为1
             ${gridName}.setNewPage(1);
         }
 
-        getData${gridName}();
+        getData${subEntity.classInfo.name}();
     }
+    */
     /* end of 子表 ${gridName} */
     </#list>
 </script>

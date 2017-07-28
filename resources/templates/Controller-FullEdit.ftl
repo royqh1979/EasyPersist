@@ -341,5 +341,33 @@ public class ${entity.classInfo.name}Controller {
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
     }
+
+    @RequestMapping(value = "/delete${subEntity.classInfo.name}", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object delete${subEntity.classInfo.name}(@RequestParam("${subEntity.idProperty.name}") ${subEntity.idProperty.type} ${subEntity.idProperty.name}) {
+        try {
+            ${subEntity.name}Service.delete(${subEntity.idProperty.name});
+            return new Result(ProcessingResultType.Success, "删除成功");
+        } catch (Exception e) {
+            logger.error("删除${subEntity.idProperty.name}为"+${subEntity.idProperty.name}+"的${subEntity.classInfo.name}对象失败:", e);
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/batchDelete${subEntity.classInfo.name}", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object batchDelete${subEntity.classInfo.name}(@RequestParam("${subEntity.idProperty.name}s[]")${subEntity.idProperty.type}[] ${subEntity.idProperty.name}s) {
+    try {
+        for (${subEntity.idProperty.type} ${subEntity.idProperty.name}:${subEntity.idProperty.name}s) {
+            ${subEntity.name}Service.delete(${subEntity.idProperty.name});
+        }
+        return new Result(ProcessingResultType.Success, "批量删除成功");
+    } catch (Exception e) {
+        logger.error("批量删除${subEntity.classInfo.name}对象失败:", e);
+        return new Result(ProcessingResultType.Fail, e.getMessage());
+    }
+    }
 </#list>
 }

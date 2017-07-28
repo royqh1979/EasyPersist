@@ -112,7 +112,7 @@ public class EntitiesGenerator {
                 //生成column对应的field变量
                 entityBuilder.append("  private ");
                 String propertyName = entity.getPropertyByColumnName(column.getName());
-                String propertyType = getType(column.getType(), column.isNotNull());
+                String propertyType = getType(column.getName(),column.getType(), column.isNotNull());
                 entityBuilder.append(propertyType);
                 entityBuilder.append(" ");
                 entityBuilder.append(propertyName);
@@ -122,7 +122,7 @@ public class EntitiesGenerator {
             for (Column column : table.getColumns()) {
                 //生成column对应的getter
                 String propertyName = entity.getPropertyByColumnName(column.getName());
-                String propertyType = getType(column.getType(), column.isNotNull());
+                String propertyType = getType(column.getName(),column.getType(), column.isNotNull());
 
                 if (column.isPrimaryKey()) {
                     entityBuilder.append("@Id\n");
@@ -345,7 +345,7 @@ public class EntitiesGenerator {
     }
 
     private static Pattern typePattern=Pattern.compile("^\\s*(\\w+)(.*)$") ;
-    private static String getType(String type, boolean isNotNull) {
+    private static String getType(String name,String type, boolean isNotNull) {
         Matcher matcher=typePattern.matcher(type);
         String s = matcher.replaceAll("$1").toLowerCase().trim();
         System.out.println("type:"+type+" - "+s);
@@ -376,6 +376,7 @@ public class EntitiesGenerator {
                 case "float4":
                     return "float";
                 case "doubleprecision":
+                case "double":
                 case "float8":
                     return "double";
             }
@@ -386,7 +387,7 @@ public class EntitiesGenerator {
                 case "serial8":
                 case "shortserial":
                 case "serial2":
-                    throw new RuntimeException("Serial Type should be not null!");
+                    throw new RuntimeException("column "+name+" Serial Type  should be not null!");
                 case "int":
                 case "integer":
                 case "int4":
@@ -406,6 +407,7 @@ public class EntitiesGenerator {
                 case "float4":
                     return "Float";
                 case "doubleprecision":
+                case "double":
                 case "float8":
                     return "Double";
             }
@@ -425,7 +427,7 @@ public class EntitiesGenerator {
             case "decimal":
                 return "BigDecimal";
         }
-        throw new RuntimeException(" Unsupported column type :" + type);
+        throw new RuntimeException("column "+name+":Unsupported column type :" + type);
     }
 
     private static String convertColumnName(String columnName) {
