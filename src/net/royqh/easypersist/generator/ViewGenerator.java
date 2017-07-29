@@ -12,9 +12,7 @@ import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,7 +22,10 @@ import java.util.Set;
 public class ViewGenerator {
     private static Template JspViewForCodeEditorTemplate = TemplateLoader.loadTemplate("View-CodeEditor.jsp.ftl");
     private static Template JspMainViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Main.jsp.ftl");
-    private static Template JspUpdateViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Update.jsp.ftl");
+    private static Template JspEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-Main.jsp.ftl");
+    private static Template JspEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-Entity.jsp.ftl");
+    private static Template JspSubEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-SubEntity.jsp.ftl");
+    private static Template JspNtoNMappingEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping.jsp.ftl");
     private static ViewGenerator generator = new ViewGenerator();
 
     private static void generateJspView(Entity entity, PsiDirectory psiOutputDir, String jspFileName, Template template, Map<String, Object> dataModel) {
@@ -57,27 +58,93 @@ public class ViewGenerator {
     }
 
     public static void generateJspViews(EditorStyle editorStyle, Entity entity, PsiDirectory psiOutputDir) {
+        if (editorStyle==EditorStyle.NormalStyle) {
+            /* entity 列表视图 */
+            generateMainJspViewFileForFullEditor(entity,psiOutputDir);
+            /* entity编辑视图-标签导航页 */
+            generateEditMainJspViewFileForFullEditor(entity,psiOutputDir);
+            /* entity编辑视图 */
+            generateEntityEditJspViewFileForFullEditor(entity,psiOutputDir);
+            /* subEntity 编辑视图 */
+            for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                generateSubEntityEditJspViewFileForFullEditor(entity,subEntityInfo,psiOutputDir);
+            }
+        } else {
+            generateJspViewFileForCodeEditor(entity, psiOutputDir);
+        }
+
+    }
+
+    /**
+     * subEntity编辑视图
+     * @param entity
+     * @param subEntityInfo
+     * @param psiOutputDir
+     */
+    private static void generateSubEntityEditJspViewFileForFullEditor(Entity entity, SubEntityInfo subEntityInfo, PsiDirectory psiOutputDir) {
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        dataModel.put("subEntityInfo",subEntityInfo);
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
+        refEntities.remove(entity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("generator", generator);
+
+        generateJspView(entity, psiOutputDir, entity.getName() + "-edit-"+subEntityInfo.getSubEntity().getName()+".jsp", JspSubEntityEditViewForFullEditorTemplate, dataModel);
+
+    }
+
+    /**
+     * entity编辑视图
+     * @param entity
+     * @param psiOutputDir
+     */
+    private static void generateEntityEditJspViewFileForFullEditor(Entity entity, PsiDirectory psiOutputDir) {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("generator", generator);
-        if (editorStyle==EditorStyle.NormalStyle) {
-            dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
-            generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+        generateJspView(entity, psiOutputDir, entity.getName() + "-edit-entity.jsp", JspEntityEditViewForFullEditorTemplate, dataModel);
+    }
 
-            Set<Entity> subEntites=new HashSet<>();
-            for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
-                Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
-                refEntities.addAll(subRefEntities);
-            }
-            refEntities.remove(entity);
-            generateJspView(entity, psiOutputDir, entity.getName() + "-update.jsp", JspUpdateViewForFullEditorTemplate, dataModel);
-        } else {
-            String fileName = entity.getName() + ".jsp";
-            generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorTemplate, dataModel);
-        }
+    /**
+     * entity编辑导航页
+     * @param entity
+     * @param psiOutputDir
+     */
+    private static void generateEditMainJspViewFileForFullEditor(Entity entity, PsiDirectory psiOutputDir) {
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        generateJspView(entity, psiOutputDir, entity.getName() + "-edit.jsp", JspEditViewForFullEditorTemplate, dataModel);
 
+    }
+
+    /**
+     *  entity列表视图
+     * @param entity
+     * @param psiOutputDir
+     */
+    private static void generateMainJspViewFileForFullEditor(Entity entity, PsiDirectory psiOutputDir) {
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("generator", generator);
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+        generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
+
+    }
+
+    private static void generateJspViewFileForCodeEditor(Entity entity, PsiDirectory psiOutputDir) {
+        String fileName = entity.getName() + ".jsp";
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("generator", generator);
+        generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorTemplate, dataModel);
     }
 
     public String getDefaultValue(String type) {

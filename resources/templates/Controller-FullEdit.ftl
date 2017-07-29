@@ -113,27 +113,32 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value="/create", method = RequestMethod.GET)
     public String createUI(Model model) {
-        ${entity.classInfo.name} ${entity.name}=new ${entity.classInfo.name}();
-        ${entity.name}.${entity.idProperty.setter}(0);
-        model.addAttribute("${entity.name}",${entity.name});
         model.addAttribute("isUpdate",false);
-        model.addAttribute("isSeperateMode",true);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
-        return  jspPrefix+"${entity.name}-update";
+        return  jspPrefix+"${entity.name}-edit";
     }
 
     @RequestMapping(value="/update/{id}", method = RequestMethod.GET)
     public String updateUI(Model model, @PathVariable("id")int id) {
-        ${entity.classInfo.name} ${entity.name}=${entity.name}Service.retrieve(id);
-        if (${entity.name}==null) {
-            throw new RuntimeException("找不到id为"+id+"的对象");
-        }
-        model.addAttribute("${entity.name}",${entity.name});
         model.addAttribute("isUpdate",true);
         model.addAttribute("id",id);
-        model.addAttribute("isSeperateMode",true);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
-        return  jspPrefix+"${entity.name}-update";
+        return  jspPrefix+"${entity.name}-edit";
+    }
+
+    @RequestMapping(value="/editUI-create", method = RequestMethod.GET)
+    public String subEditUIForCreate(Model model) {
+        model.addAttribute("isUpdate",false);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        return  jspPrefix+"${entity.name}-edit-entity";
+    }
+
+    @RequestMapping(value="/editUI-update/{id}", method = RequestMethod.GET)
+    public String subEditUIForUpdate(Model model, @PathVariable("id")int id) {
+        model.addAttribute("isUpdate",true);
+        model.addAttribute("id",id);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        return  jspPrefix+"${entity.name}-edit-entity";
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST,
@@ -249,6 +254,18 @@ public class ${entity.classInfo.name}Controller {
 <#list entity.subEntities as subEntityInfo>
     <#assign subEntity=subEntityInfo.subEntity >
     <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
+    @RequestMapping(value="/editUI-sub-${subEntity.name}/{id}", method = RequestMethod.GET)
+    public String subEditUIFor${subEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
+        ${entity.classInfo.name} ${entity.name}=${entity.name}Service.retrieve(id);
+        if (${entity.name}==null) {
+            throw new RuntimeException("找不到id为"+id+"的对象");
+        }
+        model.addAttribute("${entity.name}",${entity.name});
+        model.addAttribute("id",id);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        return  jspPrefix+"${entity.name}-edit-${subEntity.name}";
+    }
+
     @RequestMapping(value = "/list${subEntity.classInfo.name}ForGrid", method = RequestMethod.POST,
         produces = "application/json")
     @ResponseBody

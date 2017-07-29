@@ -18,6 +18,10 @@ import java.util.regex.Pattern;
  * Created by Roy on 2016/2/13.
  */
 public abstract class TypeUtils {
+
+    public static final String FILE_INFO_TYPE = "FileInfo";
+    private static final String DEPARTMENT_INFO_TYPE = "DepartmentInfo";
+
     public static boolean containsAnnotation(PsiModifierListOwner modifierListOwner, String... annotations) {
         return containsAnnotation(modifierListOwner.getModifierList(), annotations);
     }
@@ -193,5 +197,15 @@ public abstract class TypeUtils {
 
     public static boolean isWrapperType(String type) {
         return Constants.WRAPER_TYPES.contains(type);
+    }
+
+    public static boolean isFileInfoType(String type) {
+        String shortTypeName=getShortTypeName(type);
+        return FILE_INFO_TYPE.equals(shortTypeName);
+    }
+
+    public static boolean isDepartmentInfoType(String type) {
+        String shortTypeName=getShortTypeName(type);
+        return DEPARTMENT_INFO_TYPE.equals(shortTypeName);
     }
 }
