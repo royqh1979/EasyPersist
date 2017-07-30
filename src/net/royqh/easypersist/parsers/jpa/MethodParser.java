@@ -188,7 +188,11 @@ public class MethodParser {
             property= new SingleProperty(name, type, column);
         }
         String chineseAlias=AnnotationParser.parseChineseAlias(psiMethod);
-        property.setChineseAlias(chineseAlias);
+        if (chineseAlias!=null) {
+            property.setChineseAlias(chineseAlias);
+        } else if (TypeUtils.isChinese(name)){
+            property.setChineseAlias(name);
+        }
         if (type.equals("java.util.Date"))  {
             TemporalType temporalType = AnnotationParser.parseTemporal(psiMethod);
             if ( temporalType == null) {

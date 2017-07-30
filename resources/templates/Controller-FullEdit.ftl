@@ -274,11 +274,6 @@ public class ${entity.classInfo.name}Controller {
     <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
     @RequestMapping(value="/editUI-sub-${subEntity.name}/{id}", method = RequestMethod.GET)
     public String subEditUIFor${subEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
-        ${entity.classInfo.name} ${entity.name}=${entity.name}Service.retrieve(id);
-        if (${entity.name}==null) {
-            throw new RuntimeException("找不到id为"+id+"的对象");
-        }
-        model.addAttribute("${entity.name}",${entity.name});
         model.addAttribute("id",id);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-edit-${subEntity.name}";
@@ -403,6 +398,13 @@ public class ${entity.classInfo.name}Controller {
 
 <#list entity.mapRelationInfos as relationInfo>
     <#assign mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.mappingEntityFullClassName) >
+    @RequestMapping(value="/editUI-mapping-${mapEntity.name}/{id}", method = RequestMethod.GET)
+    public String mappingEditUIFor${mapEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
+        model.addAttribute("id",id);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        return  jspPrefix+"${entity.name}-mapping-${mapEntity.name}";
+    }
+
     @RequestMapping(value = "/list${mapEntity.classInfo.name}ForGrid", method = RequestMethod.POST,
     produces = "application/json")
     @ResponseBody
@@ -414,7 +416,7 @@ public class ${entity.classInfo.name}Controller {
     @RequestParam("direction") SortType sortType) {
         try {
             int id;
-            if (!StringUtils.isEmpty(idVal)){
+            if (StringUtils.isEmpty(idVal)){
                 throw new RuntimeException("id为空!");
             } else {
                 id=Integer.parseInt(idVal);
@@ -436,7 +438,7 @@ public class ${entity.classInfo.name}Controller {
     @ResponseBody
     public Object add${mapEntity.classInfo.name}(
         @RequestParam("id") int id,
-        @RequestParam("${mapEntity.name}Ids") List<Integer> ${mapEntity.name}Ids
+        @RequestParam("${mapEntity.name}Ids[]") List<Integer> ${mapEntity.name}Ids
     ) {
         try {
             ${entity.name}Service.add${mapEntity.classInfo.name}sTo${entity.classInfo.name}(id,${mapEntity.name}Ids);
@@ -458,7 +460,7 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object delete${mapEntity.classInfo.name}(@RequestParam("id") int id,
-        @RequestParam("${mapEntity.name}Ids") List<Integer> ${mapEntity.name}Ids) {
+        @RequestParam("${mapEntity.name}Ids[]") List<Integer> ${mapEntity.name}Ids) {
         try {
             ${entity.name}Service.delete${mapEntity.classInfo.name}sFrom${entity.classInfo.name}(id,${mapEntity.name}Ids);
             return new Result(ProcessingResultType.Success, "删除成功");

@@ -6,6 +6,7 @@ import com.intellij.psi.PsiFile;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import net.royqh.easypersist.model.Entity;
+import net.royqh.easypersist.model.MapRelationInfo;
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -70,9 +71,29 @@ public class ViewGenerator {
             for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
                 generateSubEntityEditJspViewFileForFullEditor(entity,subEntityInfo,psiOutputDir);
             }
+            /* nton映射关系编辑视图 */
+            for (MapRelationInfo relationInfo:entity.getMapRelationInfos()) {
+                generateNtoNRelationEditJspViewFileForFullEditor(entity,relationInfo,psiOutputDir);
+            }
         } else {
             generateJspViewFileForCodeEditor(entity, psiOutputDir);
         }
+
+    }
+
+    private static void generateNtoNRelationEditJspViewFileForFullEditor(Entity entity, MapRelationInfo mapRelationInfo, PsiDirectory psiOutputDir) {
+        Map<String, Object> dataModel = new HashMap<>();
+        Entity relationEntity=entity.getMappingRepository().findEntityByClass(mapRelationInfo.getMappingEntityFullClassName());
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(relationEntity);
+        refEntities.remove(entity);
+        dataModel.put("entity", entity);
+        dataModel.put("mapRelationInfo",mapRelationInfo);
+        dataModel.put("mapRelationEntity",relationEntity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("generator", generator);
+
+        generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-"+relationEntity.getName()+".jsp", JspNtoNMappingEditViewForFullEditorTemplate, dataModel);
+
 
     }
 
@@ -84,10 +105,11 @@ public class ViewGenerator {
      */
     private static void generateSubEntityEditJspViewFileForFullEditor(Entity entity, SubEntityInfo subEntityInfo, PsiDirectory psiOutputDir) {
         Map<String, Object> dataModel = new HashMap<>();
-        dataModel.put("entity", entity);
-        dataModel.put("subEntityInfo",subEntityInfo);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
         refEntities.remove(entity);
+        dataModel.put("entity", entity);
+        dataModel.put("subEntityInfo",subEntityInfo);
+        dataModel.put("subEntity",subEntityInfo.getSubEntity());
         dataModel.put("refEntities", refEntities);
         dataModel.put("generator", generator);
 
@@ -156,7 +178,7 @@ public class ViewGenerator {
             case "short":
                 return "0";
             case "String":
-                return "\"未定义\"";
+                return "\"\"";
             case "Date":
                 return "\"\"";
             case "boolean":

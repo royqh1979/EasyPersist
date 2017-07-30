@@ -6,7 +6,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <base href="${"$"}{baseDir}/"/>
-    <title>抚育申请开工表编辑</title>
+    <title>${subEntity.chineseAlias}</title>
 
     <!--框架必需start-->
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/jquery.js"></script>
@@ -61,7 +61,6 @@
 
 </head>
 <body>
-<#assign subEntity=subEntityInfo.subEntity >
     <div id="dataGrid${subEntity.classInfo.name}"></div>
 <script type="text/javascript">
     var id=${"$"}{id};
@@ -93,14 +92,6 @@
     <#list refEntities as refEntity>
         loadReferenceData("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${refEntity.classInfo.name}",${refEntity.name}Data,"${refEntity.name}" ,refresh);
     </#list>
-    }
-
-    function initBooleans() {
-        <#list entity.properties as property>
-            <#if generator.isBooleanProperty(property) >
-                ${property.name}FormCtrl[0].data=booleanData;
-            </#if>
-        </#list>
     }
 
     function initComplete() {

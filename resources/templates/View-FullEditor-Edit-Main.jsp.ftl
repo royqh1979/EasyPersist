@@ -69,7 +69,7 @@
 <div class="box1" panelTitle="${entity.chineseAlias}编辑">
     <div class="basicTab" iframeMode="true" id="myTab">
         <div style="width:100%;" id="tabContent">
-            <IFRAME scrolling="no" width="100%" height="100%" frameBorder=0 id=frmrightChild name=frmrightChild onload="iframeHeight('frmrightChild')" allowTransparency="true"></IFRAME>
+            <IFRAME scrolling="no" width="100%" height="100%" frameBorder=0 id=frmrightChild name=frmrightChild allowTransparency="true"></IFRAME>
         </div>
     </div>
 </div>
@@ -90,6 +90,11 @@
                 ,{ name:"${subEntity.chineseAlias}",
                    url:"${"$"}{baseDir}/${"$"}{ctrlUrl}/editUI-sub-${subEntity.name}/${"$"}{id}"}
         </#list>
+        <#list entity.mapRelationInfos as mapRelationInfo>
+            <#assign relationEntity=entity.mappingRepository.findEntityByClass(mapRelationInfo.mappingEntityFullClassName) >
+                ,{ name:"${relationEntity.chineseAlias}",
+            url:"${"$"}{baseDir}/${"$"}{ctrlUrl}/editUI-mapping-${relationEntity.name}/${"$"}{id}"}
+        </#list>
         </c:when>
         <c:otherwise>
                 { name:"新建${entity.chineseAlias}",
@@ -98,7 +103,11 @@
         </c:choose>
             ]
         }
-        myTab.attr('data',JSON.stringify(data));
+        if (myTab.data) {
+            myTab.data('data',data)
+        } else {
+            myTab.attr('data',JSON.stringify(data));
+        }
         myTab.render();
     }
     function customHeightSet(contentHeight) {
