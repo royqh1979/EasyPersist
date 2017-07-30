@@ -7,14 +7,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <base href="${"$"}{baseDir}/"/>
     <title>${entity.chineseAlias}编辑</title>
-    <!--框架必需start-->
+    <!--分离模式必须start -->
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/jquery.js"></script>
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/language/cn.js"></script>
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/framework.js"></script>
-    <link href="${"$"}{baseDir}/qui/libs/css/import_basic.css" rel="stylesheet" type="text/css"/>
-    <link rel="stylesheet" type="text/css" id="skin" prePath="${"$"}{baseDir}/qui/"/>
-    <link rel="stylesheet" type="text/css" id="customSkin"/>
-    <!--框架必需end-->
+    <link href="${"$"}{baseDir}/qui/libs/css/import_basic.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" id="skin" prePath="${"$"}{baseDir}/qui/" splitMode="true" href="${"$"}{baseDir}/qui/libs/skins/blue/style.css"/>
+    <link rel="stylesheet" type="text/css" id="customSkin" href="${"$"}{baseDir}/qui/system/layout/skin/style.css"/>
+    <!--分离模式必须end -->
 
     <!--数据表格start-->
     <script src="${"$"}{baseDir}/qui/libs/js/table/quiGrid.js" type="text/javascript"></script>
@@ -50,10 +50,6 @@
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/form/datePicker/WdatePicker.js"></script>
     <!-- 日期选择框end -->
 
-    <!--基本选项卡start-->
-    <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/nav/basicTab.js"></script>
-    <!--基本选项卡end-->
-
     <!-- form js -->
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/form/form.js"></script>
     <!-- form js -->
@@ -75,30 +71,26 @@
             <#if property.name!=entity.idProperty.name>
                 <tr>
                     <td>${property.chineseAlias}：</td>
+                    <td>
                     <#if property.isReferenceProperty() >
                         <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                        <td>
-                            <select prompt="请选择${refEntity.chineseAlias}" id="${property.name}" name="${property.name}" ></select>
-                        </td>
+                        <#if generator.isDepartmentInfoType(refEntity) >
+                            <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${property.name}" name="${property.name}"></div>
+                        <#else>
+                            <select prompt="请选择${refEntity.chineseAlias}" id="${property.name}" name="${property.name}" relValue=""></select>
+                        </#if>
                     <#elseif generator.isBooleanProperty(property) >
-                        <td>
-                            <select prompt="${property.chineseAlias}" id="${property.name}" name="${property.name}" ></select>
-                        </td>
+                        <select prompt="${property.chineseAlias}" id="${property.name}" name="${property.name}" ></select>
                     <#elseif generator.isIntProperty(property) >
-                        <td>
-                            <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
-                        </td>
+                        <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
                     <#elseif generator.isNumberProperty(property) >
-                        <td colspan="4">
-                            <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="positiveDecimal"  watermark="请输入合法数字"/>
-                        </td>
+                        <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="positiveDecimal"  watermark="请输入合法数字"/>
                     <#elseif generator.isDateProperty(property) >
-                        <td><input type="text" id="${property.name}" name="${property.name}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
+                        <input type="text" id="${property.name}" name="${property.name}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/>
                     <#else>
-                        <td>
-                            <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" />
-                        </td>
+                        <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" />
                     </#if>
+                    </td>
                 </tr>
             </#if>
         </#list>
@@ -142,12 +134,14 @@
                     <#list indexedProperties as indexProperty>
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
+                            <#if !generator.isDepartmentInfoType(refEntity)>
                             if (name == '${refEntity.name}') {
                                 var ctrl=$("#${indexProperty.name}");
                                 ctrl.data("data",list);
                                 //刷新下拉框
                                 ctrl.render();
                             }
+                            </#if>
                         </#if>
                     </#list>
                     }
@@ -289,8 +283,15 @@
     <#list entity.properties as property>
         <#if generator.isBooleanProperty(property)>
         ${property.name}:${property.name}FormCtrl.val().toString()=="true" ? "y": "n"
+        <#elseif property.isReferenceProperty()>
+            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+            <#if generator.isDepartmentInfoType(refEntity)>
+        ${property.name}:${property.name}FormCtrl.attr('relValue')
+            <#else>
+        ${property.name}: ${property.name}FormCtrl.val()
+            </#if>
         <#else>
-    ${property.name}: ${property.name}FormCtrl.val()
+        ${property.name}: ${property.name}FormCtrl.val()
         </#if>
         <#sep>,</#sep>
     </#list>

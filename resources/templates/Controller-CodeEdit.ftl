@@ -19,6 +19,9 @@ import net.royqh.lang.DateTools;
 
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 <#list typeList as type>
 import ${type};
@@ -30,8 +33,13 @@ public class ${entity.classInfo.name}Controller {
     @Autowired
     private ${entity.classInfo.name}Service ${entity.name}Service;
     <#list refEntities as refEntity>
+        <#if generator.isDepartmentInfoType(refEntity)>
+    @Autowired
+    private DepartmentService ${refEntity.name}Service;
+        <#else >
     @Autowired
     private ${refEntity.classInfo.name}Service ${refEntity.name}Service;
+        </#if>
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
     private static final String jspPrefix= "";
@@ -61,6 +69,16 @@ public class ${entity.classInfo.name}Controller {
     }
 
 <#list refEntities as refEntity>
+    <#if generator.isDepartmentInfoType(refEntity)>
+    @RequestMapping(value="/listDepartmentInfoTree",method = RequestMethod.GET,
+    produces = "application/json")
+    @ResponseBody
+    public Map<String,List> listDepartmentInfoTree(HttpServletRequest request){
+        Map<String, List> result = ${refEntity.name}Service.getDepartmentTreeMap();
+        return result;
+    }
+    </#if>
+
     @RequestMapping(value = "/list${refEntity.classInfo.name}", method = RequestMethod.POST,
             produces = "application/json")
     @ResponseBody

@@ -156,7 +156,11 @@
                         <#if property.isReferenceProperty()>
                             <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                             <#if refEntity!=entity>
-                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                                <#if generator.isDepartmentInfoType(refEntity)>
+                                    { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree",selWidth:145 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                                <#else>
+                                    { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                                </#if>
                             </#if>
                         <#elseif generator.isBooleanProperty(property) >
                             { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},

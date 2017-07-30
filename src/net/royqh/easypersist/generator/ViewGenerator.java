@@ -9,6 +9,7 @@ import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.model.SubEntityInfo;
 import net.royqh.easypersist.utils.TypeUtils;
+import net.royqh.parser.model.Index;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -208,5 +209,13 @@ public class ViewGenerator {
 
     public boolean isDateProperty(SingleProperty property) {
         return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
+    }
+
+    public boolean isDepartmentInfoType(Entity entity) {
+        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
+    }
+
+    public boolean isFileInfoType(Entity entity) {
+        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
     }
 }

@@ -166,8 +166,13 @@
                     <#if !firstColumn>,<#else><#assign firstColumn=false ></#if>
                     <#if property.isReferenceProperty()>
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
-                            headerRender:genHeaderRender("${property.chineseAlias}")}
+                        <#if generator.isDepartmentInfoType(refEntity)>
+                            { name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree" ,selWidth:145 },isSort:false,render:render${property.name?cap_first},
+                                headerRender:genHeaderRender("${property.chineseAlias}")}
+                        <#else>
+                            { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
+                                headerRender:genHeaderRender("${property.chineseAlias}")}
+                        </#if>
                     <#elseif generator.isBooleanProperty(property) >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first},
                             headerRender:genHeaderRender("${property.chineseAlias}")}

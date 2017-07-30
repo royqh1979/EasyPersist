@@ -19,7 +19,7 @@ public class ${entity.classInfo.name}Service {
     public int countAll(<#list indexedProperties as indexProperty>
         <#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
             Date end${indexProperty.name?cap_first}
-        <#else>${indexProperty.type} ${indexProperty.name}</#if><#sep>,</#sep></#list>) {
+        <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name}</#if><#sep>,</#sep></#list>) {
         return persistor.countAll(<#list indexedProperties as indexProperty>
             <#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
                 end${indexProperty.name?cap_first}
@@ -33,7 +33,7 @@ public class ${entity.classInfo.name}Service {
     public List<${entity.classInfo.name}> findAll(
         <#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
         Date end${indexProperty.name?cap_first},
-        <#else>${indexProperty.type} ${indexProperty.name},</#if>
+        <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
         </#list>String orderBy, SortType sortType, Pager pager) {
     return persistor.findAll(<#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
             end${indexProperty.name?cap_first},

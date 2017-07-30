@@ -59,9 +59,15 @@
                     <td>${indexProperty.chineseAlias}：</td>
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                            <td colspan="4">
-                            <select prompt="请选择${refEntity.chineseAlias}" id="${indexProperty.name}" name="${indexProperty.name}"></select>
-                        </td>
+                            <#if generator.isDepartmentInfoType(refEntity)>
+                                <td colspan="4">
+                                    <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${indexProperty.name}" name="${indexProperty.name}" relValue=""></div>
+                                </td>
+                            <#else>
+                                <td colspan="4">
+                                <select prompt="请选择${refEntity.chineseAlias}" id="${indexProperty.name}" name="${indexProperty.name}"></select>
+                                </td>
+                            </#if>
                         <#elseif generator.isIntProperty(indexProperty) >
                             <td colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
@@ -123,12 +129,14 @@
                         <#list indexedProperties as indexProperty>
                             <#if indexProperty.isReferenceProperty() >
                                 <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
+                                <#if !generator.isDepartmentInfoType(refEntity)>
                         if (name == '${refEntity.name}') {
                             var ctrl=$("#${indexProperty.name}");
                             ctrl.data("data",list);
                             //刷新下拉框
                             ctrl.render();
                         }
+                                </#if>
                             </#if>
                         </#list>
                     }
@@ -230,7 +238,11 @@
     <#list indexedProperties as indexProperty>
         <#if indexProperty.isReferenceProperty() >
             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                    ${indexProperty.name}: $('#${indexProperty.name}').val(),
+             <#if generator.isDepartmentInfoType(refEntity)>
+                ${indexProperty.name}: $('#${indexProperty.name}').attr('relValue'),
+             <#else>
+                ${indexProperty.name}: $('#${indexProperty.name}').val(),
+             </#if>
         <#elseif generator.isDateProperty(indexProperty) >
                     start${indexProperty.name?cap_first}: $('#start${indexProperty.name?cap_first}').val(),
                     end${indexProperty.name?cap_first}: $('#end${indexProperty.name?cap_first}').val(),
@@ -267,8 +279,8 @@
     }
 
     //修改
-    function onEdit(rowid) {
-        window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/update/"+rowid);
+    function onEdit(id) {
+        window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/update/"+id);
         /*
         top.Dialog.open({
             URL: "${"$"}{baseDir}/${"$"}{ctrlUrl}/update/"+rowid,
