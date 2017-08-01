@@ -95,13 +95,7 @@
     }
 
     function initComplete() {
-        //当提交表单刷新本页面时关闭弹窗
-        top.Dialog.close();
-
         loadAllReferenceData(false);
-        initBooleans();
-
-
         initGrid${subEntity.classInfo.name}();
 
     }
@@ -154,18 +148,21 @@
                                 </#if>
                             </#if>
                         <#elseif generator.isBooleanProperty(property) >
-                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',editor: { type: 'select', data: booleanData,selWidth:50 },isSort:true,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
                         <#elseif property.isTemporal() >
-                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false},
+                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,type:'date',editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:true},
                         <#else>
                             <#if generator.isIntProperty(property) >
                                 <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
+                                <#assign sortType="int" >
                             <#elseif generator.isNumberProperty(property) >
                                 <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
+                                <#assign sortType="float" >
                             <#else>
                                 <#assign limit="" />
+                                <#assign sortType="string" >
                             </#if>
-                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false},
+                            { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,type:'${sortType}',editor: { type: 'text' ${limit} },isSort:true},
                         </#if>
                     </#if>
                 </#list>
@@ -187,11 +184,12 @@
                     }
                 }
             ],
-            data:[], sortName: '${subEntity.idProperty.column.name}', rownumbers: true, checkbox: true,
+            data:[], sortName: '${subEntity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
             enabledEdit: true,clickToEdit: false,onDblClickRow:function(rowdata, rowindex){
                 ${gridName}.beginEdit(rowindex);
             },onBeforeEdit: onBeforeEdit${subEntity.classInfo.name}, onBeforeSubmitEdit: onBeforeSubmitEdit${subEntity.classInfo.name},onAfterSubmitEdit: onAfterSubmitEdit${subEntity.classInfo.name},
+            onReload: onReload, onChangeSort: onChangeSort, dataAction:'server',
             toolbar: {
                 items: [
                     {text: '新增', click: add${subEntity.classInfo.name}, iconClass: 'icon_add'},
@@ -205,6 +203,14 @@
             }
         });
 
+        getData${subEntity.classInfo.name}(false);
+    }
+
+    function onReload() {
+        getData${subEntity.classInfo.name}(false);
+    }
+
+    function onChangeSort() {
         getData${subEntity.classInfo.name}(false);
     }
 

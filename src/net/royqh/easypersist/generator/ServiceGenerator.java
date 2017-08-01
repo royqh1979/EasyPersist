@@ -11,6 +11,7 @@ import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +21,7 @@ public class ServiceGenerator {
 
     private static Template ServiceForCodeEditorTemplate =TemplateLoader.loadTemplate("Service-CodeEditor.ftl");
     private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
+    private static Template ServiceForSubEntityFullEditorTemplate =TemplateLoader.loadTemplate("Service-SubEntityFullEditor.ftl");
     private static ServiceGenerator generator=new ServiceGenerator();
 
     public static void generateService(EditorStyle editorStyle,PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
@@ -36,11 +38,50 @@ public class ServiceGenerator {
         psiOutputDir.add(psiFile);
         if (editorStyle==EditorStyle.NormalStyle) {
             for (SubEntityInfo subEntityInfo : entity.getSubEntities()) {
-                generateService(editorStyle, psiFileFactory, codeStyleManager, subEntityInfo.getSubEntity(), psiOutputDir);
+                generateSubEntityService(psiFileFactory, codeStyleManager, subEntityInfo, entity, psiOutputDir);
             }
         }
     }
 
+    private static void generateSubEntityService(PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, SubEntityInfo subEntityInfo, Entity entity, PsiDirectory psiOutputDir) {
+        Entity subEntity=subEntityInfo.getSubEntity();
+        String serviceClassName = CodeUtils.getServiceName(subEntity);
+        String fileName = serviceClassName + ".java";
+
+        PsiFile oldFile = psiOutputDir.findFile(fileName);
+        //We Only Create compositor when it is not existed;
+        if (oldFile != null) {
+            oldFile.delete();
+        }
+        PsiFile psiFile = generateSubEntityServiceFile(subEntityInfo, psiFileFactory);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
+        psiOutputDir.add(psiFile);
+    }
+
+    private static PsiFile generateSubEntityServiceFile(SubEntityInfo subEntityInfo, PsiFileFactory psiFileFactory) {
+        Entity subEntity=subEntityInfo.getSubEntity();
+        String className = CodeUtils.getServiceName(subEntity);
+        StringWriter writer = new StringWriter();
+        writer.append("package dummy;\n");
+        /*---*/
+        Map<String,Object> dataModel=new HashMap<>();
+        dataModel.put("subEntity",subEntityInfo.getSubEntity());
+        dataModel.put("subEntityInfo",subEntityInfo);
+        dataModel.put("idType", TypeUtils.getShortTypeName(subEntityInfo.getSubEntity().getIdProperty().getType()));
+        dataModel.put("generator", generator);
+        dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(subEntity));
+        dataModel.put("typeList",CodeUtils.getMappedTypeList(subEntity));
+        dataModel.put("refPropertyType",TypeUtils.getShortTypeName(subEntityInfo.getSubEntityReferenceProperty().getType()));
+        try {
+            ServiceForSubEntityFullEditorTemplate.process(dataModel,writer);
+            dataModel.clear();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
+                writer.toString());
+    }
 
 
     private static PsiFile generateServiceFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
@@ -87,5 +128,9 @@ public class ServiceGenerator {
 
     public boolean isRangeTypeProperty(SingleProperty property){
         return TypeUtils.isRangeTypeProperty(property);
+    }
+
+    public List<SingleProperty> getIndexedProperties(Entity entity) {
+        return CodeUtils.getAllIndexProperties(entity);
     }
 }

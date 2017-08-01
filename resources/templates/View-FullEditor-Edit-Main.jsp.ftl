@@ -15,6 +15,7 @@
     <link href="${"$"}{baseDir}/qui/libs/css/import_basic.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" id="skin" prePath="${"$"}{baseDir}/qui/" splitMode="true" href="${"$"}{baseDir}/qui/libs/skins/blue/style.css"/>
     <link rel="stylesheet" type="text/css" id="customSkin" href="${"$"}{baseDir}/qui/system/layout/skin/style.css"/>
+    <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/main.js"></script>
     <!--分离模式必须end -->
 
     <!--弹窗组件start-->
@@ -69,7 +70,7 @@
 <div class="box1" panelTitle="${entity.chineseAlias}编辑">
     <div class="basicTab" iframeMode="true" id="myTab">
         <div style="width:100%;" id="tabContent">
-            <IFRAME scrolling="no" width="100%" height="100%" frameBorder=0 id=frmrightChild name=frmrightChild allowTransparency="true"></IFRAME>
+            <IFRAME scrolling="yes" width="100%" height="100%" frameBorder=0 id=frmrightChild name=frmrightChild allowTransparency="true"></IFRAME>
         </div>
     </div>
 </div>
@@ -111,7 +112,7 @@
         myTab.render();
     }
     function customHeightSet(contentHeight) {
-        $("#tabContent").height(contentHeight - 130)
+        $("#tabContent").height(contentHeight - 50)
     }
 </script>
 </html>

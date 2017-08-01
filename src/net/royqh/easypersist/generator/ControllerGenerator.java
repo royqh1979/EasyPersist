@@ -125,6 +125,11 @@ public class ControllerGenerator {
                     content.append("(");
                     content.append("new Date()");
                     content.append(");\n");
+                } else if ("String".equals(shortTypeName)){
+                    content.append(entity.getName());
+                    content.append(".");
+                    content.append(property.getSetter());
+                    content.append("(\"\");\n");
                 } else {
                     content.append(" throw new RuntimeException(\"param for " + property.getName() + " is empty!\");\n");
                 }
@@ -203,6 +208,10 @@ public class ControllerGenerator {
 
     public boolean isFileInfoType(Entity entity) {
         return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
+    }
+
+    public List<SingleProperty> getIndexedProperties(Entity entity) {
+        return CodeUtils.getAllIndexProperties(entity);
     }
 }
 

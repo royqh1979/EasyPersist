@@ -15,6 +15,7 @@ import net.royqh.parser.model.Index;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public class ViewGenerator {
     private static Template JspEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-Entity.jsp.ftl");
     private static Template JspSubEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-SubEntity.jsp.ftl");
     private static Template JspNtoNMappingEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping.jsp.ftl");
+    private static Template JspNtoNMappingAddEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping-Add.jsp.ftl");
     private static ViewGenerator generator = new ViewGenerator();
 
     private static void generateJspView(Entity entity, PsiDirectory psiOutputDir, String jspFileName, Template template, Map<String, Object> dataModel) {
@@ -56,7 +58,6 @@ public class ViewGenerator {
                 }
             }
         }
-
     }
 
     public static void generateJspViews(EditorStyle editorStyle, Entity entity, PsiDirectory psiOutputDir) {
@@ -74,6 +75,7 @@ public class ViewGenerator {
             /* nton映射关系编辑视图 */
             for (MapRelationInfo relationInfo:entity.getMapRelationInfos()) {
                 generateNtoNRelationEditJspViewFileForFullEditor(entity,relationInfo,psiOutputDir);
+                generateNtoNRelationAddEditJspViewFileForFullEditor(entity,relationInfo,psiOutputDir);
             }
         } else {
             generateJspViewFileForCodeEditor(entity, psiOutputDir);
@@ -81,20 +83,31 @@ public class ViewGenerator {
 
     }
 
-    private static void generateNtoNRelationEditJspViewFileForFullEditor(Entity entity, MapRelationInfo mapRelationInfo, PsiDirectory psiOutputDir) {
+    private static void generateNtoNRelationAddEditJspViewFileForFullEditor(Entity entity, MapRelationInfo mapRelationInfo, PsiDirectory psiOutputDir) {
         Map<String, Object> dataModel = new HashMap<>();
         Entity relationEntity=entity.getMappingRepository().findEntityByClass(mapRelationInfo.getMappingEntityFullClassName());
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(relationEntity);
-        refEntities.remove(entity);
-        dataModel.put("entity", entity);
         dataModel.put("mapRelationInfo",mapRelationInfo);
         dataModel.put("mapRelationEntity",relationEntity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("generator", generator);
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(relationEntity));
 
-        generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-"+relationEntity.getName()+".jsp", JspNtoNMappingEditViewForFullEditorTemplate, dataModel);
+        generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-add-"+relationEntity.getName()+".jsp", JspNtoNMappingAddEditViewForFullEditorTemplate, dataModel);
+    }
 
+    private static void generateNtoNRelationEditJspViewFileForFullEditor(Entity entity, MapRelationInfo mapRelationInfo, PsiDirectory psiOutputDir) {
+        Map<String, Object> dataModel = new HashMap<>();
+        Entity relationEntity = entity.getMappingRepository().findEntityByClass(mapRelationInfo.getMappingEntityFullClassName());
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(relationEntity);
+        refEntities.remove(entity);
+        dataModel.put("entity", entity);
+        dataModel.put("mapRelationInfo", mapRelationInfo);
+        dataModel.put("mapRelationEntity", relationEntity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("generator", generator);
 
+        generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-" + relationEntity.getName() + ".jsp", JspNtoNMappingEditViewForFullEditorTemplate, dataModel);
     }
 
     /**

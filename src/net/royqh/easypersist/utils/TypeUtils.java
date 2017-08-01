@@ -215,12 +215,12 @@ public abstract class TypeUtils {
         return false;
     }
 
-    public static boolean isString(String type) {
+    public static boolean isStringType(String type) {
         return "String".equals(TypeUtils.getShortTypeName(TypeUtils.getObjectType(type)));
     }
 
     public static boolean isStringType(SingleProperty singleProperty) {
-        return isString(singleProperty.getType());
+        return isStringType(singleProperty.getType());
     }
 
 

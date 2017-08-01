@@ -198,11 +198,20 @@
                 <#if ! (property.name == entity.idProperty.name) >
                     <#if property.isReferenceProperty()>
                         <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                        {display: '${property.chineseAlias}', name: '${property.name}',align: 'left', width: "120",render:render${property.name?cap_first}},
+                        {display: '${property.chineseAlias}', name: '${property.name}',align: 'left', width: "120",type:'string',render:render${property.name?cap_first}},
                     <#elseif generator.isBooleanProperty(property) >
-                        { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,render:render${property.name?cap_first}},
+                        { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',render:render${property.name?cap_first}},
                     <#else >
-                        {display: '${property.chineseAlias}', name: '${property.name}',align: 'left', width: "120"},
+                        <#if generator.isIntProperty(property) >
+                            <#assign sortType="int" >
+                        <#elseif generator.isNumberProperty(property) >
+                            <#assign sortType="float" >
+                        <#elseif property.isTemporal()>
+                            <#assign sortType='date' >
+                        <#else>
+                            <#assign sortType="string" >
+                        </#if>
+                        {display: '${property.chineseAlias}', name: '${property.name}',type:'${sortType}',align: 'left', width: "120"},
                     </#if>
                 </#if>
             </#list>
@@ -216,9 +225,9 @@
                     }
                 }
             ],
-            data:[], sortName: '${entity.idProperty.column.name}', rownumbers: true, checkbox: true,
+            data:[], sortName: '${entity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
-
+            onReload: onReload, onChangeSort: onChangeSort, dataAction:'server',
             toolbar: {
                 items: [
                     {text: '新增', click: addUnit, iconClass: 'icon_add'},
@@ -230,6 +239,14 @@
 
         getData(false);
 
+    }
+
+    function onReload() {
+        getData(false);
+    }
+
+    function onChangeSort() {
+        getData(false);
     }
 
     function getData(refresh){
@@ -349,19 +366,6 @@
     function resetSearch() {
         $("#queryForm")[0].reset();
         $('#searchButton').click();
-    }
-
-    //刷新表格数据并重置排序和页数
-    function refresh(isUpdate) {
-        if (!isUpdate) {
-            //重置排序
-            grid.options.sortName = 'userId';
-            grid.options.sortOrder = "desc";
-            //页号重置为1
-            grid.setNewPage(1);
-        }
-
-        grid.loadData();
     }
 
 </script>

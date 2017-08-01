@@ -1,18 +1,26 @@
 package net.royqh.easypersist.generator;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Roy on 2016/2/24.
  */
 public class MethodGenerator {
     private SQLGenerator sqlGenerator;
+    private static Template CreateFindXXXMappingForAddTemplate = TemplateLoader.loadTemplate("Persistor-Method-CreateFindXXXMappingForAdd.ftl");
+    private static Template GetColumnNameByPropertyNameTemplate = TemplateLoader.loadTemplate("Persistor-Method-GetColumnNameByPropertyName.ftl");
 
     public MethodGenerator(SQLGenerator sqlGenerator) {
         this.sqlGenerator = sqlGenerator;
@@ -22,7 +30,7 @@ public class MethodGenerator {
         return sqlGenerator;
     }
 
-    public  void createDeleteMethod(StringBuilder content, Entity entity) {
+    public void createDeleteMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append(sqlGenerator.generateDeleteSQL(entity));
 
@@ -40,7 +48,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createUpdateMethod(StringBuilder content, Entity entity) {
+    public void createUpdateMethod(StringBuilder content, Entity entity) {
         List<String> updateColumns = new ArrayList<>();
         List<SingleProperty> updateProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
@@ -49,13 +57,24 @@ public class MethodGenerator {
                 continue;
             if (property.getPropertyType() == PropertyType.Column) {
                 SingleProperty singleProperty = (SingleProperty) property;
-                updateColumns.add(sqlGenerator.getQuote()+singleProperty.getColumnName() +
-                        sqlGenerator.getQuote()+"=?");
+                updateColumns.add(sqlGenerator.getQuote() + singleProperty.getColumnName() +
+                        sqlGenerator.getQuote() + "=?");
                 updateProperties.add(singleProperty);
             }
         }
         content.append(sqlGenerator.generateUpdateSQL(entity.getTableName(), updateColumns, idProperty.getColumnName()));
 
+        if (!entity.isAutoGenerateId()) {
+            content.append("public void update(");
+            content.append(entity.getClassInfo().getName());
+            content.append(" ");
+            content.append(entity.getName());
+            content.append(") {\n");
+            content.append(String.format(" update(%s,%s.%s());",
+                    entity.getName(), entity.getName(), entity.getIdProperty().getSetter()));
+            content.append("}\n");
+
+        }
         content.append("public void update(");
         content.append(entity.getClassInfo().getName());
         content.append(" ");
@@ -88,7 +107,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createCreateMethod(StringBuilder content, Entity entity) {
+    public void createCreateMethod(StringBuilder content, Entity entity) {
         List<String> insertFields = new ArrayList<>();
         List<SingleProperty> insertProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
@@ -110,7 +129,7 @@ public class MethodGenerator {
         }
     }
 
-    public  void createCreateWithoutAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
+    public void createCreateWithoutAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public ");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -133,7 +152,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createCreateWithAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
+    public void createCreateWithAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public ");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -163,7 +182,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createLoadByIdMethod(StringBuilder content, Entity entity) {
+    public void createLoadByIdMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public " + entity.getClassInfo().getName() + " retrieve(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -187,7 +206,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createLoadAllMethod(StringBuilder content, Entity entity) {
+    public void createLoadAllMethod(StringBuilder content, Entity entity) {
 //        String rowCallbackHandlerClassName = CodeUtils.getRowCallbackHandlerClassName(entity);
         content.append("public List<" + entity.getClassInfo().getName() + "> retrieveAll() {\n");
         content.append("String sql=SELECT_ALL_SQL;");
@@ -205,13 +224,13 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createRetrieveByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public void createRetrieveByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         createRetrieveByXXXMethod(entity, content, indexProperties);
     }
 
-    public  void createRetrieveByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+    public void createRetrieveByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         indexProperties.add(referenceSingleProperty);
         createRetrieveByXXXMethod(entity, content, indexProperties);
@@ -248,14 +267,14 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createCountByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+    public void createCountByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         indexProperties.add(referenceSingleProperty);
         createCountByXXXMethod(entity, content, indexProperties);
     }
 
 
-    public  void createCountByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public void createCountByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         createCountByXXXMethod(entity, content, indexProperties);
@@ -275,11 +294,11 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isString(singleProperty.getType()))  {
-                    parameterList.add("String "+singleProperty.getName());
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
                 }
                 continue;
-            }  else {
+            } else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -301,13 +320,13 @@ public class MethodGenerator {
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
-            }  else {
+            } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -322,22 +341,23 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createFindByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+    public void createFindByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
         createFindByXXXMethodWithoutSort(entity, referenceSingleProperty, content);
         createFindByXXXMethodWithSort(entity, referenceSingleProperty, content);
     }
 
-    public  void createFindByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public void createFindByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         createFindByXXXMethodWithoutSort(entity, indexInfo, content);
         createFindByXXXMethodWithSort(entity, indexInfo, content);
     }
 
-    private  void createFindByXXXMethodWithoutSort(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+    private void createFindByXXXMethodWithoutSort(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         indexProperties.add(referenceSingleProperty);
         createFindByXXXMethodWithoutSort(entity, content, indexProperties);
     }
-    private  void createFindByXXXMethodWithoutSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+
+    private void createFindByXXXMethodWithoutSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         createFindByXXXMethodWithoutSort(entity, content, indexProperties);
@@ -356,11 +376,11 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isString(singleProperty.getType()))  {
-                    parameterList.add("String "+singleProperty.getName());
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
                 }
                 continue;
-            }  else {
+            } else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -383,13 +403,13 @@ public class MethodGenerator {
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
-            }  else {
+            } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -407,13 +427,13 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    private  void createFindByXXXMethodWithSort(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+    private void createFindByXXXMethodWithSort(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         indexProperties.add(referenceSingleProperty);
         createFindByXXXMethodWithSort(entity, content, indexProperties);
     }
 
-    private  void createFindByXXXMethodWithSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    private void createFindByXXXMethodWithSort(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
         createFindByXXXMethodWithSort(entity, content, indexProperties);
     }
@@ -431,11 +451,11 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isString(singleProperty.getType()))  {
-                    parameterList.add("String "+singleProperty.getName());
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
                 }
                 continue;
-            }  else {
+            } else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -447,13 +467,13 @@ public class MethodGenerator {
         parameterList.add("int resultSize");
         content.append(String.join(",", parameterList));
         content.append(") {\n");
-        content.append("Preconditions.checkArgument(checkColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor"+entity.getClassInfo().getName()+"(orderBy);\n");
         content.append("String sql;\n");
         content.append("String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
-        content.append(" order by \"+orderBy+sortSql+\"");
-        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(" order by \"+orderByColumn+sortSql+\"");
+        content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
         content.append(";\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -466,13 +486,13 @@ public class MethodGenerator {
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
-            }  else {
+            } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -490,7 +510,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createCountAllMethod(Entity entity, StringBuilder content) {
+    public void createCountAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
 
         content.append("public int countAll(");
@@ -502,11 +522,11 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isString(singleProperty.getType()))  {
-                    parameterList.add("String "+singleProperty.getName());
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
                 }
                 continue;
-            }  else {
+            } else {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + singleProperty.getName());
 
@@ -538,7 +558,7 @@ public class MethodGenerator {
                         sqlGenerator.getQuote()));
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(String.format("if (%s!=null) {\n", property.getName()));
                     content.append(String.format("params.add(\"%s%s%s like ?\");\n",
                             sqlGenerator.getQuote(),
@@ -559,11 +579,11 @@ public class MethodGenerator {
 
         content.append("String sql;\n");
         content.append("if (params.size()!=0) {\n");
-        content.append("sql=\"select count(*) from " +sqlGenerator.getQuote()
-                +entity.getTableName() + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params);\n");
+        content.append("sql=\"select count(*) from " + sqlGenerator.getQuote()
+                + entity.getTableName() + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params);\n");
         content.append("} else {\n");
-        content.append("sql=\"select count(*) from "  +sqlGenerator.getQuote()
-                + entity.getTableName() +sqlGenerator.getQuote() + "\";\n");
+        content.append("sql=\"select count(*) from " + sqlGenerator.getQuote()
+                + entity.getTableName() + sqlGenerator.getQuote() + "\";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -583,11 +603,11 @@ public class MethodGenerator {
                 content.append("i++;\n");
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(String.format("if (%s!=null) {\n", property.getName()));
                     content.append(
-                        JdbcUtils.generateStatementParameterSetter("i", property,
-                                "\"%\"+"+property.getName()+"+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter("i", property,
+                                    "\"%\"+" + property.getName() + "+\"%\""));
                     content.append("i++;\n");
                     content.append("}\n");
                 }
@@ -610,7 +630,7 @@ public class MethodGenerator {
     }
 
 
-    public  void createFindAllMethod(Entity entity, StringBuilder content) {
+    public void createFindAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
 
         content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
@@ -622,8 +642,8 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isString(singleProperty.getType()))  {
-                    parameterList.add("String "+singleProperty.getName());
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
                 }
                 continue;
             } else {
@@ -663,7 +683,7 @@ public class MethodGenerator {
                         sqlGenerator.getQuote()));
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(String.format("if (%s!=null) {\n", property.getName()));
                     content.append(String.format("params.add(\"%s%s%s like ?\");\n",
                             sqlGenerator.getQuote(),
@@ -683,24 +703,23 @@ public class MethodGenerator {
         }
 
         content.append("String sql,orderClause;\n");
-        content.append("if (orderBy==null) {\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor"+entity.getClassInfo().getName()+"(orderBy);\n");
+        content.append("if (orderByColumn==null) {\n");
         content.append("orderClause=\"\";\n");
         content.append("}else{\n");
-        content.append("Preconditions.checkArgument(checkColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n");
-
         content.append(" String sortSql=isAscending?\" asc \":\" desc \";\n");
-        content.append("orderClause=\" order by \"+orderBy+sortSql;\n");
+        content.append("orderClause=\" order by \"+orderByColumn+sortSql;\n");
         content.append("}\n");
         content.append("String limitClause=\" ");
-        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
         content.append(";\n");
         content.append("if (params.size()!=0) {\n");
-        content.append("sql=\"select * from "  +sqlGenerator.getQuote()
+        content.append("sql=\"select * from " + sqlGenerator.getQuote()
                 + entity.getTableName()
-                +sqlGenerator.getQuote()+ " where \"+String.join(\" and \",params)+orderClause+limitClause;\n");
+                + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params)+orderClause+limitClause;\n");
         content.append("} else {\n");
-        content.append("sql=\"select * from " +sqlGenerator.getQuote()
-                + entity.getTableName()  +sqlGenerator.getQuote()+ "\"+orderClause+limitClause;\n");
+        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+                + entity.getTableName() + sqlGenerator.getQuote() + "\"+orderClause+limitClause;\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -720,11 +739,12 @@ public class MethodGenerator {
                 content.append("i++;\n");
                 content.append("}\n");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(String.format("if (%s!=null) {\n", property.getName()));
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter("i", property, "\"%\"+"+property.getName()+"+\"%\""));
-                    content.append("i++;\n");content.append("}\n");
+                            JdbcUtils.generateStatementParameterSetter("i", property, "\"%\"+" + property.getName() + "+\"%\""));
+                    content.append("i++;\n");
+                    content.append("}\n");
                 }
                 continue;
             } else {
@@ -747,28 +767,28 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    protected  void createStatementStatments(StringBuilder content) {
+    protected void createStatementStatments(StringBuilder content) {
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("Statement stmt = null;\n");
         content.append("try {\n");
         content.append("stmt = con.createStatement();\n");
     }
 
-    protected  void createPreparedStatementStatments(StringBuilder content) {
+    protected void createPreparedStatementStatments(StringBuilder content) {
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("PreparedStatement stmt = null;\n");
         content.append("try {\n");
         content.append("stmt = con.prepareStatement(sql);\n");
     }
 
-    protected  void createPreparedStatementWithGeneratedKeyStatments(StringBuilder content) {
+    protected void createPreparedStatementWithGeneratedKeyStatments(StringBuilder content) {
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("PreparedStatement stmt = null;\n");
         content.append("try {\n");
         content.append("stmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);\n");
     }
 
-    protected  void createExceptionHandleStatements(StringBuilder content) {
+    protected void createExceptionHandleStatements(StringBuilder content) {
         content.append("}\n");
         content.append("catch (SQLException ex) {\n");
         content.append("JdbcUtils.closeStatement(stmt);\n");
@@ -783,7 +803,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createExceptionTranslatorGetter(StringBuilder content) {
+    public void createExceptionTranslatorGetter(StringBuilder content) {
         content.append("public synchronized SQLExceptionTranslator getExceptionTranslator() {\n");
         content.append("if (this.exceptionTranslator == null) {\n");
         content.append("DataSource dataSource = getDataSource();\n");
@@ -798,13 +818,13 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createDataSourceGetter(StringBuilder content) {
+    public void createDataSourceGetter(StringBuilder content) {
         content.append("public DataSource getDataSource() {\n");
         content.append("return dataSource;\n");
         content.append("}\n");
     }
 
-    public  void createDataSourceSetter(StringBuilder content) {
+    public void createDataSourceSetter(StringBuilder content) {
         content.append("public void setDataSource(DataSource dataSource) {\n");
         content.append("this.dataSource=dataSource;\n");
         content.append("}\n");
@@ -812,7 +832,7 @@ public class MethodGenerator {
 
 
     @NotNull
-    public  List<SingleProperty> getIndexProperties(Entity entity, IndexInfo indexInfo) {
+    public List<SingleProperty> getIndexProperties(Entity entity, IndexInfo indexInfo) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         for (String propertyName : indexInfo.getProperties()) {
             SingleProperty singleProperty = (SingleProperty) entity.getProperty(propertyName);
@@ -821,7 +841,20 @@ public class MethodGenerator {
         return indexProperties;
     }
 
-    public  void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createFindXXXMappingForAddMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+        Map<String, Object> dataModel = new HashMap<>();
+        Entity mapEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+
+        dataModel.put("mapEntity", mapEntity);
+        dataModel.put("mapRelationInfo", relationInfo);
+
+        dataModel.put("indexProperties", CodeUtils.getAllIndexProperties(mapEntity));
+        dataModel.put("generator", this);
+        dataModel.put("quote",sqlGenerator.getQuote());
+        generateMethodView(content, CreateFindXXXMappingForAddTemplate, dataModel);
+    }
+
+    public void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("public List<");
         content.append(relationInfo.getMappingEntityFullClassName());
@@ -851,7 +884,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createCountXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createCountXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("public int count" +
                 StringUtils.capitalize(mappingEntity.getName()) + "(");
@@ -875,7 +908,7 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createFindXXXMappingWithSortMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createFindXXXMappingWithSortMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
         content.append("public List<");
         content.append(relationInfo.getMappingEntityFullClassName());
@@ -885,19 +918,21 @@ public class MethodGenerator {
         content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize");
         content.append(") {\n");
         content.append("String sql;\n");
-        content.append("if (orderBy==null) {\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor"+mappingEntity.getClassInfo().getName()+"(orderBy);\n");
+
+        content.append("if (orderByColumn==null) {\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
-        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(" ");
+        content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
         content.append(";\n");
         content.append("}else{\n");
-        content.append(String.format("Preconditions.checkArgument(check%sColumnName(orderBy), \" order by column name '\"+orderBy+\"'is invalid\");\n",
-                mappingEntity.getClassInfo().getName()));
+
         content.append("String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
-        content.append(" order by A.\"+orderBy+sortSql+\"");
-        content.append(sqlGenerator.generateLimitClause("startPos","resultSize"));
+        content.append(" order by A.\"+orderByColumn+sortSql+\" ");
+        content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
         content.append(";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
@@ -918,13 +953,13 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-        String mappingEntityId=mappingEntity.getName()+"Id";
+        String mappingEntityId = mappingEntity.getName() + "Id";
         content.append("public void add");
         content.append(StringUtils.capitalize(mappingEntity.getName()));
         content.append("To");
-        content.append(StringUtils.capitalize(entity.getName())+  "(");
+        content.append(StringUtils.capitalize(entity.getName()) + "(");
 
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id,");
@@ -947,14 +982,14 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createBatchCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createBatchCreateXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-        String mappingEntityId=mappingEntity.getName()+"Id";
-        String mappingEntityIds=mappingEntity.getName()+"Ids";
+        String mappingEntityId = mappingEntity.getName() + "Id";
+        String mappingEntityIds = mappingEntity.getName() + "Ids";
         content.append("public void add");
         content.append(StringUtils.capitalize(mappingEntity.getName()));
         content.append("sTo");
-        content.append(StringUtils.capitalize(entity.getName())+  "(");
+        content.append(StringUtils.capitalize(entity.getName()) + "(");
 
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id,Iterable<");
@@ -987,13 +1022,13 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-        String mappingEntityId=mappingEntity.getName()+"Id";
+        String mappingEntityId = mappingEntity.getName() + "Id";
         content.append("public void delete");
         content.append(StringUtils.capitalize(mappingEntity.getName()));
         content.append("From");
-        content.append(StringUtils.capitalize(entity.getName())+  "(");
+        content.append(StringUtils.capitalize(entity.getName()) + "(");
 
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id,");
@@ -1016,14 +1051,14 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public  void createBatchDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
+    public void createBatchDeleteXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
         Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
-        String mappingEntityIds=mappingEntity.getName()+"Ids";
-        String mappingEntityId=mappingEntity.getName()+"Id";
+        String mappingEntityIds = mappingEntity.getName() + "Ids";
+        String mappingEntityId = mappingEntity.getName() + "Id";
         content.append("public void delete");
         content.append(StringUtils.capitalize(mappingEntity.getName()));
         content.append("sFrom");
-        content.append(StringUtils.capitalize(entity.getName())+  "(");
+        content.append(StringUtils.capitalize(entity.getName()) + "(");
 
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id,Iterable<");
@@ -1052,15 +1087,16 @@ public class MethodGenerator {
         content.append("}\n");
         content.append("stmt.executeBatch();\n");
         createExceptionHandleStatements(content);
-        content.append("}\n");    }
+        content.append("}\n");
+    }
 
-    public  void createDeleteByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
+    public void createDeleteByXXXMethod(Entity entity, ReferenceSingleProperty referenceSingleProperty, StringBuilder content) {
         List<SingleProperty> indexProperties = new ArrayList<>();
         indexProperties.add(referenceSingleProperty);
         createDeleteByXXXMethod(entity, content, indexProperties);
     }
 
-    public  void createDeleteByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
+    public void createDeleteByXXXMethod(Entity entity, IndexInfo indexInfo, StringBuilder content) {
         List<SingleProperty> indexProperties = getIndexProperties(entity, indexInfo);
 
         createDeleteByXXXMethod(entity, content, indexProperties);
@@ -1079,11 +1115,11 @@ public class MethodGenerator {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
             } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isString(singleProperty.getType()))  {
-                    parameterList.add("String "+singleProperty.getName());
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
                 }
                 continue;
-            }  else {
+            } else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
 
@@ -1105,13 +1141,13 @@ public class MethodGenerator {
                         JdbcUtils.generateStatementParameterSetter((i + 1) + "", property, "max" + StringUtils.capitalize(property.getName())));
                 i += 2;
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+"+property.getName()+"+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
-            }  else {
+            } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
                 i++;
@@ -1122,42 +1158,45 @@ public class MethodGenerator {
         content.append("}\n");
     }
 
-    public void createCheckColumnMethod(Entity entity, StringBuilder content) {
-        content.append("public boolean checkColumnName(");
-        content.append("String columnName");
-        content.append(") {\n");
-        content.append("if (columnName==null) { \n");
-        content.append(" return false;\n");
-        content.append("}\n");
-        generateColumnCheckStatements(entity, content);
-        content.append("return false;\n");
-        content.append("}\n");
+    public void createPropertyNameToColumnNameMethod(Entity entity, StringBuilder content) {
+        Map<String,Object> dataModel=new HashMap<>();
+        dataModel.put("entity",entity);
+        generateMethodView(content,GetColumnNameByPropertyNameTemplate, dataModel);
     }
 
-    private void generateColumnCheckStatements(Entity entity, StringBuilder content) {
-        for (Property property:entity.getProperties()) {
-            if (property.getPropertyType()== PropertyType.Column) {
-                SingleProperty singleProperty=(SingleProperty)property;
-                content.append("if (columnName.equalsIgnoreCase(\"");
-                content.append(singleProperty.getColumnName());
-                content.append("\")) {\n");
-                content.append("return true;\n");
-                content.append("}\n");
+    private static void generateMethodView(StringBuilder content, Template template, Map<String, Object> dataModel) {
+        StringWriter writer = new StringWriter();
+        try {
+            template.process(dataModel, writer);
+            content.append(writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (TemplateException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    public void createCheckXXXColumnNameMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
-        Entity refEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName()) ;
-        content.append(String.format("public boolean check%sColumnName(",
-                refEntity.getClassInfo().getName()));
-        content.append("String columnName");
-        content.append(") {\n");
-        content.append("if (columnName==null) { \n");
-        content.append(" return false;\n");
-        content.append("}\n");
-        generateColumnCheckStatements(refEntity, content);
-        content.append("return false;\n");
-        content.append("}\n");
+    public boolean isRangeTypeProperty(SingleProperty property) {
+        return TypeUtils.isRangeTypeProperty(property);
+    }
+
+    public String getObjectType(String type) {
+        return TypeUtils.getObjectType(type);
+    }
+
+    public boolean isStringType(String type) {
+        return TypeUtils.isStringType(type);
+    }
+
+    public String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar){
+        return JdbcUtils.generateStatementParameterSetter(paramIndex,property,paramVar);
     }
 }

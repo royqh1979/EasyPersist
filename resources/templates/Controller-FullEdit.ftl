@@ -405,6 +405,13 @@ public class ${entity.classInfo.name}Controller {
         return  jspPrefix+"${entity.name}-mapping-${mapEntity.name}";
     }
 
+    @RequestMapping(value="/editUI-mapping-add-${mapEntity.name}/{id}", method = RequestMethod.GET)
+    public String mappingAddEditUIFor${mapEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
+        model.addAttribute("id",id);
+        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        return  jspPrefix+"${entity.name}-mapping-add-${mapEntity.name}";
+    }
+
     @RequestMapping(value = "/list${mapEntity.classInfo.name}ForGrid", method = RequestMethod.POST,
     produces = "application/json")
     @ResponseBody
@@ -471,6 +478,45 @@ public class ${entity.classInfo.name}Controller {
                     logger.debug("delete ${mapEntity.classInfo.name}.${mapEntity.idProperty.name}:" + ${mapEntity.name}Id+" from ${entity.classInfo.name}.${entity.idProperty.name}:"+id);
                 }
             }
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+    <#assign mapIndexedProperties=generator.getIndexedProperties(mapEntity)>
+    @RequestMapping(value = "/list${mapEntity.classInfo.name}ForAdd", method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Object list${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty>
+    <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+        @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
+    <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
+        @RequestParam("mapping-id") int mappingId) {
+        try {<#list mapIndexedProperties as indexProperty>
+    <#if generator.isDateProperty(indexProperty) >
+            Date start${indexProperty.name?cap_first}Var=null;
+            if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
+                start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
+            }
+            Date end${indexProperty.name?cap_first}Var=null;
+            if (!StringUtils.isEmpty(end${indexProperty.name?cap_first}Val)){
+                end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
+            }
+    <#else >
+    ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            if (!StringUtils.isEmpty(${indexProperty.name}Val)){
+                ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+            }
+    </#if>
+</#list>
+            List<${mapEntity.classInfo.name}> ${mapEntity.name}List = ${entity.name}Service.find${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty>
+    <#if generator.isDateProperty(indexProperty) >
+                start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
+                <#else >${indexProperty.name}Var</#if>,</#list>mappingId);
+            Pager pager=new Pager(50000,1);
+            Grid<${mapEntity.classInfo.name}> result = new Grid<>(pager, ${mapEntity.name}List, null, null);
+            return result;
+        } catch (RuntimeException e) {
+            logger.error("获取${mapEntity.classInfo.name}对象列表失败:", e);
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
     }

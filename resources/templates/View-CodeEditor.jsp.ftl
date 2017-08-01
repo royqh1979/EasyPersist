@@ -167,26 +167,29 @@
                     <#if property.isReferenceProperty()>
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                         <#if generator.isDepartmentInfoType(refEntity)>
-                            { name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree" ,selWidth:145 },isSort:false,render:render${property.name?cap_first},
+                            { name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree" ,selWidth:145 },type:'string',isSort:false,render:render${property.name?cap_first},
                                 headerRender:genHeaderRender("${property.chineseAlias}")}
                         <#else>
-                            { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first},
+                            { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,type:'string',render:render${property.name?cap_first},
                                 headerRender:genHeaderRender("${property.chineseAlias}")}
                         </#if>
                     <#elseif generator.isBooleanProperty(property) >
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,render:render${property.name?cap_first},
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,type:'string',render:render${property.name?cap_first},
                             headerRender:genHeaderRender("${property.chineseAlias}")}
                     <#elseif property.isTemporal() >
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},type:'date',isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
                     <#else>
                         <#if generator.isIntProperty(property) >
                             <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
+                            <#assign sortType="int" >
                         <#elseif generator.isNumberProperty(property) >
                             <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
+                            <#assign sortType="float" >
                         <#else>
                             <#assign limit="" />
+                            <#assign sortType="string" >
                         </#if>
-                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
+                    { name: '${property.name}', align: 'left', width: 120,editor: { type: 'text' ${limit} },type:'${sortType}',isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
                 </#if>
                 </#if>
             </#list>
@@ -200,7 +203,7 @@
                 menu.show({ top: e.pageY, left: e.pageX });
                 return false;
             },
-
+            onReload: onReload, onChangeSort: onChangeSort,
             toolbar:{
                 items:[
                     {text: '新增', click: onAdd, iconClass: 'icon_add'},
@@ -224,6 +227,10 @@
     function onReload() {
         loadReferenceData(true);
         getData(true);
+    }
+
+    function onChangeSort(){
+        getData(false);
     }
 
     function getData(refresh){

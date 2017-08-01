@@ -52,5 +52,7 @@ public abstract class Property {
     public boolean isReferenceProperty() {
         return false;
     }
+
+    public boolean isColumnProperty() { return false;}
     
 }

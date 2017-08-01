@@ -95,13 +95,9 @@
     }
 
     function initComplete() {
-        //当提交表单刷新本页面时关闭弹窗
-        top.Dialog.close();
-
         loadAllReferenceData(false);
 
         initGrid();
-
     }
 
     var grid = null;
@@ -144,15 +140,24 @@
                         <#assign refEntity=mapRelationEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                         <#if refEntity!=entity>
                             <#if generator.isDepartmentInfoType(refEntity)>
-                                { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:false,render:render${property.name?cap_first}},
+                                { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:true,type:'string',render:render${property.name?cap_first}},
                             <#else>
-                                { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:false,render:render${property.name?cap_first}},
+                                { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:true,type:'string',render:render${property.name?cap_first}},
                             </#if>
                         </#if>
                     <#elseif generator.isBooleanProperty(property) >
-                        { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,isSort:false,render:render${property.name?cap_first}},
+                        { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,isSort:true,type:'string',render:render${property.name?cap_first}},
                     <#else>
-                        { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:false},
+                        <#if generator.isIntProperty(property) >
+                            <#assign sortType="int" >
+                        <#elseif generator.isNumberProperty(property) >
+                            <#assign sortType="float" >
+                        <#elseif property.isTemporal()>
+                            <#assign sortType='date' >
+                        <#else>
+                            <#assign sortType="string" >
+                        </#if>
+                        { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', type:'${sortType}', width: 120,isSort:true},
                     </#if>
                 </#if>
             </#list>
@@ -163,9 +168,9 @@
                     }
                 }
             ],
-            data:[], sortName: '${mapRelationEntity.idProperty.column.name}', rownumbers: true, checkbox: true,
+            data:[], sortName: '${mapRelationEntity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
-            enabledEdit: false,clickToEdit: false,
+            enabledEdit: false,clickToEdit: false, onReload: onReload, onChangeSort: onChangeSort, dataAction:'server',
             toolbar: {
                 items: [
                     {text: '新增', click: add, iconClass: 'icon_add'},
@@ -175,6 +180,14 @@
             }
         });
 
+        getData(false);
+    }
+
+    function onReload() {
+        getData(false);
+    }
+
+    function onChangeSort() {
         getData(false);
     }
 
@@ -202,30 +215,19 @@
 
         //新增
     function add() {
-        var ${mapRelationEntity.name}Ids=[];
-        //在这里做新增处理
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/add${mapRelationEntity.classInfo.name}",
-                {id: id, ${mapRelationEntity.name}Ids:${mapRelationEntity.name}Ids},
-            function(result){
-                if(result && result.result && result.result=="Success"){
-                    var row = grid.getRow(0);
-                grid.addEditRow(result.entity, row, true);
-                } else if (result && result.reason) {
-                    top.Dialog.alert("添加失败，原因:"+result.reason);
-                } else {
-                    top.Dialog.alert("添加失败");
-                }
-        },"json").error(function() {
-            top.Dialog.alert("添加失败")
-        });
-
+        top.Dialog.open({
+            URL:"${"$"}{baseDir}/${"$"}{ctrlUrl}/editUI-mapping-add-${mapRelationEntity.name}/${"$"}{id}",
+            Title:"添加${mapRelationEntity.chineseAlias}",
+            Width: 800,
+            Height:600
+        })
     }
 
     //删除
     function onDelete(rowidx){
         top.Dialog.confirm("确定要删除该记录吗？",function(){
             //删除记录
-            var row = grid.getRow(rowidx)
+            var row = grid.getRow(rowidx);
             $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/delete${mapRelationEntity.classInfo.name}",
                     {   id : id,  "${mapRelationEntity.name}Ids":[row.${mapRelationEntity.idProperty.name}]},
                     function(result){

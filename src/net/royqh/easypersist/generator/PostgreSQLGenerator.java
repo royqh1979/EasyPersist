@@ -178,7 +178,7 @@ public class PostgreSQLGenerator extends SQLGenerator {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(\\\"" + property.getColumnName() + "\\\" between ? and ? )");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType()))  {
                     clauses.add("\\\""+property.getColumnName() + "\\\" like ?");
                 }
                 continue;
@@ -294,7 +294,7 @@ public class PostgreSQLGenerator extends SQLGenerator {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(\\\"" + property.getColumnName() + "\\\" between ? and ? )");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType()))  {
                     clauses.add("\\\""+property.getColumnName() + "\\\" like ?");
                 }
                 continue;

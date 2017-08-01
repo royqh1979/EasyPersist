@@ -14,6 +14,9 @@ import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
 import java.util.*;
 
 /**
@@ -182,7 +185,7 @@ public class PersistorsGenerator {
         createUtilMethods(content);
 
         //System.out.println("Generating Check Column Method for "+entity.getName());
-        methodGenerator.createCheckColumnMethod(entity, content);
+        methodGenerator.createPropertyNameToColumnNameMethod(entity, content);
 
 
         //System.out.println("Generating Row Mapper for "+entity.getName());
@@ -192,6 +195,13 @@ public class PersistorsGenerator {
 
         content.append("}\n");
 
+//        try {
+//            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(new FileOutputStream("f:\\test.java"),"UTF-8");
+//            outputStreamWriter.write(content.toString());
+//            outputStreamWriter.close();
+//        } catch (Exception e){
+//
+//    }
         //System.out.println("Generating Persistor File for "+entity.getName());
         return psiFileFactory.createFileFromText(className + ".java", JavaLanguage.INSTANCE,
                 content.toString());
@@ -205,9 +215,11 @@ public class PersistorsGenerator {
             methodGenerator.createDeleteXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createBatchDeleteXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createCountXXXMappingMethod(entity, relationInfo, content);
+            methodGenerator.createFindXXXMappingForAddMethod(entity, relationInfo, content);
             methodGenerator.createFindXXXMappingMethod(entity, relationInfo, content);
             methodGenerator.createFindXXXMappingWithSortMethod(entity, relationInfo, content);
-            methodGenerator.createCheckXXXColumnNameMethod(entity,relationInfo,content);
+            Entity mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+            methodGenerator.createPropertyNameToColumnNameMethod(mapEntity,content);
         }
     }
 
@@ -287,6 +299,7 @@ public class PersistorsGenerator {
 
     private void generateImports(Entity entity, StringBuilder content) {
         content.append("import javax.sql.DataSource;\n");
+        content.append("import org.apache.commons.lang3.StringUtils;\n");
         content.append("import org.slf4j.Logger;\n");
         content.append("import org.slf4j.LoggerFactory;\n");
         content.append("import java.util.Date;\n");
@@ -365,7 +378,6 @@ public class PersistorsGenerator {
     public void generatePersistor(PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory outputDir) {
         PsiFile psiFile = generatePersistorFile(entity, null, psiFileFactory);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
-
         PsiFile oldFile = outputDir.findFile(psiFile.getName());
         if (oldFile != null) {
             oldFile.delete();

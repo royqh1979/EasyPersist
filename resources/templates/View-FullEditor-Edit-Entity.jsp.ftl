@@ -7,14 +7,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <base href="${"$"}{baseDir}/"/>
     <title>${entity.chineseAlias}编辑</title>
-    <!--分离模式必须start -->
+    <!--框架必需start-->
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/jquery.js"></script>
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/language/cn.js"></script>
     <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/framework.js"></script>
-    <link href="${"$"}{baseDir}/qui/libs/css/import_basic.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" id="skin" prePath="${"$"}{baseDir}/qui/" splitMode="true" href="${"$"}{baseDir}/qui/libs/skins/blue/style.css"/>
-    <link rel="stylesheet" type="text/css" id="customSkin" href="${"$"}{baseDir}/qui/system/layout/skin/style.css"/>
-    <!--分离模式必须end -->
+    <link href="${"$"}{baseDir}/qui/libs/css/import_basic.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" id="skin" prePath="${"$"}{baseDir}/qui/"/>
+    <link rel="stylesheet" type="text/css" id="customSkin"/>
+    <!--框架必需end-->
 
     <!--数据表格start-->
     <script src="${"$"}{baseDir}/qui/libs/js/table/quiGrid.js" type="text/javascript"></script>
@@ -192,8 +192,6 @@
     }
 
     function initComplete() {
-        //当提交表单刷新本页面时关闭弹窗
-        top.Dialog.close();
 
     <#list entity.properties as property>
         ${property.name}FormCtrl=$("#updateForm #${property.name}");

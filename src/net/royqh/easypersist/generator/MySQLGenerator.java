@@ -178,7 +178,7 @@ public class MySQLGenerator extends SQLGenerator {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType()))  {
                     clauses.add("`"+property.getColumnName() + "` like ?");
                 }
                 continue;
@@ -294,7 +294,7 @@ public class MySQLGenerator extends SQLGenerator {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
             } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isString(property.getType()))  {
+                if (TypeUtils.isStringType(property.getType()))  {
                     clauses.add("`"+property.getColumnName() + "` like ?");
                 }
                 continue;
@@ -313,6 +313,6 @@ public class MySQLGenerator extends SQLGenerator {
 
     @Override
     public String generateLimitClause(String start, String count) {
-        return "limit \"+"+start+"+\",\"+"+count;
+        return " limit \"+"+start+"+\",\"+"+count;
     }
 }

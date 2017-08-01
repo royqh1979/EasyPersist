@@ -71,4 +71,8 @@ public class SingleProperty extends Property {
         return PropertyType.Column;
     }
 
+    @Override
+    public boolean isColumnProperty() {
+        return true;
+    }
 }
