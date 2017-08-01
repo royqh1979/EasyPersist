@@ -206,44 +206,20 @@ public class ViewGenerator {
     }
 
     public boolean isIntProperty(SingleProperty property) {
-        switch (TypeUtils.getShortTypeName(property.getType())) {
-            case "Integer":
-            case "int":
-            case "Short":
-            case "short":
-            case "Long":
-            case "long":
-                return true;
-            default:
-                return false;
-        }
+        return TypeUtils.isIntProperty(property);
+
     }
 
     public boolean isNumberProperty(SingleProperty property) {
-        switch (TypeUtils.getShortTypeName(property.getType())) {
-            case "Float":
-            case "float":
-            case "Double":
-            case "double":
-            case "BigDecimal":
-                return true;
-            default:
-                return false;
-        }
+        return TypeUtils.isNumberProperty(property);
     }
 
     public boolean isBooleanProperty(SingleProperty property) {
-        switch (TypeUtils.getShortTypeName(property.getType())) {
-            case "Boolean":
-            case "boolean":
-                return true;
-            default:
-                return false;
-        }
+        return TypeUtils.isBooleanProperty(property);
     }
 
     public boolean isDateProperty(SingleProperty property) {
-        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
+        return TypeUtils.isDateProperty(property);
     }
 
     public boolean isDepartmentInfoType(Entity entity) {

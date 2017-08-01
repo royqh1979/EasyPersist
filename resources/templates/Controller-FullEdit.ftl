@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 <#list typeList as type>
 import ${type};
@@ -91,6 +92,47 @@ public class ${entity.classInfo.name}Controller {
         } catch (RuntimeException e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);
             return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/exportList", method = RequestMethod.POST)
+    public void exportList(<#list indexedProperties as indexProperty>
+        <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+        @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
+        <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
+    @RequestParam("pager.pageNo") int pageNo,
+    @RequestParam("pager.pageSize") int pageSize,
+    @RequestParam("sort") String orderBy,
+    @RequestParam("direction") SortType sortType,
+    HttpServletResponse response) {
+        try {<#list indexedProperties as indexProperty>
+            <#if generator.isDateProperty(indexProperty) >
+            Date start${indexProperty.name?cap_first}Var=null;
+            if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
+            start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
+            }
+            Date end${indexProperty.name?cap_first}Var=null;
+            if (!StringUtils.isEmpty(end${indexProperty.name?cap_first}Val)){
+            end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
+            }
+            <#else >
+            ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            if (!StringUtils.isEmpty(${indexProperty.name}Val)){
+            ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+            }
+            </#if>
+        </#list>
+            Pager pager = new Pager(100000000, 1);
+            String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}", "UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
+            ${entity.name}Service.exportToExcel(<#list indexedProperties as indexProperty>
+            <#if generator.isDateProperty(indexProperty) >
+            start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
+            <#else >${indexProperty.name}Var</#if>,</#list>orderBy, sortType, pager,response.getOutputStream());
+        } catch (RuntimeException e) {
+            logger.error("获取${entity.classInfo.name}对象列表失败:", e);
+            e.printStackTrace();
         }
     }
 

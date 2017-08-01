@@ -241,4 +241,45 @@ public abstract class TypeUtils {
         String shortTypeName=getShortTypeName(type);
         return DEPARTMENT_INFO_TYPE.equals(shortTypeName);
     }
+
+    public static boolean isIntProperty(SingleProperty property) {
+        switch (TypeUtils.getShortTypeName(property.getType())) {
+            case "Integer":
+            case "int":
+            case "Short":
+            case "short":
+            case "Long":
+            case "long":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isNumberProperty(SingleProperty property) {
+        switch (TypeUtils.getShortTypeName(property.getType())) {
+            case "Float":
+            case "float":
+            case "Double":
+            case "double":
+            case "BigDecimal":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isBooleanProperty(SingleProperty property) {
+        switch (TypeUtils.getShortTypeName(property.getType())) {
+            case "Boolean":
+            case "boolean":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isDateProperty(SingleProperty property) {
+        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
+    }
 }

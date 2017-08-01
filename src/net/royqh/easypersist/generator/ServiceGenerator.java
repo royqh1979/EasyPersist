@@ -122,15 +122,32 @@ public class ServiceGenerator {
         return TypeUtils.getObjectType(type);
     }
 
-    public boolean isDateProperty(SingleProperty property){
-        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
-    }
-
     public boolean isRangeTypeProperty(SingleProperty property){
         return TypeUtils.isRangeTypeProperty(property);
     }
 
     public List<SingleProperty> getIndexedProperties(Entity entity) {
         return CodeUtils.getAllIndexProperties(entity);
+    }
+
+    public boolean isIntProperty(SingleProperty property) {
+        return TypeUtils.isIntProperty(property);
+
+    }
+
+    public boolean isNumberProperty(SingleProperty property) {
+        return TypeUtils.isNumberProperty(property);
+    }
+
+    public boolean isBooleanProperty(SingleProperty property) {
+        return TypeUtils.isBooleanProperty(property);
+    }
+
+    public boolean isDateProperty(SingleProperty property) {
+        return TypeUtils.isDateProperty(property);
+    }
+
+    public boolean isDepartmentInfoType(Entity entity) {
+        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
     }
 }
