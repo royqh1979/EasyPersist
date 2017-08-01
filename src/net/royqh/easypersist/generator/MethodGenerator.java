@@ -21,6 +21,7 @@ public class MethodGenerator {
     private SQLGenerator sqlGenerator;
     private static Template CreateFindXXXMappingForAddTemplate = TemplateLoader.loadTemplate("Persistor-Method-CreateFindXXXMappingForAdd.ftl");
     private static Template GetColumnNameByPropertyNameTemplate = TemplateLoader.loadTemplate("Persistor-Method-GetColumnNameByPropertyName.ftl");
+    private static Template RowProcessorTemplate = TemplateLoader.loadTemplate("Persistor-RowProcessor.ftl");
 
     public MethodGenerator(SQLGenerator sqlGenerator) {
         this.sqlGenerator = sqlGenerator;
@@ -208,18 +209,20 @@ public class MethodGenerator {
 
     public void createLoadAllMethod(StringBuilder content, Entity entity) {
 //        String rowCallbackHandlerClassName = CodeUtils.getRowCallbackHandlerClassName(entity);
-        content.append("public List<" + entity.getClassInfo().getName() + "> retrieveAll() {\n");
+        content.append("    public List<" + entity.getClassInfo().getName() + "> retrieveAll(){\n");
+        content.append("        DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
+        content.append("        retrieveAll(rowProcessor);\n");
+        content.append("        return rowProcessor.getResults();\n");
+        content.append("    }\n");
+
+        content.append("public void retrieveAll(RowProcessor rowProcessor) {\n");
         content.append("String sql=SELECT_ALL_SQL;");
         content.append("logger.debug(sql);\n");
         createStatementStatments(content);
         content.append("ResultSet resultSet=stmt.executeQuery(sql);\n");
-        content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                entity.getClassInfo().getName()));
-        content.append("int i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        content.append("return results;\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -388,6 +391,29 @@ public class MethodGenerator {
         }
         content.append(String.join(",", parameterList));
         content.append(") {\n");
+        content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
+        content.append("findBy" + indexName + "(");
+        for (SingleProperty singleProperty : indexProperties) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
+                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
+                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    content.append(singleProperty.getName() + ",");
+                }
+                continue;
+            } else {
+                content.append(singleProperty.getName() + ",");
+            }
+        }
+        content.append("rowProcessor);\n");
+        content.append("return rowProcessor.getResults();\n");
+        content.append("}\n");
+
+        content.append("public void findBy" +
+                indexName + "(");
+        content.append(String.join(",", parameterList));
+        content.append(", RowProcessor rowProcessor) {\n");
         content.append("String sql;\n");
         content.append("sql=\"");
         content.append(sqlGenerator.generateFindByXXXSQL(entity, indexProperties));
@@ -408,7 +434,6 @@ public class MethodGenerator {
                             JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
                     i++;
                 }
-                continue;
             } else {
                 content.append(
                         JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName()));
@@ -416,13 +441,9 @@ public class MethodGenerator {
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
-        content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                entity.getClassInfo().getName()));
-        content.append("int i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        content.append("return results;\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -454,7 +475,6 @@ public class MethodGenerator {
                 if (TypeUtils.isStringType(singleProperty.getType())) {
                     parameterList.add("String " + singleProperty.getName());
                 }
-                continue;
             } else {
                 parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                         + " " + singleProperty.getName());
@@ -467,7 +487,30 @@ public class MethodGenerator {
         parameterList.add("int resultSize");
         content.append(String.join(",", parameterList));
         content.append(") {\n");
-        content.append("String orderByColumn=getColumnNameByPropertyNameFor"+entity.getClassInfo().getName()+"(orderBy);\n");
+        content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
+        content.append("findBy" + indexName + "(");
+        for (SingleProperty singleProperty : indexProperties) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
+                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
+                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    content.append(singleProperty.getName() + ",");
+                }
+                continue;
+            } else {
+                content.append(singleProperty.getName() + ",");
+            }
+        }
+        content.append("orderBy,isAscending,startPos,resultSize, rowProcessor);\n");
+        content.append("return rowProcessor.getResults();\n");
+        content.append("}\n");
+
+        content.append("public void findBy" +
+                indexName + "(");
+        content.append(String.join(",", parameterList));
+        content.append(",RowProcessor rowProcessor) {\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor" + entity.getClassInfo().getName() + "(orderBy);\n");
         content.append("String sql;\n");
         content.append("String sortSql=isAscending?\" asc \":\" desc \";\n");
         content.append("sql=\"");
@@ -499,13 +542,9 @@ public class MethodGenerator {
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
-        content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                entity.getClassInfo().getName()));
-        content.append("int i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        content.append("return results;\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -632,7 +671,6 @@ public class MethodGenerator {
 
     public void createFindAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
-
         content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
@@ -645,7 +683,6 @@ public class MethodGenerator {
                 if (TypeUtils.isStringType(singleProperty.getType())) {
                     parameterList.add("String " + singleProperty.getName());
                 }
-                continue;
             } else {
                 parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
                         + " " + singleProperty.getName());
@@ -658,6 +695,28 @@ public class MethodGenerator {
         parameterList.add("int resultSize");
         content.append(String.join(",", parameterList));
         content.append(") {\n");
+        content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
+        content.append("findAll(");
+        for (SingleProperty singleProperty : indexProperties) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
+                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
+                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    content.append(singleProperty.getName() + ",");
+                }
+                continue;
+            } else {
+                content.append(singleProperty.getName() + ",");
+            }
+        }
+        content.append("orderBy,isAscending,startPos,resultSize, rowProcessor);\n");
+        content.append("return rowProcessor.getResults();\n");
+        content.append("}\n");
+
+        content.append("public void findAll(");
+        content.append(String.join(",", parameterList));
+        content.append(",RowProcessor rowProcessor) {\n");
 
         content.append("List<String> params=new ArrayList<>();\n");
         for (SingleProperty property : indexProperties) {
@@ -703,7 +762,7 @@ public class MethodGenerator {
         }
 
         content.append("String sql,orderClause;\n");
-        content.append("String orderByColumn=getColumnNameByPropertyNameFor"+entity.getClassInfo().getName()+"(orderBy);\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor" + entity.getClassInfo().getName() + "(orderBy);\n");
         content.append("if (orderByColumn==null) {\n");
         content.append("orderClause=\"\";\n");
         content.append("}else{\n");
@@ -756,13 +815,9 @@ public class MethodGenerator {
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
-        content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                entity.getClassInfo().getName()));
-        content.append("i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        content.append("return results;\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -850,7 +905,7 @@ public class MethodGenerator {
 
         dataModel.put("indexProperties", CodeUtils.getAllIndexProperties(mapEntity));
         dataModel.put("generator", this);
-        dataModel.put("quote",sqlGenerator.getQuote());
+        dataModel.put("quote", sqlGenerator.getQuote());
         generateMethodView(content, CreateFindXXXMappingForAddTemplate, dataModel);
     }
 
@@ -859,9 +914,20 @@ public class MethodGenerator {
         content.append("public List<");
         content.append(relationInfo.getMappingEntityFullClassName());
         content.append("> find" +
-                StringUtils.capitalize(mappingEntity.getName()) + "(");
+                mappingEntity.getClassInfo().getName() + "(");
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id");
+        content.append(") {\n");
+        content.append(CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor rowProcessor=new "+CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor();\n");
+        content.append("find" + mappingEntity.getClassInfo().getName() + "(");
+        content.append("id, rowProcessor);\n");
+        content.append("return rowProcessor.getResults();\n");
+        content.append("}\n");
+
+        content.append("public  void find" +
+                StringUtils.capitalize(mappingEntity.getName()) + "(");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,"+CodeUtils.getPersistorName(mappingEntity)+".RowProcessor rowProcessor");
         content.append(") {\n");
         content.append("String sql=\"");
         content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
@@ -871,13 +937,8 @@ public class MethodGenerator {
         content.append(String.format("stmt.%s(1,id);\n",
                 JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
-        content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                mappingEntity.getClassInfo().getName()));
-        content.append("int i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(");
-        content.append(CodeUtils.getPersistorName(mappingEntity));
-        content.append(".SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("rowProcessor.processRow(resultSet)");
         content.append("}\n");
         content.append("return results;\n");
         createExceptionHandleStatements(content);
@@ -917,8 +978,19 @@ public class MethodGenerator {
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize");
         content.append(") {\n");
+        content.append(CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor rowProcessor=new "+CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor();\n");
+        content.append("find" + mappingEntity.getClassInfo().getName() + "(");
+        content.append("id, orderBy,isAscending,startPos,resultSize,rowProcessor);\n");
+        content.append("return rowProcessor.getResults();\n");
+        content.append("}\n");
+
+        content.append("public void find" +
+                StringUtils.capitalize(mappingEntity.getName()) + "WithSort(");
+        content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
+        content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize,"+CodeUtils.getPersistorName(mappingEntity)+".RowProcessor rowProcessor");
+        content.append(") {\n");
         content.append("String sql;\n");
-        content.append("String orderByColumn=getColumnNameByPropertyNameFor"+mappingEntity.getClassInfo().getName()+"(orderBy);\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor" + mappingEntity.getClassInfo().getName() + "(orderBy);\n");
 
         content.append("if (orderByColumn==null) {\n");
         content.append("sql=\"");
@@ -940,15 +1012,9 @@ public class MethodGenerator {
         content.append(String.format("stmt.%s(1,id);\n",
                 JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
-        content.append(String.format("List<%s> results=new ArrayList<>();\n",
-                mappingEntity.getClassInfo().getName()));
-        content.append("int i=1;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("results.add(");
-        content.append(CodeUtils.getPersistorName(mappingEntity));
-        content.append(".SIMPLE_ROW_MAPPER.mapRow(resultSet,i++));\n");
+        content.append("rowProcessor.processRow(resultSet)");
         content.append("}\n");
-        content.append("return results;\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -1159,9 +1225,9 @@ public class MethodGenerator {
     }
 
     public void createPropertyNameToColumnNameMethod(Entity entity, StringBuilder content) {
-        Map<String,Object> dataModel=new HashMap<>();
-        dataModel.put("entity",entity);
-        generateMethodView(content,GetColumnNameByPropertyNameTemplate, dataModel);
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        generateMethodView(content, GetColumnNameByPropertyNameTemplate, dataModel);
     }
 
     private static void generateMethodView(StringBuilder content, Template template, Map<String, Object> dataModel) {
@@ -1196,7 +1262,13 @@ public class MethodGenerator {
         return TypeUtils.isStringType(type);
     }
 
-    public String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar){
-        return JdbcUtils.generateStatementParameterSetter(paramIndex,property,paramVar);
+    public String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar) {
+        return JdbcUtils.generateStatementParameterSetter(paramIndex, property, paramVar);
+    }
+
+    public void createRowProcessor(Entity entity, StringBuilder content) {
+        Map<String,Object> dataModel=new HashMap<>();
+        dataModel.put("entity",entity);
+          generateMethodView(content,RowProcessorTemplate,dataModel);
     }
 }

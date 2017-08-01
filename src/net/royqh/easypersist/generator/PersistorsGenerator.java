@@ -187,9 +187,10 @@ public class PersistorsGenerator {
         //System.out.println("Generating Check Column Method for "+entity.getName());
         methodGenerator.createPropertyNameToColumnNameMethod(entity, content);
 
+        methodGenerator.createRowProcessor(entity,content);
 
         //System.out.println("Generating Row Mapper for "+entity.getName());
-        content.append(RowMapperGenerator.createRowMapper(entity));
+        RowMapperGenerator.createRowMapper(entity,content);
 
         //content.append(RowCallbackHandlerGenerator.createRowCallbackHandler(entity));
 

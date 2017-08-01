@@ -10,11 +10,9 @@ import net.royqh.easypersist.utils.TypeUtils;
  * Created by Roy on 2016/2/18.
  */
 public class RowMapperGenerator {
-    public static StringBuilder createRowMapper(Entity entity) {
-        StringBuilder content=new StringBuilder();
+    public static void createRowMapper(Entity entity, StringBuilder content) {
         createSimpleRowMapper(content,entity);
         //createTablePrefixedRowMapper(content,entity);
-        return content;
     }
 
     private static void createSimpleRowMapper(StringBuilder content, Entity entity) {
