@@ -2,10 +2,12 @@ import ${entity.classInfo.qualifiedName};
 import cn.edu.bjfu.smartforestry.view.ProcessingResultType;
 import cn.edu.bjfu.smartforestry.view.utils.Result;
 import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;
+import cn.edu.bjfu.smartforestry.view.utils.SpringSecurityHelper;
+import cn.edu.bjfu.smartforestry.view.utils.TaskRedirector;
 import com.qui.base.Grid;
 import com.qui.base.ListForSelect;
 import com.qui.base.Pager;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +46,14 @@ public class ${entity.classInfo.name}Controller {
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
     private static final String jspPrefix= "";
     private static final String pathPrefix = "codes/";
+    private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return jspPrefix+"${entity.name}";
     }
@@ -55,6 +62,9 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object list(@RequestParam("refresh") String strRefresh) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             boolean refresh=(strRefresh!=null);
             List<${entity.classInfo.name}> list = ${entity.name}Service.listAll(refresh);
@@ -74,6 +84,9 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Map<String,List> listDepartmentInfoTree(HttpServletRequest request){
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         Map<String, List> result = ${refEntity.name}Service.getDepartmentTreeMap();
         return result;
     }
@@ -83,6 +96,9 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object list${refEntity.classInfo.name}(@RequestParam("refresh") String strRefresh) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             boolean refresh=(strRefresh!=null);
             List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll(refresh);
@@ -114,6 +130,9 @@ public class ${entity.classInfo.name}Controller {
     @RequestParam("${property.name}") String ${property.name}Val
     </#if>
 </#list>) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
             <#list entity.properties as property>
@@ -140,6 +159,9 @@ public class ${entity.classInfo.name}Controller {
         @RequestParam("${property.name}") String ${property.name}Val,</#if></#list>
         <#if !entity.isAutoGenerateId() >  @RequestParam("${entity.idProperty.name}ForUpdate") ${entity.idProperty.type} ${entity.idProperty.name}ValForUpdate  ,</#if>
         @RequestParam("${entity.idProperty.name}") ${entity.idProperty.type} ${entity.idProperty.name}Val) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
 <#if entity.isAutoGenerateId() >
             ${entity.classInfo.name} ${entity.name} = ${entity.name}Service.retrieve(${entity.idProperty.name}Val);
@@ -178,6 +200,9 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object delete(@RequestParam("${entity.idProperty.name}") ${entity.idProperty.type} ${entity.idProperty.name}) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.name}Service.delete(${entity.idProperty.name});
             return new Result(ProcessingResultType.Success, "删除成功");
@@ -191,6 +216,9 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object batchDelete(@RequestParam("${entity.idProperty.name}s[]")${entity.idProperty.type}[] ${entity.idProperty.name}s) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             for (${entity.idProperty.type} ${entity.idProperty.name}:${entity.idProperty.name}s) {
                 ${entity.name}Service.delete(${entity.idProperty.name});

@@ -2,11 +2,13 @@ import ${entity.classInfo.qualifiedName};
 import cn.edu.bjfu.smartforestry.view.ProcessingResultType;
 import cn.edu.bjfu.smartforestry.view.utils.Result;
 import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;
+import cn.edu.bjfu.smartforestry.view.utils.SpringSecurityHelper;
+import cn.edu.bjfu.smartforestry.view.utils.TaskRedirector;
 import com.qui.base.Grid;
 import com.qui.base.ListForSelect;
 import com.qui.base.Pager;
 import com.qui.base.SortType;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,14 @@ public class ${entity.classInfo.name}Controller {
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
     private static final String jspPrefix= "";
     private static final String pathPrefix = "codes/";
+    private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return jspPrefix+"${entity.name}";
     }
@@ -61,6 +68,9 @@ public class ${entity.classInfo.name}Controller {
             @RequestParam("pager.pageSize") int pageSize,
             @RequestParam("sort") String orderBy,
             @RequestParam("direction") SortType sortType) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {<#list indexedProperties as indexProperty>
                 <#if generator.isDateProperty(indexProperty) >
                 Date start${indexProperty.name?cap_first}Var=null;
@@ -130,7 +140,7 @@ public class ${entity.classInfo.name}Controller {
             <#if generator.isDateProperty(indexProperty) >
             start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
             <#else >${indexProperty.name}Var</#if>,</#list>orderBy, sortType, pager,response.getOutputStream());
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);
             e.printStackTrace();
         }
@@ -151,6 +161,9 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object list${refEntity.classInfo.name}(@RequestParam("refresh") String strRefresh) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             boolean refresh=(strRefresh!=null);
             List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll(refresh);
@@ -173,6 +186,10 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value="/create", method = RequestMethod.GET)
     public String createUI(Model model) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("isUpdate",false);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-edit";
@@ -180,6 +197,10 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value="/update/{id}", method = RequestMethod.GET)
     public String updateUI(Model model, @PathVariable("id")int id) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("isUpdate",true);
         model.addAttribute("id",id);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
@@ -188,6 +209,10 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value="/editUI-create", method = RequestMethod.GET)
     public String subEditUIForCreate(Model model) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("isUpdate",false);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-edit-entity";
@@ -195,6 +220,10 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value="/editUI-update/{id}", method = RequestMethod.GET)
     public String subEditUIForUpdate(Model model, @PathVariable("id")int id) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("isUpdate",true);
         model.addAttribute("id",id);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
@@ -212,6 +241,9 @@ public class ${entity.classInfo.name}Controller {
     @RequestParam("${property.name}") String ${property.name}Val
         </#if>
 </#list>) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
             <#list entity.properties as property>
@@ -237,6 +269,9 @@ public class ${entity.classInfo.name}Controller {
     public Object update(<#list entity.properties as property><#if entity.idProperty.name != property.name>
 @RequestParam("${property.name}") String ${property.name}Val,</#if></#list>
 @RequestParam("${entity.idProperty.name}") ${entity.idProperty.type} ${entity.idProperty.name}Val) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.classInfo.name} ${entity.name} = ${entity.name}Service.retrieve(${entity.idProperty.name}Val);
             if (${entity.name} == null) {
@@ -267,6 +302,9 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object retrieve(@PathVariable("id")  ${entity.idProperty.type} ${entity.idProperty.name}Val) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.classInfo.name} ${entity.name} = ${entity.name}Service.retrieve(${entity.idProperty.name}Val);
             if (${entity.name} == null) {
@@ -286,6 +324,9 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object delete(@RequestParam("${entity.idProperty.name}") ${entity.idProperty.type} ${entity.idProperty.name}) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.name}Service.delete(${entity.idProperty.name});
             return new Result(ProcessingResultType.Success, "删除成功");
@@ -299,6 +340,9 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object batchDelete(@RequestParam("${entity.idProperty.name}s[]")${entity.idProperty.type}[] ${entity.idProperty.name}s) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             for (${entity.idProperty.type} ${entity.idProperty.name}:${entity.idProperty.name}s) {
                 ${entity.name}Service.delete(${entity.idProperty.name});
@@ -316,6 +360,10 @@ public class ${entity.classInfo.name}Controller {
     <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
     @RequestMapping(value="/editUI-sub-${subEntity.name}/{id}", method = RequestMethod.GET)
     public String subEditUIFor${subEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("id",id);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-edit-${subEntity.name}";
@@ -330,6 +378,9 @@ public class ${entity.classInfo.name}Controller {
         @RequestParam("pager.pageSize") int pageSize,
         @RequestParam("sort") String orderBy,
         @RequestParam("direction") SortType sortType) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${generator.getObjectType(subRefProperty.type)} ${subRefProperty.name}Var=null;
             if (!StringUtils.isEmpty(${subRefProperty.name}Val)){
@@ -358,6 +409,9 @@ public class ${entity.classInfo.name}Controller {
         @RequestParam("${property.name}") String ${property.name}Val
             </#if>
 </#list>) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${subEntity.classInfo.name} ${subEntity.name} = new ${subEntity.classInfo.name}();
             <#list subEntity.properties as property>
@@ -383,6 +437,9 @@ public class ${entity.classInfo.name}Controller {
     public Object update${subEntity.classInfo.name}(<#list subEntity.properties as property><#if subEntity.idProperty.name != property.name>
     @RequestParam("${property.name}") String ${property.name}Val,</#if></#list>
     @RequestParam("${subEntity.idProperty.name}") ${subEntity.idProperty.type} ${subEntity.idProperty.name}Val) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${subEntity.classInfo.name} ${subEntity.name} = ${subEntity.name}Service.retrieve(${entity.idProperty.name}Val);
             if (${subEntity.name} == null) {
@@ -413,6 +470,9 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object delete${subEntity.classInfo.name}(@RequestParam("${subEntity.idProperty.name}") ${subEntity.idProperty.type} ${subEntity.idProperty.name}) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${subEntity.name}Service.delete(${subEntity.idProperty.name});
             return new Result(ProcessingResultType.Success, "删除成功");
@@ -426,15 +486,18 @@ public class ${entity.classInfo.name}Controller {
     produces = "application/json")
     @ResponseBody
     public Object batchDelete${subEntity.classInfo.name}(@RequestParam("${subEntity.idProperty.name}s[]")${subEntity.idProperty.type}[] ${subEntity.idProperty.name}s) {
-    try {
-        for (${subEntity.idProperty.type} ${subEntity.idProperty.name}:${subEntity.idProperty.name}s) {
-            ${subEntity.name}Service.delete(${subEntity.idProperty.name});
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
         }
-        return new Result(ProcessingResultType.Success, "批量删除成功");
-    } catch (Exception e) {
-        logger.error("批量删除${subEntity.classInfo.name}对象失败:", e);
-        return new Result(ProcessingResultType.Fail, e.getMessage());
-    }
+        try {
+            for (${subEntity.idProperty.type} ${subEntity.idProperty.name}:${subEntity.idProperty.name}s) {
+                ${subEntity.name}Service.delete(${subEntity.idProperty.name});
+            }
+            return new Result(ProcessingResultType.Success, "批量删除成功");
+        } catch (Exception e) {
+            logger.error("批量删除${subEntity.classInfo.name}对象失败:", e);
+            return new Result(ProcessingResultType.Fail, e.getMessage());
+        }
     }
 </#list>
 
@@ -442,6 +505,10 @@ public class ${entity.classInfo.name}Controller {
     <#assign mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.mappingEntityFullClassName) >
     @RequestMapping(value="/editUI-mapping-${mapEntity.name}/{id}", method = RequestMethod.GET)
     public String mappingEditUIFor${mapEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("id",id);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-mapping-${mapEntity.name}";
@@ -449,6 +516,10 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value="/editUI-mapping-add-${mapEntity.name}/{id}", method = RequestMethod.GET)
     public String mappingAddEditUIFor${mapEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
+        /* 判断当前用户是否有权访问 */
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model,"无权访问");
+        }
         model.addAttribute("id",id);
         model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
         return  jspPrefix+"${entity.name}-mapping-add-${mapEntity.name}";
@@ -463,6 +534,9 @@ public class ${entity.classInfo.name}Controller {
     @RequestParam("pager.pageSize") int pageSize,
     @RequestParam("sort") String orderBy,
     @RequestParam("direction") SortType sortType) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             int id;
             if (StringUtils.isEmpty(idVal)){
@@ -489,6 +563,9 @@ public class ${entity.classInfo.name}Controller {
         @RequestParam("id") int id,
         @RequestParam("${mapEntity.name}Ids[]") List<Integer> ${mapEntity.name}Ids
     ) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.name}Service.add${mapEntity.classInfo.name}sTo${entity.classInfo.name}(id,${mapEntity.name}Ids);
             return new Result(ProcessingResultType.Success, "添加成功");
@@ -510,6 +587,9 @@ public class ${entity.classInfo.name}Controller {
     @ResponseBody
     public Object delete${mapEntity.classInfo.name}(@RequestParam("id") int id,
         @RequestParam("${mapEntity.name}Ids[]") List<Integer> ${mapEntity.name}Ids) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {
             ${entity.name}Service.delete${mapEntity.classInfo.name}sFrom${entity.classInfo.name}(id,${mapEntity.name}Ids);
             return new Result(ProcessingResultType.Success, "删除成功");
@@ -533,6 +613,9 @@ public class ${entity.classInfo.name}Controller {
         @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
     <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
         @RequestParam("mapping-id") int mappingId) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return new Result(ProcessingResultType.Fail, "无权访问");
+        }
         try {<#list mapIndexedProperties as indexProperty>
     <#if generator.isDateProperty(indexProperty) >
             Date start${indexProperty.name?cap_first}Var=null;
