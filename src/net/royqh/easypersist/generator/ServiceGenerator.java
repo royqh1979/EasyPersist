@@ -4,15 +4,14 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.model.SingleProperty;
-import net.royqh.easypersist.model.SubEntityInfo;
+import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Roy on 2017/6/24.
@@ -103,7 +102,10 @@ public class ServiceGenerator {
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
-                dataModel.put("typeList",CodeUtils.getMappedTypeList(entity));
+                Set<String> typeList=CodeUtils.getRefencedTypeList(entity);
+                typeList.addAll(CodeUtils.getMappedTypeList(entity));
+                typeList.remove(entity.getClassInfo().getQualifiedName());
+                dataModel.put("typeList",typeList);
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             } else {
                 ServiceForCodeEditorTemplate.process(dataModel, writer);

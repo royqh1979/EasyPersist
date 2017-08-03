@@ -197,4 +197,15 @@ public class CodeUtils {
             }
         }
     }
+
+    public static Set<String> getRefencedTypeList(Entity entity) {
+        Set<String> results=new HashSet<>();
+        for (Property property:entity.getProperties()){
+            if (property.isReferenceProperty()) {
+                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
+                results.add(referenceSingleProperty.getRefEntityFullClassName());
+            }
+        }
+        return results;
+    }
 }

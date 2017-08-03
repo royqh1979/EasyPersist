@@ -66,7 +66,7 @@ public class ${entity.classInfo.name}Controller {
             return new Result(ProcessingResultType.Fail, "无权访问");
         }
         try {
-            boolean refresh=(strRefresh!=null);
+            boolean refresh=("y".equals(strRefresh));
             List<${entity.classInfo.name}> list = ${entity.name}Service.listAll(refresh);
             Pager pager = new Pager(1000, 1);
             pager.setTotalRows(list.size());
@@ -100,7 +100,7 @@ public class ${entity.classInfo.name}Controller {
             return new Result(ProcessingResultType.Fail, "无权访问");
         }
         try {
-            boolean refresh=(strRefresh!=null);
+            boolean refresh=("y".equals(strRefresh));
             List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll(refresh);
             ListForSelect listForSelect = new ListForSelect();
             for (${refEntity.classInfo.name} ${refEntity.name} : list) {

@@ -168,9 +168,11 @@
                     }
                 }
             ],
-            data:[], sortName: '${mapRelationEntity.idProperty.name}', rownumbers: true, checkbox: true,
+            url:"${"$"}{baseDir}/${"$"}{ctrlUrl}/list${mapRelationEntity.classInfo.name}ForGrid", params:[
+                    {name:"id", value: id}
+            ], sortName: '${mapRelationEntity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
-            enabledEdit: false,clickToEdit: false, onReload: onReload, onChangeSort: onChangeSort, dataAction:'server',
+            enabledEdit: false,clickToEdit: false, onSuccess: onSuccess, onError: onError, dataAction:'server',
             toolbar: {
                 items: [
                     {text: '新增', click: add, iconClass: 'icon_add'},
@@ -183,34 +185,24 @@
         getData(false);
     }
 
-    function onReload() {
-        getData(false);
+    function onSuccess(data,grid) {
+        if(data && data.reason) {
+            top.Dialog.alert("读取数据失败, 原因:"+result.reason);
+        }
     }
 
-    function onChangeSort() {
-        getData(false);
+    function onError(XMLHttpRequest, textStatus, errorThrown){
+        top.Dialog.alert("读取数据失败:"+result.textStatus);
     }
 
     function getData(refresh){
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${mapRelationEntity.classInfo.name}ForGrid",
-                {
-                    'id':id,
-                    'pager.pageSize': grid.options.pageSize,
-                'pager.pageNo': grid.options.page,
-                'sort': grid.options.sortName,
-                'direction': grid.options.sortOrder
-    },
-        function(result){
-            if(result && result.reason) {
-                top.Dialog.alert("读取数据失败, 原因:"+result.reason);
-            } else {
-                var gridData = result;
-                //刷新表格
-                grid.loadData(gridData);
-            }
-        },"json").error(function() {
-            top.Dialog.alert("读取数据失败")
-        });
+        grid.setOptions({
+            params:[
+                    {name:"id", value: id}
+            ]
+        })
+        grid.setNewPage(1);
+        grid.loadData();
     }
 
         //新增

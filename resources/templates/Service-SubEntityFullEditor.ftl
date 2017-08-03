@@ -23,7 +23,7 @@ public class ${subEntity.classInfo.name}Service {
     }
 
     public List<${subEntity.classInfo.name}> findBy${refProperty.name?cap_first}(${refPropertyType} ${refProperty.name},String orderBy, SortType sortType, Pager pager) {
-        return persistor.findBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name},orderBy,sortType==SortType.asc,pager.getPageSize(),pager.getStartRow());
+        return persistor.findBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name},orderBy,sortType==SortType.asc,pager.getStartRow(),pager.getPageSize());
     }
 
     public ${idType} create(${subEntity.classInfo.name} ${subEntity.name}) {

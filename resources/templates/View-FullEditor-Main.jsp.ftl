@@ -225,64 +225,110 @@
                     }
                 }
             ],
-            data:[], sortName: '${entity.idProperty.name}', rownumbers: true, checkbox: true,
+            url:"${"$"}{baseDir}/${"$"}{ctrlUrl}/list", params:[
+    <#list indexedProperties as indexProperty>
+        <#if generator.isDateProperty(indexProperty) >
+                {name:"start${indexProperty.name?cap_first}",value: ""},
+                {name:"end${indexProperty.name?cap_first}",value: ""}
+        <#else>
+                {name:"${indexProperty.name}", value: ""}
+        </#if><#sep>,</#sep>
+    </#list>
+            ], sortName: '${entity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
-            onReload: onReload, onChangeSort: onChangeSort, dataAction:'server',
+            onSuccess: onSuccess, onError: onError, dataAction:'server',
             toolbar: {
                 items: [
                     {text: '新增', click: addUnit, iconClass: 'icon_add'},
+                    {line: true},
+                    {text: '导出excel', click: exportToExcel, iconClass: 'icon_export'},
                     {line: true},
                     {text: '批量删除', click: onBatchDelete, iconClass: 'icon_delete'}
                 ]
             }
         });
-
-        getData(false);
-
     }
 
-    function onReload() {
-        getData(false);
+    function onSuccess(data,grid) {
+        if(data && data.reason) {
+            top.Dialog.alert("读取数据失败, 原因:"+result.reason);
+        }
     }
 
-    function onChangeSort() {
-        getData(false);
+    function onError(XMLHttpRequest, textStatus, errorThrown){
+        top.Dialog.alert("读取数据失败:"+result.textStatus);
     }
 
     function getData(refresh){
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list",
-                {
+        grid.setOptions({
+            params:[
+            <#list indexedProperties as indexProperty>
+                <#if indexProperty.isReferenceProperty() >
+                    <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
+                    <#if generator.isDepartmentInfoType(refEntity)>
+                {name:"${indexProperty.name}",value:$('#${indexProperty.name}').attr('relValue')}
+                    <#else>
+                {name:"${indexProperty.name}", value: $('#${indexProperty.name}').val()}
+                    </#if>
+                <#elseif generator.isDateProperty(indexProperty) >
+                {name:"start${indexProperty.name?cap_first}",value: $('#start${indexProperty.name?cap_first}').val()},
+                {name:"end${indexProperty.name?cap_first}",value: $('#end${indexProperty.name?cap_first}').val()}
+                <#else>
+                {name:"${indexProperty.name}", value: $('#${indexProperty.name}').val()}
+                </#if><#sep>,</#sep>
+            </#list>
+            ]
+        })
+        grid.setNewPage(1);
+        grid.loadData();
+    }
+
+    function exportToExcel() {
+        var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportList";
+        var iframe = $('<iframe id="down-file-iframe" ></iframe>');
+        var form = $('<form target="down-file-iframe"></form>');
+        form.attr('action', url + "?rand=" + Math.random());
+        form.attr('method', 'post');
+        var input;
     <#list indexedProperties as indexProperty>
-        <#if indexProperty.isReferenceProperty() >
-            <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-             <#if generator.isDepartmentInfoType(refEntity)>
-                ${indexProperty.name}: $('#${indexProperty.name}').attr('relValue'),
-             <#else>
-                ${indexProperty.name}: $('#${indexProperty.name}').val(),
-             </#if>
-        <#elseif generator.isDateProperty(indexProperty) >
-                    start${indexProperty.name?cap_first}: $('#start${indexProperty.name?cap_first}').val(),
-                    end${indexProperty.name?cap_first}: $('#end${indexProperty.name?cap_first}').val(),
+        <#if generator.isDateProperty(indexProperty) >
+        input= $('<input type="text" />');
+        input.attr('name', "start${indexProperty.name?cap_first}");
+        input.attr('value', $('#start${indexProperty.name?cap_first}').val());
+        form.append(input);
+        input= $('<input type="text" />');
+        input.attr('name', "end${indexProperty.name?cap_first}");
+        input.attr('value', $('#end${indexProperty.name?cap_first}').val());
+        form.append(input);
         <#else>
-                    ${indexProperty.name}: $('#${indexProperty.name}').val(),
+        input= $('<input type="text" />');
+        input.attr('name', "${indexProperty.name}");
+            <#if indexProperty.isReferenceProperty() >
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
+                <#if generator.isDepartmentInfoType(refEntity)>
+        input.attr('value', $('#${indexProperty.name}').attr('relValue'));
+                <#else>
+        input.attr('value', $('#${indexProperty.name}').val());
+                </#if>
+            <#else>
+        input.attr('value', $('#${indexProperty.name}').val());
+            </#if>
+        form.append(input);
         </#if>
     </#list>
-                'pager.pageSize': grid.options.pageSize,
-                'pager.pageNo': grid.options.page,
-                'sort': grid.options.sortName,
-                'direction': grid.options.sortOrder
-                },
-                function(result){
-                    if(result && result.reason) {
-                        top.Dialog.alert("读取数据失败, 原因:"+result.reason);
-                    } else {
-                        var gridData = result;
-                        //刷新表格
-                        grid.loadData(gridData);
-                    }
-                },"json").error(function() {
-            top.Dialog.alert("读取数据失败")
-        });
+        input= $('<input type="text" />');
+        input.attr('name', "sort");
+        input.attr('value', grid.options.sortName);
+        form.append(input);
+        input= $('<input type="text" />');
+        input.attr('name', "direction");
+        input.attr('value', grid.options.sortOrder);
+        form.append(input);
+        form.appendTo('body');
+        iframe.appendTo('body');
+        form.submit();
+        iframe.remove();
+        form.remove();
     }
 
     //新增

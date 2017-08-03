@@ -61,7 +61,7 @@
 
 </head>
 <body>
-    <div id="dataGrid${subEntity.classInfo.name}"></div>
+    <div id="dataGrid"></div>
 <script type="text/javascript">
     var id=${"$"}{id};
     var booleanData={list:[{key:"是",value:true},{key:"否",value:false}]};
@@ -96,19 +96,16 @@
 
     function initComplete() {
         loadAllReferenceData(false);
-        initGrid${subEntity.classInfo.name}();
-
+        initGrid();
     }
 
-    <#assign gridName="grid"+subEntity.classInfo.name >
-    /* 子表 ${gridName} */
-    var ${gridName} = null;
+    var grid = null;
 
         <#list subEntity.properties as property>
             <#if property.isReferenceProperty() >
                 <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
 
-    function render${property.name?cap_first}ForGrid${subEntity.classInfo.name}(item) {
+    function render${property.name?cap_first}ForGrid(item) {
         if (item==null) {
             return "未选择";
         }
@@ -119,7 +116,7 @@
         return "未选择";
     }
             <#elseif generator.isBooleanProperty(property)>
-    function render${property.name?cap_first}ForGrid${subEntity.classInfo.name}(item) {
+    function render${property.name?cap_first}ForGrid(item) {
         if (item==null) {
             return "未选择";
         }
@@ -132,8 +129,8 @@
         </#list>
 
 
-    function initGrid${subEntity.classInfo.name}(){
-        ${gridName} = $("#dataGrid${subEntity.classInfo.name}").quiGrid({
+    function initGrid(){
+        grid = $("#dataGrid").quiGrid({
             columns: [
                 <#list subEntity.properties as property>
                     <#if property == subEntity.idProperty  >
@@ -142,13 +139,13 @@
                             <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                             <#if refEntity!=entity>
                                 <#if generator.isDepartmentInfoType(refEntity)>
-                                    { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree",selWidth:145 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                                    { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree",selWidth:145 },isSort:false,render:render${property.name?cap_first}ForGrid},
                                 <#else>
-                                    { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                                    { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid},
                                 </#if>
                             </#if>
                         <#elseif generator.isBooleanProperty(property) >
-                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',editor: { type: 'select', data: booleanData,selWidth:50 },isSort:true,render:render${property.name?cap_first}ForGrid${subEntity.classInfo.name}},
+                            { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',editor: { type: 'select', data: booleanData,selWidth:50 },isSort:true,render:render${property.name?cap_first}ForGrid},
                         <#elseif property.isTemporal() >
                             { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,type:'date',editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:true},
                         <#else>
@@ -170,106 +167,94 @@
                         var h = "";
                         if (!rowdata._editing)
                         {
-                            h += "<a onclick='onDelete${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_delete'>删除</span></a> ";
-                            h += "<a onclick='beginEdit${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_edit'>修改</span></a> ";
+                            h += "<a onclick='onDelete(" + rowindex + ")'><span class='icon_delete'>删除</span></a> ";
+                            h += "<a onclick='beginEdit(" + rowindex + ")'><span class='icon_edit'>修改</span></a> ";
 
                         }
                         else
                         {
-                            h += "<a onclick='endEdit${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_ok'>提交</span></a> ";
-                            h += "<a onclick='cancelEdit${subEntity.classInfo.name}(" + rowindex + ")'><span class='icon_no'>取消</span></a> ";
+                            h += "<a onclick='endEdit(" + rowindex + ")'><span class='icon_ok'>提交</span></a> ";
+                            h += "<a onclick='cancelEdit(" + rowindex + ")'><span class='icon_no'>取消</span></a> ";
 
                         }
                         return h;
                     }
                 }
             ],
-            data:[], sortName: '${subEntity.idProperty.name}', rownumbers: true, checkbox: true,
+            url:"${"$"}{baseDir}/${"$"}{ctrlUrl}/list${subEntity.classInfo.name}ForGrid",
+            params:[
+                {name:'${subEntityInfo.subEntityReferenceProperty.name}',value:id}
+            ],sortName: '${subEntity.idProperty.name}', rownumbers: true, checkbox: true,
             height: '100%', width: "100%", pageSize: 50, percentWidthMode: false,sortOrder:'asc',
             enabledEdit: true,clickToEdit: false,onDblClickRow:function(rowdata, rowindex){
-                ${gridName}.beginEdit(rowindex);
-            },onBeforeEdit: onBeforeEdit${subEntity.classInfo.name}, onBeforeSubmitEdit: onBeforeSubmitEdit${subEntity.classInfo.name},onAfterSubmitEdit: onAfterSubmitEdit${subEntity.classInfo.name},
-            onReload: onReload, onChangeSort: onChangeSort, dataAction:'server',
+                grid.beginEdit(rowindex);
+            },onBeforeEdit: onBeforeEdit, onBeforeSubmitEdit: onBeforeSubmitEdit,onAfterSubmitEdit: onAfterSubmitEdit,
+            onSuccess: onSuccess, onError: onError, dataAction:'server',
             toolbar: {
                 items: [
-                    {text: '新增', click: add${subEntity.classInfo.name}, iconClass: 'icon_add'},
+                    {text: '新增', click: add, iconClass: 'icon_add'},
                     {line: true},
-                    { text: '全部确认修改', click: endAllEdit${subEntity.classInfo.name}, iconClass: 'icon_ok' },
+                    { text: '全部确认修改', click: endAllEdit, iconClass: 'icon_ok' },
                     { line: true },
-                    { text: '全部取消修改', click: cancelAllEdit${subEntity.classInfo.name}, iconClass: 'icon_no' },
+                    { text: '全部取消修改', click: cancelAllEdit, iconClass: 'icon_no' },
                     { line: true},
-                    {text: '批量删除', click: deleteAll${subEntity.classInfo.name}, iconClass: 'icon_delete'}
+                    {text: '批量删除', click: deleteAll, iconClass: 'icon_delete'}
                 ]
             }
         });
 
-        getData${subEntity.classInfo.name}(false);
     }
 
-    function onReload() {
-        getData${subEntity.classInfo.name}(false);
+    function onSuccess(data,grid) {
+        if(data && data.reason) {
+            top.Dialog.alert("读取数据失败, 原因:"+result.reason);
+        }
     }
 
-    function onChangeSort() {
-        getData${subEntity.classInfo.name}(false);
+    function onError(XMLHttpRequest, textStatus, errorThrown){
+        top.Dialog.alert("读取数据失败:"+result.textStatus);
     }
 
-    function getData${subEntity.classInfo.name}(refresh){
-        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/list${subEntity.classInfo.name}ForGrid",
-                {
-                    '${subEntityInfo.subEntityReferenceProperty.name}':id,
-                    'pager.pageSize': ${gridName}.options.pageSize,
-                    'pager.pageNo': ${gridName}.options.page,
-                    'sort': ${gridName}.options.sortName,
-                    'direction': ${gridName}.options.sortOrder
-                },
-                function(result){
-                    if(result && result.reason) {
-                        top.Dialog.alert("读取数据失败, 原因:"+result.reason);
-                    } else {
-                        var gridData = result;
-                        //刷新表格
-                        ${gridName}.loadData(gridData);
-                    }
-                },"json").error(function() {
-            top.Dialog.alert("读取数据失败")
-        });
+    function getData(refresh){
+        grid.setOptions({
+            params:[
+                {name:'${subEntityInfo.subEntityReferenceProperty.name}',value:id}
+            ]
+        })
+        grid.setNewPage(1);
+        grid.loadData();
     }
 
         //开始编辑
-    function beginEdit${subEntity.classInfo.name}(rowid) {
-        ${gridName}.beginEdit(rowid);
+    function beginEdit(rowid) {
+        grid.beginEdit(rowid);
     }
 
     //取消编辑
-    function cancelEdit${subEntity.classInfo.name}(rowid) {
-        ${gridName}.cancelEdit(rowid);
+    function cancelEdit(rowid) {
+        grid.cancelEdit(rowid);
     }
 
     //结束编辑
-    function endEdit${subEntity.classInfo.name}(rowid)
+    function endEdit(rowid)
     {
-        ${gridName}.endEdit(rowid);
+        grid.endEdit(rowid);
     }
 
     //全部确认修改
-    function endAllEdit${subEntity.classInfo.name}(){
-        ${gridName}.endEdit();
+    function endAllEdit(){
+        grid.endEdit();
     }
 
 
     //全部取消修改
-    function cancelAllEdit${subEntity.classInfo.name}()
+    function cancelAllEdit()
     {
-        ${gridName}.cancelEdit();
+        grid.cancelEdit();
     }
 
-
-
-
-
         //新增
-    function add${subEntity.classInfo.name}() {
+    function add() {
         var obj={
         <#list subEntity.properties as property>
             <#if property.isReferenceProperty()>
@@ -285,12 +270,11 @@
             <#sep>,</#sep>
         </#list>
         }
-
         //在这里做新增处理
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/create${subEntity.classInfo.name}",obj,function(result){
             if(result && result.result && result.result=="Success"){
-                var row = ${gridName}.getRow(0);
-                ${gridName}.addEditRow(result.entity, row, true);
+                var row = grid.getRow(0);
+                grid.addEditRow(result.entity, row, true);
             } else if (result && result.reason) {
                 top.Dialog.alert("添加失败，原因:"+result.reason);
             } else {
@@ -303,7 +287,7 @@
     }
 
     //编辑前事件
-    function onBeforeEdit${subEntity.classInfo.name}(e)
+    function onBeforeEdit(e)
     {
         var str="编辑前事件，可阻止某些行或列进行编辑。列名："+e.column.name+"；行号："+e.rowindex+"；编辑前的值："+e.value+"\n";
         //if(e.record.id=="121"){
@@ -314,13 +298,13 @@
 
 
     //编辑提交前事件
-    function onBeforeSubmitEdit${subEntity.classInfo.name}(e){
+    function onBeforeSubmitEdit(e){
         <#list subEntity.properties as property>
             <#if property!=subEntity.idProperty>
                 <#if property.isReferenceProperty()>
                 <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                     <#if refEntity!=entity>
-        if (render${property.name?cap_first}ForGrid${subEntity.classInfo.name}(e.newdata)=="未选择"){
+        if (render${property.name?cap_first}ForGrid(e.newdata)=="未选择"){
             top.Dialog.alert("${property.chineseAlias}必须选择！",null,null,null,2);
             return false;
         }
@@ -338,7 +322,7 @@
     }
 
     //编辑后事件
-    function onAfterSubmitEdit${subEntity.classInfo.name}(e)
+    function onAfterSubmitEdit(e)
     {
         //在这里一律作修改处理
         var obj = e.record;
@@ -347,17 +331,17 @@
         obj.${subEntityInfo.subEntityReferenceProperty.name} = id;
         //ajax方式提交数据到数据库
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update${subEntity.classInfo.name}",
-                formToEntity${subEntity.classInfo.name}(obj),function(result){
+                formToEntity(obj),function(result){
                     if(result && result.reason) {
                         top.Dialog.alert("数据创建/更新失败, 原因:"+result.reason);
                     }
-                    getData${subEntity.classInfo.name}(false);
+                    getData(false);
                 },"json").error(function() {
             top.Dialog.alert("数据创建/更新失败");
         });
     }
 
-    function formToEntity${subEntity.classInfo.name}(obj) {
+    function formToEntity(obj) {
         return {
         <#list subEntity.properties as property>
             <#if property.name == subEntityInfo.subEntityReferenceProperty.name>
@@ -373,14 +357,14 @@
     }
 
     //删除
-    function onDelete${subEntity.classInfo.name}(rowidx){
+    function onDelete(rowidx){
         top.Dialog.confirm("确定要删除该记录吗？",function(){
             //删除记录
-            var row = ${gridName}.getRow(rowidx)
+            var row = grid.getRow(rowidx)
             $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/delete${subEntity.classInfo.name}",
                     {"${subEntity.idProperty.name}":row.${subEntity.idProperty.name}},
                     function(result){
-                        handleResult${subEntity.classInfo.name}(result);
+                        handleResult(result);
                     },"json").error(function() {
                 top.Dialog.alert("数据创建/更新失败");
             });
@@ -391,8 +375,8 @@
 
 
     //批量删除
-    function deleteAll${subEntity.classInfo.name}() {
-        var rows = ${gridName}.getSelectedRows();
+    function deleteAll() {
+        var rows = grid.getSelectedRows();
         var rowsLength = rows.length;
 
         if (rowsLength == 0) {
@@ -408,38 +392,22 @@
                     //获取所有选中行
                     {"${subEntity.idProperty.name}s":${subEntity.idProperty.name}s},
                     function (result) {
-                        handleResult${subEntity.classInfo.name}(result);
+                        handleResult(result);
                     },
                     "json");
         });
     }
     //删除后的提示
-    function handleResult${subEntity.classInfo.name}(result) {
+    function handleResult(result) {
         if(result && result.result && result.result=="Success"){
             //成功
-            getData${subEntity.classInfo.name}(false);
+            getData(false);
         } else if (result && result.reason) {
             top.Dialog.alert("删除失败，原因:"+result.reason);
         } else {
             top.Dialog.alert("删除失败");
         }
     }
-
-    //刷新表格数据并重置排序和页数
-    /*
-    function refresh${subEntity.classInfo.name}(isUpdate) {
-        if (!isUpdate) {
-            //重置排序
-            ${gridName}.options.sortName = "${subEntity.idProperty.column.name}";
-            ${gridName}.options.sortOrder = "asc";
-            //页号重置为1
-            ${gridName}.setNewPage(1);
-        }
-
-        getData${subEntity.classInfo.name}();
-    }
-    */
-    /* end of 子表 ${gridName} */
 
 </script>
 </body>

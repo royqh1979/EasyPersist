@@ -110,8 +110,6 @@ public class ${entity.classInfo.name}Controller {
         <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
         @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
         <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
-    @RequestParam("pager.pageNo") int pageNo,
-    @RequestParam("pager.pageSize") int pageSize,
     @RequestParam("sort") String orderBy,
     @RequestParam("direction") SortType sortType,
     HttpServletResponse response) {
@@ -139,7 +137,14 @@ public class ${entity.classInfo.name}Controller {
             ${entity.name}Service.exportToExcel(<#list indexedProperties as indexProperty>
             <#if generator.isDateProperty(indexProperty) >
             start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
-            <#else >${indexProperty.name}Var</#if>,</#list>orderBy, sortType, pager,response.getOutputStream());
+            <#else >${indexProperty.name}Var</#if>,</#list>
+            <#list entity.properties as property>
+                <#if property.isReferenceProperty()>
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+            ${refEntity.name}Service.listAll(false),
+                </#if>
+            </#list>
+            orderBy, sortType, pager,response.getOutputStream());
         } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);
             e.printStackTrace();
@@ -165,7 +170,7 @@ public class ${entity.classInfo.name}Controller {
             return new Result(ProcessingResultType.Fail, "无权访问");
         }
         try {
-            boolean refresh=(strRefresh!=null);
+            boolean refresh=("y".equals(strRefresh));
             List<${refEntity.classInfo.name}> list = ${refEntity.name}Service.listAll(refresh);
             ListForSelect listForSelect = new ListForSelect();
             for (${refEntity.classInfo.name} ${refEntity.name} : list) {

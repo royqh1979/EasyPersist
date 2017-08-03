@@ -194,7 +194,7 @@
                 </#if>
             </#list>
             ],
-            data:[],sortName: '${entity.idProperty.name}',rownumbers:true,checkbox:true,pageSize:1000,dataAction:"server",usePager: true,
+            data:[],sortName: '${entity.idProperty.name}',rownumbers:true,checkbox:true,usePager: false,
             height: "100%", width:"100%",enabledEdit: true,onBeforeEdit: onBeforeEdit, onBeforeSubmitEdit: onBeforeSubmitEdit,
             onAfterEdit: onAfterEdit, whenRClickToSelect:false,excelMode:true,usePager:false,onDelete:onDelete,
             onContextmenu : function (parm,e)
@@ -203,7 +203,7 @@
                 menu.show({ top: e.pageY, left: e.pageX });
                 return false;
             },
-            onReload: onReload, onChangeSort: onChangeSort,
+            onReload: onReload,
             toolbar:{
                 items:[
                     {text: '新增', click: onAdd, iconClass: 'icon_add'},
@@ -227,10 +227,6 @@
     function onReload() {
         loadReferenceData(true);
         getData(true);
-    }
-
-    function onChangeSort(){
-        getData(false);
     }
 
     function getData(refresh){

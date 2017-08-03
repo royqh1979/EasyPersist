@@ -938,9 +938,8 @@ public class MethodGenerator {
                 JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet)");
+        content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        content.append("return results;\n");
         createExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -979,7 +978,7 @@ public class MethodGenerator {
         content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize");
         content.append(") {\n");
         content.append(CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor rowProcessor=new "+CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor();\n");
-        content.append("find" + mappingEntity.getClassInfo().getName() + "(");
+        content.append("find" + mappingEntity.getClassInfo().getName() + "WithSort(");
         content.append("id, orderBy,isAscending,startPos,resultSize,rowProcessor);\n");
         content.append("return rowProcessor.getResults();\n");
         content.append("}\n");
@@ -1013,7 +1012,7 @@ public class MethodGenerator {
                 JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet)");
+        content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
         createExceptionHandleStatements(content);
         content.append("}\n");

@@ -54,6 +54,11 @@ public class ${entity.classInfo.name}Service {
     <#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
     Date end${indexProperty.name?cap_first},
     <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
+    </#list><#list entity.properties as property>
+            <#if property.isReferenceProperty()>
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
+            </#if>
     </#list>String orderBy, SortType sortType, Pager pager,OutputStream outputStream) throws IOException {
         HSSFWorkbook workbook=new HSSFWorkbook();
         HSSFSheet sheet=workbook.createSheet();
@@ -62,6 +67,17 @@ public class ${entity.classInfo.name}Service {
         dateCellStyle.setDataFormat(format.getFormat("yyyy年m月d日"));
         HSSFCellStyle numberCellStyle = workbook.createCellStyle();
         numberCellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+        HSSFRow row=sheet.createRow(0);
+        HSSFCell cell;
+        int t=1;
+<#list entity.properties as property>
+    <#if property == entity.idProperty >
+    <#else>
+        cell=row.createCell(t++);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue("${property.chineseAlias}");
+    </#if>
+</#list>
         persistor.findAll(<#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
             end${indexProperty.name?cap_first},
             <#elseif generator.isRangeTypeProperty(indexProperty) >
@@ -83,13 +99,18 @@ public class ${entity.classInfo.name}Service {
                     cell=row.createCell(t++);
             <#if property.isReferenceProperty()>
                 <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                <#if generator.isDepartmentInfoType(refEntity)>
+                    <#if refEntity.listHeaderProperty??>
+                        <#assign listHeader=refEntity.listHeaderProperty>
+                    <#else>
+                        <#assign listHeader=refEntity.idProperty>
+                    </#if>
                     cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-                <#else>
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-                </#if>
+                    cell.setCellValue("");
+                    for (${refEntity.classInfo.name} ${refEntity.name}:list${refEntity.classInfo.name}){
+                        if (${refEntity.name}.${refEntity.idProperty.getter}()==${entity.name}.${property.getter}()){
+                            cell.setCellValue(${refEntity.name}.${listHeader.getter}());
+                        }
+                    }
             <#elseif generator.isBooleanProperty(property) >
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
                 cell.setCellValue(${entity.name}.${property.getter}());
