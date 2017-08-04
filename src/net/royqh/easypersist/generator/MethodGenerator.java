@@ -585,13 +585,13 @@ public class MethodGenerator {
                         sqlGenerator.getQuote()));
                 content.append(String.format("} else if (%s != null) {\n",
                         "min" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s > ? )\");\n",
+                content.append(String.format("params.add(\"(%s%s%s >= ? )\");\n",
                         sqlGenerator.getQuote(),
                         property.getColumnName(),
                         sqlGenerator.getQuote()));
                 content.append(String.format("} else if (%s != null) {\n",
                         "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s < ? )\");\n",
+                content.append(String.format("params.add(\"(%s%s%s <= ? )\");\n",
                         sqlGenerator.getQuote(),
                         property.getColumnName(),
                         sqlGenerator.getQuote()));
@@ -730,13 +730,13 @@ public class MethodGenerator {
                         sqlGenerator.getQuote()));
                 content.append(String.format("} else if (%s != null) {\n",
                         "min" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s > ? )\");\n",
+                content.append(String.format("params.add(\"(%s%s%s >= ? )\");\n",
                         sqlGenerator.getQuote(),
                         property.getColumnName(),
                         sqlGenerator.getQuote()));
                 content.append(String.format("} else if (%s != null) {\n",
                         "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s < ? )\");\n",
+                content.append(String.format("params.add(\"(%s%s%s <= ? )\");\n",
                         sqlGenerator.getQuote(),
                         property.getColumnName(),
                         sqlGenerator.getQuote()));
