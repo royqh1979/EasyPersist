@@ -4,7 +4,15 @@ import org.springframework.stereotype.Service;
 import com.qui.base.Pager;
 import com.qui.base.SortType;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+<#list typeList as type>
+import ${type};
+</#list>
 
 @Service
 public class ${entity.classInfo.name}Service {
@@ -19,6 +27,81 @@ public class ${entity.classInfo.name}Service {
         }
         checkCache();
         return cachedList;
+    }
+
+    public void exportToExcel(
+    <#list entity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
+        </#if>
+    </#list>OutputStream outputStream) throws IOException {
+        HSSFWorkbook workbook=new HSSFWorkbook();
+        HSSFSheet sheet=workbook.createSheet();
+        HSSFCellStyle dateCellStyle = workbook.createCellStyle();
+        HSSFDataFormat format= workbook.createDataFormat();
+        dateCellStyle.setDataFormat(format.getFormat("yyyy年m月d日"));
+        HSSFCellStyle numberCellStyle = workbook.createCellStyle();
+        numberCellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+        HSSFRow row=sheet.createRow(0);
+        HSSFCell cell;
+        int t=0;
+        <#list entity.properties as property>
+            <#if property == entity.idProperty >
+            <#else>
+            cell=row.createCell(t++);
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue("${property.chineseAlias}");
+            </#if>
+        </#list>
+        checkCache();
+        int i=1;
+        for (${entity.classInfo.name} ${entity.name}:cachedList){
+            row=sheet.createRow(i);
+            t=0;
+        <#list entity.properties as property>
+            <#if property == entity.idProperty >
+            <#else>
+            cell=row.createCell(t++);
+                <#if property.isReferenceProperty()>
+                    <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    <#if refEntity.listHeaderProperty??>
+                        <#assign listHeader=refEntity.listHeaderProperty>
+                    <#else>
+                        <#assign listHeader=refEntity.idProperty>
+                    </#if>
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue("");
+            for (${refEntity.classInfo.name} ${refEntity.name}:list${refEntity.classInfo.name}){
+                if (${refEntity.name}.${refEntity.idProperty.getter}()==${entity.name}.${property.getter}()){
+                    cell.setCellValue(${refEntity.name}.${listHeader.getter}());
+                }
+            }
+                <#elseif generator.isBooleanProperty(property) >
+            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+            cell.setCellValue(${entity.name}.${property.getter}());
+                <#elseif property.isTemporal() >
+            cell.setCellStyle(dateCellStyle);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(${entity.name}.${property.getter}());
+                <#else>
+                    <#if generator.isIntProperty(property) >
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(${entity.name}.${property.getter}());
+                    <#elseif generator.isNumberProperty(property) >
+            cell.setCellStyle(numberCellStyle);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(${entity.name}.${property.getter}());
+                    <#else>
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue(${entity.name}.${property.getter}());
+                    </#if>
+                </#if>
+            </#if>
+        </#list>
+            i++;
+        }
+        workbook.write(outputStream);
     }
 
 <#list entity.properties as property>

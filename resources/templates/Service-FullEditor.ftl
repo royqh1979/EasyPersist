@@ -69,7 +69,7 @@ public class ${entity.classInfo.name}Service {
         numberCellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
         HSSFRow row=sheet.createRow(0);
         HSSFCell cell;
-        int t=1;
+        int t=0;
 <#list entity.properties as property>
     <#if property == entity.idProperty >
     <#else>
@@ -90,8 +90,8 @@ public class ${entity.classInfo.name}Service {
                 @Override
                 public void processRow(ResultSet rs) throws SQLException {
                     HSSFRow row=sheet.createRow(i);
-                    ${entity.classInfo.name} ${entity.name}=persistor.SIMPLE_ROW_MAPPER.mapRow(rs,i++);
-                    int t=1;
+                    ${entity.classInfo.name} ${entity.name}=persistor.SIMPLE_ROW_MAPPER.mapRow(rs,i);
+                    int t=0;
                     HSSFCell cell;
     <#list entity.properties as property>
         <#if property == entity.idProperty >
@@ -112,28 +112,29 @@ public class ${entity.classInfo.name}Service {
                         }
                     }
             <#elseif generator.isBooleanProperty(property) >
-                cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+                    cell.setCellValue(${entity.name}.${property.getter}());
             <#elseif property.isTemporal() >
-                cell.setCellStyle(dateCellStyle);
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellStyle(dateCellStyle);
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(${entity.name}.${property.getter}());
             <#else>
                 <#if generator.isIntProperty(property) >
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(${entity.name}.${property.getter}());
                 <#elseif generator.isNumberProperty(property) >
-                cell.setCellStyle(numberCellStyle);
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellStyle(numberCellStyle);
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(${entity.name}.${property.getter}());
                 <#else>
-                cell.setCellType(Cell.CELL_TYPE_STRING);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellValue(${entity.name}.${property.getter}());
                 </#if>
             </#if>
         </#if>
     </#list>
-           }
+                    i++;
+                }
         });
         workbook.write(outputStream);
     }

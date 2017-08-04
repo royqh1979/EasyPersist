@@ -210,6 +210,8 @@
                     { line : true },
                     {text: '批量删除', click: onBatchDelete ,iconClass: 'icon_delete'},
                     { line : true },
+                    {text: '导出excel', click: exportToExcel, iconClass: 'icon_export'},
+                    {line: true},
                     {text: '刷新', click: onReload ,iconClass: 'icon_reload'}
                 ]
             }
@@ -243,6 +245,19 @@
                 },"json").error(function() {
             top.Dialog.alert("读取数据失败")
         });
+    }
+
+    function exportToExcel() {
+        var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportList";
+        var iframe = $('<iframe id="down-file-iframe" ></iframe>');
+        var form = $('<form target="down-file-iframe"></form>');
+        form.attr('action', url + "?rand=" + Math.random());
+        form.attr('method', 'post');
+        form.appendTo('body');
+        iframe.appendTo('body');
+        form.submit();
+        iframe.remove();
+        form.remove();
     }
 
 

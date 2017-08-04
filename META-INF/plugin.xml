@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.13.8</version>
+  <version>0.13.9</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -70,6 +70,8 @@
                fix: grid edit <br />
                fix: N-to-N relationship edit <br />
       * 0.13.8 add: privilege check in editor controller
+      * 0.13.9 add: excel export
+               fix: editor pagination
     ]]>
   </change-notes>
 

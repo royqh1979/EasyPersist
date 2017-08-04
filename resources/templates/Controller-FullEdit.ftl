@@ -113,6 +113,10 @@ public class ${entity.classInfo.name}Controller {
     @RequestParam("sort") String orderBy,
     @RequestParam("direction") SortType sortType,
     HttpServletResponse response) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            response.setStatus(401);
+            return;
+        }
         try {<#list indexedProperties as indexProperty>
             <#if generator.isDateProperty(indexProperty) >
             Date start${indexProperty.name?cap_first}Var=null;

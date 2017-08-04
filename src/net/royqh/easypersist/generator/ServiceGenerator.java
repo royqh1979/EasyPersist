@@ -99,15 +99,15 @@ public class ServiceGenerator {
         dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         dataModel.put("generator", generator);
 
+        Set<String> typeList=CodeUtils.getRefencedTypeList(entity);
+        dataModel.put("typeList",typeList);
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
-                Set<String> typeList=CodeUtils.getRefencedTypeList(entity);
                 typeList.addAll(CodeUtils.getMappedTypeList(entity));
-                typeList.remove(entity.getClassInfo().getQualifiedName());
-                dataModel.put("typeList",typeList);
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             } else {
+                typeList.remove(entity.getClassInfo().getQualifiedName());
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
             }
             dataModel.clear();
