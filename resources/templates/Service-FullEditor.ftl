@@ -70,6 +70,9 @@ public class ${entity.classInfo.name}Service {
         HSSFRow row=sheet.createRow(0);
         HSSFCell cell;
         int t=0;
+        cell=row.createCell(t++);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue("${entity.idProperty.chineseAlias}");
 <#list entity.properties as property>
     <#if property == entity.idProperty >
     <#else>
@@ -93,6 +96,9 @@ public class ${entity.classInfo.name}Service {
                     ${entity.classInfo.name} ${entity.name}=persistor.SIMPLE_ROW_MAPPER.mapRow(rs,i);
                     int t=0;
                     HSSFCell cell;
+                    cell=row.createCell(t++);
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(${entity.name}.${entity.idProperty.getter}());
     <#list entity.properties as property>
         <#if property == entity.idProperty >
         <#else>

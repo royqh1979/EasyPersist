@@ -10,6 +10,10 @@ import java.util.List;
 
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.util.CellRangeAddressList;
 <#list typeList as type>
 import ${type};
 </#list>
@@ -46,19 +50,46 @@ public class ${entity.classInfo.name}Service {
         HSSFRow row=sheet.createRow(0);
         HSSFCell cell;
         int t=0;
+        cell=row.createCell(t++);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue("${entity.idProperty.chineseAlias}");
         <#list entity.properties as property>
             <#if property == entity.idProperty >
             <#else>
+                <#if property.isReferenceProperty()>
+                    <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    <#if refEntity.listHeaderProperty??>
+                        <#assign listHeader=refEntity.listHeaderProperty>
+                    <#else>
+                        <#assign listHeader=refEntity.idProperty>
+                    </#if>
+            {
+                String[] strings=new String[list${refEntity.classInfo.name}.size()];
+                for (int j=0;j<list${refEntity.classInfo.name}.size();j++){
+                    ${refEntity.classInfo.name} ${refEntity.name}=list${refEntity.classInfo.name}.get(j);
+                    strings[j]=""+${refEntity.name}.${listHeader.getter}();
+                }
+                CellRangeAddressList addressList = new CellRangeAddressList(1, 65534, t, t);
+                DataValidationHelper dvHelper = sheet.getDataValidationHelper();
+                DataValidationConstraint dvConstraint = dvHelper.createExplicitListConstraint(strings);
+                DataValidation validation = dvHelper.createValidation(dvConstraint, addressList);
+                sheet.addValidationData(validation);
+            }
+                </#if>
             cell=row.createCell(t++);
             cell.setCellType(Cell.CELL_TYPE_STRING);
             cell.setCellValue("${property.chineseAlias}");
             </#if>
         </#list>
+
         checkCache();
         int i=1;
         for (${entity.classInfo.name} ${entity.name}:cachedList){
             row=sheet.createRow(i);
             t=0;
+            cell=row.createCell(t++);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(${entity.name}.${entity.idProperty.getter}());
         <#list entity.properties as property>
             <#if property == entity.idProperty >
             <#else>
