@@ -4,6 +4,7 @@ import com.sun.deploy.security.ValidationState;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.SingleProperty;
 import net.royqh.easypersist.utils.TypeUtils;
+import net.royqh.parser.model.Index;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.EnumType;
@@ -198,6 +199,16 @@ public class JdbcUtils {
                 return varName + ".name()";
         }
         return varName;
+    }
+
+
+    public static String generateIdEmptyTest(SingleProperty idProperty, Entity entity) {
+        if (TypeUtils.isIntProperty(idProperty)) {
+            return String.format("%s.%s() == 0 ",entity.getName(),idProperty.getGetter());
+        } else if (TypeUtils.isStringType(idProperty)) {
+            return String.format("StringUtils.isEmpty(%s.%s())",entity.getName(),idProperty.getGetter());
+        }
+        throw new RuntimeException("Unsupported Id Property type in entity "+entity.getClassInfo().getQualifiedName()+" : "+idProperty.getType());
     }
 
     public static String generateDateParameterVariable(String varName, TemporalType temporalType) {

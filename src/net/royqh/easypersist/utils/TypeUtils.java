@@ -250,6 +250,8 @@ public abstract class TypeUtils {
             case "short":
             case "Long":
             case "long":
+            case "byte":
+            case "Byte":
                 return true;
             default:
                 return false;

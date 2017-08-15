@@ -128,6 +128,74 @@ public class MethodGenerator {
         } else {
             createCreateWithoutAutoGenerateIdMethod(content, entity, insertProperties);
         }
+        createBatchCreateMethod(content,entity);
+    }
+
+    private void createBatchCreateMethod(StringBuilder content, Entity entity) {
+        SingleProperty idProperty = entity.getIdProperty();
+        content.append("public void batchCreate(List<");
+        content.append(entity.getClassInfo().getName());
+        content.append("> lst");
+        content.append(entity.getClassInfo().getName());
+        content.append(") {\n");
+        if (entity.isAutoGenerateId()){
+            content.append(String.format("String sql=\"insert into %s%s%s(",
+                    sqlGenerator.getQuote(),entity.getTableName(),sqlGenerator.getQuote()));
+            content.append(sqlGenerator.getQuote()+entity.getIdProperty().getColumnName()+sqlGenerator.getQuote());
+            for (Property property : entity.getProperties()) {
+                if (idProperty == property)
+                    continue;
+                if (property.getPropertyType() == PropertyType.Column) {
+                    SingleProperty singleProperty = (SingleProperty) property;
+                    content.append(String.format(",%s%s%s",
+                            sqlGenerator.getQuote(),singleProperty.getColumnName(),sqlGenerator.getQuote()));
+                }
+            }
+            content.append(") values (?");
+            for (Property property : entity.getProperties()) {
+                if (idProperty == property)
+                    continue;
+                if (property.getPropertyType() == PropertyType.Column) {
+                    content.append(String.format(",?"));
+                }
+            }
+            content.append(")\";\n");
+        } else {
+            content.append("String sql = INSERT_SQL;\n");
+        }
+
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append(String.format("for (%s %s:lst%s) {\n",
+                entity.getClassInfo().getName(), entity.getName(),entity.getClassInfo().getName()));
+        int i=1;
+        if (entity.isAutoGenerateId()) {
+            content.append(String.format("if (%s){\n",
+                    JdbcUtils.generateIdEmptyTest(entity.getIdProperty(),entity)));
+            content.append("stmt.setNull(1, Types.INTEGER);\n");
+            content.append("} else {\n");
+                content.append(
+                    JdbcUtils.generateStatementParameterSetter("1", entity.getIdProperty(), entity));
+            content.append("}\n");
+        } else {
+            content.append(
+                    JdbcUtils.generateStatementParameterSetter("1", entity.getIdProperty(), entity));
+        }
+        for (Property property : entity.getProperties()) {
+            if (idProperty == property)
+                continue;
+            if (property.getPropertyType() == PropertyType.Column) {
+                i++;
+                content.append(
+                        JdbcUtils.generateStatementParameterSetter(i+"", entity.getIdProperty(), entity));
+
+            }
+        }
+        content.append("stmt.addBatch();\n");
+        content.append("}\n");
+        content.append("stmt.executeBatch();\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
     }
 
     public void createCreateWithoutAutoGenerateIdMethod(StringBuilder content, Entity entity, List<SingleProperty> insertProperties) {
