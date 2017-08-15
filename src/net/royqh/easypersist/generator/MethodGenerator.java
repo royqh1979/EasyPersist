@@ -35,8 +35,21 @@ public class MethodGenerator {
         SingleProperty idProperty = entity.getIdProperty();
         content.append(sqlGenerator.generateDeleteSQL(entity));
 
+        content.append("public void deleteAll() {\n");
+        content.append(String.format("String sql=\"delete from %s%s%s\";\n",
+                sqlGenerator.getQuote(),entity.getTableName(),sqlGenerator.getQuote()));
+        content.append("logger.debug(sql);\n");
+        content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
+        content.append("Statement stmt = null;\n");
+        content.append("try {\n");
+        content.append("stmt = con.createStatement();\n");
+        content.append("stmt.execute(sql);\n");
+        createExceptionHandleStatements(content);
+        content.append("}\n");
+
         content.append("public void delete(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
+
         content.append(" id) {\n");
         content.append("String sql=DELETE_SQL;\n");
         content.append("logger.debug(sql);\n");
