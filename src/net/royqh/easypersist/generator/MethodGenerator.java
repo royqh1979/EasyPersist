@@ -44,7 +44,7 @@ public class MethodGenerator {
         content.append("try {\n");
         content.append("stmt = con.createStatement();\n");
         content.append("stmt.execute(sql);\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
 
         content.append("public void delete(");
@@ -58,7 +58,7 @@ public class MethodGenerator {
         content.append(JdbcUtils.getColumnSetter(idProperty));
         content.append("(1,id);\n");
         content.append("stmt.executeUpdate();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -117,7 +117,7 @@ public class MethodGenerator {
                     JdbcUtils.generateStatementParameterSetter((updateProperties.size() + 1) + "", idProperty, entity.getIdProperty().getName()));
         }
         content.append("stmt.executeUpdate();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -207,7 +207,7 @@ public class MethodGenerator {
         content.append("stmt.addBatch();\n");
         content.append("}\n");
         content.append("stmt.executeBatch();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -230,7 +230,7 @@ public class MethodGenerator {
         }
         content.append("stmt.executeUpdate();\n");
         content.append("return " + entity.getName() + "." + idProperty.getGetter() + "();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -260,7 +260,7 @@ public class MethodGenerator {
                 entity.getName(), idProperty.getSetter(), JdbcUtils.getColumnGetter(idProperty)));
         content.append(String.format("return %s.%s();\n",
                 entity.getName(), idProperty.getGetter()));
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -284,7 +284,7 @@ public class MethodGenerator {
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
         content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -304,7 +304,7 @@ public class MethodGenerator {
         content.append("while(resultSet.next()){\n");
         content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -347,7 +347,7 @@ public class MethodGenerator {
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
         content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -421,7 +421,7 @@ public class MethodGenerator {
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
         content.append("return resultSet.getInt(1);\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -525,7 +525,7 @@ public class MethodGenerator {
         content.append("while(resultSet.next()){\n");
         content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -626,7 +626,7 @@ public class MethodGenerator {
         content.append("while(resultSet.next()){\n");
         content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -745,7 +745,7 @@ public class MethodGenerator {
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
         content.append("return resultSet.getInt(1);\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -899,7 +899,7 @@ public class MethodGenerator {
         content.append("while(resultSet.next()){\n");
         content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -924,14 +924,15 @@ public class MethodGenerator {
         content.append("stmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);\n");
     }
 
-    protected void createExceptionHandleStatements(StringBuilder content) {
+    protected void generateExceptionHandleStatements(StringBuilder content) {
         content.append("}\n");
         content.append("catch (SQLException ex) {\n");
         content.append("JdbcUtils.closeStatement(stmt);\n");
         content.append("stmt = null;\n");
         content.append("DataSourceUtils.releaseConnection(con, getDataSource());\n");
         content.append("con = null;\n");
-        content.append("throw getExceptionTranslator().translate(\"JDBC \", sql, ex);\n");
+        //content.append("throw getExceptionTranslator().translate(\"JDBC \", sql, ex);\n");
+        content.append("throw new RuntimeException(ex);\n");
         content.append("}\n");
         content.append("finally {\n");
         content.append("JdbcUtils.closeStatement(stmt);\n");
@@ -1021,7 +1022,7 @@ public class MethodGenerator {
         content.append("while(resultSet.next()){\n");
         content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1045,7 +1046,7 @@ public class MethodGenerator {
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
         content.append("return resultSet.getInt(1);\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1095,7 +1096,7 @@ public class MethodGenerator {
         content.append("while(resultSet.next()){\n");
         content.append("rowProcessor.processRow(resultSet);\n");
         content.append("}\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1124,7 +1125,7 @@ public class MethodGenerator {
                 JdbcUtils.getColumnSetter(entity.getIdProperty()),
                 mappingEntityId));
         content.append("stmt.executeUpdate();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1164,7 +1165,7 @@ public class MethodGenerator {
         content.append("stmt.addBatch();\n");
         content.append("}\n");
         content.append("stmt.executeBatch();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1193,7 +1194,7 @@ public class MethodGenerator {
                 JdbcUtils.getColumnSetter(entity.getIdProperty()),
                 mappingEntityId));
         content.append("stmt.executeUpdate();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1232,7 +1233,7 @@ public class MethodGenerator {
         content.append("stmt.addBatch();\n");
         content.append("}\n");
         content.append("stmt.executeBatch();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 
@@ -1300,7 +1301,7 @@ public class MethodGenerator {
             }
         }
         content.append("stmt.executeUpdate();\n");
-        createExceptionHandleStatements(content);
+        generateExceptionHandleStatements(content);
         content.append("}\n");
     }
 

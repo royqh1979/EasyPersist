@@ -119,6 +119,10 @@ public class ${entity.classInfo.name}Service {
                     <#if generator.isIntProperty(property) >
             cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             cell.setCellValue(${entity.name}.${property.getter}());
+                    <#elseif generator.isBigDecimalProperty(property) >
+            cell.setCellStyle(numberCellStyle);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(${entity.name}.${property.getter}().doubleValue());
                     <#elseif generator.isNumberProperty(property) >
             cell.setCellStyle(numberCellStyle);
             cell.setCellType(Cell.CELL_TYPE_NUMERIC);

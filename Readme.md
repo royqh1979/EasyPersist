@@ -74,6 +74,7 @@ I choose to write this generator as an intellij IDEA plug-in,because:
 ### Supported JPA Annotations
 * @Entity
 * @Table
+* @Index
 * @Id
 * @GeneratedValue
 * @Column
@@ -89,5 +90,22 @@ I choose to write this generator as an intellij IDEA plug-in,because:
 * @OneToMany
 * @JoinColumn
 * @JoinTable
+
+### Custome Entity Annotations
+* @ChineseAlias chinese title displayed for an entity or entity's property 
+* @ListHeader Suppose one entity A is referenced by another entity B.
+  When editing B, we will show a dropdown list for user to select responding A.
+  The property annotated with @ListHeader will be shown in the list.
+* @MapRelations/@MapRelation Like @Index/@Indexes, coders can use these annotations to
+    specify SQL n-to-n relation tables information. (We use a relation table to record n-to-n relation).
+* @Reference we use this annotation to specify a one column foreign key.
+* @SubEntities we use this annotation to specify subsidiary relations between entities,
+  such as: a sale and it's sale items, a person and his education historiese.
+
+## Design Notes
+### Excel Import
+When Import a 
+ 
+
 
 

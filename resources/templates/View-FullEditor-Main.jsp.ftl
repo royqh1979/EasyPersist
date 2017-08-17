@@ -251,7 +251,7 @@
 
     function onSuccess(data,grid) {
         if(data && data.reason) {
-            top.Dialog.alert("读取数据失败, 原因:"+result.reason);
+            top.Dialog.alert("读取数据失败, 原因:"+data.reason);
         }
     }
 

@@ -149,6 +149,9 @@ public class ServiceGenerator {
         return TypeUtils.isDateProperty(property);
     }
 
+    public boolean isBigDecimalProperty(SingleProperty property) {
+        return TypeUtils.isBigDecimal(property);
+    }
     public boolean isDepartmentInfoType(Entity entity) {
         return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
     }

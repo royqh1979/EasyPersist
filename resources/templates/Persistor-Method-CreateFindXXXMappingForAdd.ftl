@@ -69,7 +69,7 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
         stmt = null;
         DataSourceUtils.releaseConnection(con, getDataSource());
         con = null;
-        throw getExceptionTranslator().translate("JDBC ", sql, ex);
+        throw new RuntimeException(ex);
     } finally {
         JdbcUtils.closeStatement(stmt);
         DataSourceUtils.releaseConnection(con, getDataSource());

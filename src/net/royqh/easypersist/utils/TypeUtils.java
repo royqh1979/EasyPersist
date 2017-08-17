@@ -258,6 +258,13 @@ public abstract class TypeUtils {
         }
     }
 
+    public static boolean isBigDecimal(SingleProperty property) {
+        if ("BigDecimal".equals(TypeUtils.getShortTypeName(property.getType()))) {
+            return true;
+        }
+        return false;
+    }
+
     public static boolean isNumberProperty(SingleProperty property) {
         switch (TypeUtils.getShortTypeName(property.getType())) {
             case "Float":
