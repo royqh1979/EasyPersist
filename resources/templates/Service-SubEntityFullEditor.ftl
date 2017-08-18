@@ -13,6 +13,9 @@ import ${type};
 
 @Service
 public class ${subEntity.classInfo.name}Service {
+    <#assign entity=subEntity>
+    <#include "service/ExportRowToExcelProcessor.ftl" >
+
     @Autowired
     private ${subEntity.classInfo.name}Persistor persistor;
 
