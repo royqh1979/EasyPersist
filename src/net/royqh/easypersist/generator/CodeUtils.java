@@ -1,6 +1,18 @@
 package net.royqh.easypersist.generator;
 
+import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction;
+import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElementFinder;
+import com.intellij.psi.impl.JavaPsiFacadeEx;
+import com.intellij.psi.impl.PsiClassImplUtil;
+import com.intellij.psi.impl.PsiElementFinderImpl;
+import com.intellij.psi.impl.PsiImplUtil;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.model.jpa.Constants;
 import net.royqh.easypersist.utils.TypeUtils;
@@ -60,21 +72,20 @@ public class CodeUtils {
 
     @NotNull
     public static String getPersistorName(Entity entity) {
-        return "__" + StringUtil.capitalize(entity.getName())
+        return "__" + entity.getClassInfo().getName()
                     + "Persistor";
     }
 
     public static String getPersistorCompositorName(Entity entity) {
-        return  StringUtil.capitalize(entity.getName())
-                + "Persistor";
+        return  entity.getClassInfo().getName() + "Persistor";
     }
 
     public static String getServiceName(Entity entity) {
-        return StringUtil.capitalize(entity.getName())+"Service";
+        return entity.getClassInfo().getName()+"Service";
     }
 
     public static String getControllerName(Entity entity) {
-        return StringUtil.capitalize(entity.getName())+"Controller";
+        return entity.getClassInfo().getName()+"Controller";
     }
     @NotNull
     public static Set<Entity> getRefencingEntities(Entity entity) {
@@ -207,5 +218,69 @@ public class CodeUtils {
             }
         }
         return results;
+    }
+
+    public static Set<String> getMappedTypePersistorList(Entity entity,Module module) {
+        Set<String> types = new HashSet<>();
+        getMappedTypePersistorList(entity, types,module);
+        return types;
+    }
+
+    public static void getMappedTypePersistorList(Entity entity, Set<String> types, Module module) {
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
+        for (MapRelationInfo relationInfo : entity.getMapRelationInfos()) {
+            Entity mappingEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
+            if (mappingEntity==null) {
+                throw new RuntimeException("Not found entity definition for class "+relationInfo.getMappingEntityFullClassName());
+            }
+            String persistorClassName=getPersistorType(mappingEntity,module,moduleScope);
+            if (persistorClassName!=null) {
+                types.add(persistorClassName);
+            }
+        }
+
+    }
+
+    public static String getPersistorType(Entity entity, Module module) {
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
+        return getPersistorType(entity,module,moduleScope);
+    }
+
+    public static String getPersistorType(Entity entity, Module module, GlobalSearchScope searchScope) {
+        PsiClass[] persistorClasses=PsiShortNamesCache.getInstance(module.getProject()).getClassesByName(getPersistorCompositorName(entity),searchScope);
+        if (persistorClasses.length>0) {
+            return persistorClasses[0].getQualifiedName();
+        }
+        return null;
+    }
+
+
+    public static String getServiceType(Entity entity, Module module) {
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
+        return getServiceType(entity,module,moduleScope);
+    }
+
+    public static String getServiceType(Entity entity, Module module, GlobalSearchScope searchScope) {
+        PsiClass[] serviceClasses=PsiShortNamesCache.getInstance(module.getProject()).getClassesByName(getServiceName(entity),searchScope);
+        if (serviceClasses.length>0) {
+            return serviceClasses[0].getQualifiedName();
+        }
+        return null;
+    }
+
+    public static Set<String> getRefencedServiceTypes(Entity entity, Module module) {
+        Set<String> services=new HashSet<>();
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
+        for (Property property:entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
+                String serviceClassName=getServiceType(referenceEntity,module,moduleScope);
+                if (serviceClassName!=null) {
+                    services.add(serviceClassName);
+                }
+            }
+        }
+        return services;
     }
 }

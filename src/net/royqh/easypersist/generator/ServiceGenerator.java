@@ -1,6 +1,7 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
@@ -23,7 +24,7 @@ public class ServiceGenerator {
     private static Template ServiceForSubEntityFullEditorTemplate =TemplateLoader.loadTemplate("Service-SubEntityFullEditor.ftl");
     private static ServiceGenerator generator=new ServiceGenerator();
 
-    public static void generateService(EditorStyle editorStyle,PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
+    public static void generateService(EditorStyle editorStyle,PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
         String serviceClassName = CodeUtils.getServiceName(entity);
         String fileName = serviceClassName + ".java";
 
@@ -32,17 +33,17 @@ public class ServiceGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateServiceFile(editorStyle, entity, null, psiFileFactory);
+        PsiFile psiFile = generateServiceFile(editorStyle, entity, null, psiFileFactory,module);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
         if (editorStyle==EditorStyle.NormalStyle) {
             for (SubEntityInfo subEntityInfo : entity.getSubEntities()) {
-                generateSubEntityService(psiFileFactory, codeStyleManager, subEntityInfo, entity, psiOutputDir);
+                generateSubEntityService(psiFileFactory, codeStyleManager, subEntityInfo, entity, psiOutputDir, module);
             }
         }
     }
 
-    private static void generateSubEntityService(PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, SubEntityInfo subEntityInfo, Entity entity, PsiDirectory psiOutputDir) {
+    private static void generateSubEntityService(PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, SubEntityInfo subEntityInfo, Entity entity, PsiDirectory psiOutputDir, Module module) {
         Entity subEntity=subEntityInfo.getSubEntity();
         String serviceClassName = CodeUtils.getServiceName(subEntity);
         String fileName = serviceClassName + ".java";
@@ -52,12 +53,12 @@ public class ServiceGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateSubEntityServiceFile(subEntityInfo, psiFileFactory);
+        PsiFile psiFile = generateSubEntityServiceFile(subEntityInfo, psiFileFactory,module);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
     }
 
-    private static PsiFile generateSubEntityServiceFile(SubEntityInfo subEntityInfo, PsiFileFactory psiFileFactory) {
+    private static PsiFile generateSubEntityServiceFile(SubEntityInfo subEntityInfo, PsiFileFactory psiFileFactory, Module module) {
         Entity subEntity=subEntityInfo.getSubEntity();
         String className = CodeUtils.getServiceName(subEntity);
         StringWriter writer = new StringWriter();
@@ -69,7 +70,14 @@ public class ServiceGenerator {
         dataModel.put("idType", TypeUtils.getShortTypeName(subEntityInfo.getSubEntity().getIdProperty().getType()));
         dataModel.put("generator", generator);
         dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(subEntity));
-        dataModel.put("typeList",CodeUtils.getMappedTypeList(subEntity));
+        Set<String> typeList=CodeUtils.getMappedTypeList(subEntity);
+        String persistorType=CodeUtils.getPersistorType(subEntity,module);
+        if (persistorType!=null) {
+            typeList.add(persistorType);
+        }
+        typeList.addAll(CodeUtils.getMappedTypePersistorList(subEntity,module));
+        typeList.addAll(CodeUtils.getRefencedTypeList(subEntity));
+        dataModel.put("typeList",typeList);
         dataModel.put("refPropertyType",TypeUtils.getShortTypeName(subEntityInfo.getSubEntityReferenceProperty().getType()));
         try {
             ServiceForSubEntityFullEditorTemplate.process(dataModel,writer);
@@ -83,7 +91,7 @@ public class ServiceGenerator {
     }
 
 
-    private static PsiFile generateServiceFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+    private static PsiFile generateServiceFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
         String className = CodeUtils.getServiceName(entity);
         String persistorName=CodeUtils.getPersistorCompositorName(entity);
         StringWriter writer = new StringWriter();
@@ -105,9 +113,17 @@ public class ServiceGenerator {
             if (editorStyle==EditorStyle.NormalStyle) {
                 dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
                 typeList.addAll(CodeUtils.getMappedTypeList(entity));
+                String persistorType=CodeUtils.getPersistorType(entity,module);
+                if (persistorType!=null) {
+                    typeList.add(persistorType);
+                }
+                typeList.addAll(CodeUtils.getMappedTypePersistorList(entity,module));
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             } else {
-                typeList.remove(entity.getClassInfo().getQualifiedName());
+                String persistorType=CodeUtils.getPersistorType(entity,module);
+                if (persistorType!=null) {
+                    typeList.add(persistorType);
+                }
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
             }
             dataModel.clear();

@@ -1,11 +1,10 @@
 package net.royqh.easypersist.generator;
 
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
 import net.royqh.easypersist.model.Entity;
 import net.royqh.easypersist.model.MapRelationInfo;
 import net.royqh.easypersist.model.SingleProperty;
@@ -23,7 +22,7 @@ public class ControllerGenerator {
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
     private static ControllerGenerator generator=new ControllerGenerator();
 
-    public static void generateController(EditorStyle editorStyle, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir) {
+    public static void generateController(EditorStyle editorStyle, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         String fileName = controllerClassName + ".java";
 
@@ -32,12 +31,12 @@ public class ControllerGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateControllerFile(editorStyle,entity, null, psiFileFactory);
+        PsiFile psiFile = generateControllerFile(editorStyle,entity, null, psiFileFactory, module);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
     }
 
-    private static PsiFile generateControllerFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory) {
+    private static PsiFile generateControllerFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
@@ -48,8 +47,13 @@ public class ControllerGenerator {
 
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
-        Set<String> types = CodeUtils.getTypeList(entity, true);
-        dataModel.put("typeList", types);
+        Set<String> typeList = CodeUtils.getTypeList(entity, true);
+        String serviceType=CodeUtils.getServiceType(entity,module);
+        if (serviceType!=null) {
+            typeList.add(serviceType);
+        }
+        typeList.addAll(CodeUtils.getRefencedServiceTypes(entity,module));
+        dataModel.put("typeList", typeList);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("generator",generator);
@@ -63,14 +67,20 @@ public class ControllerGenerator {
                     Set<Entity> subRefEntities=CodeUtils.getRefencingEntities(subEntityInfo.getSubEntity());
                     refEntities.addAll(subRefEntities);
                     //add import types used by subEntity
-                    types.addAll(CodeUtils.getTypeList(subEntityInfo.getSubEntity(), true));
+                    String subServiceType=CodeUtils.getServiceType(subEntityInfo.getSubEntity(),module);
+                    if (subServiceType!=null) {
+                        typeList.add(subServiceType);
+                    }
+                    typeList.addAll(CodeUtils.getRefencedServiceTypes(subEntityInfo.getSubEntity(),module));
+                    typeList.addAll(CodeUtils.getTypeList(subEntityInfo.getSubEntity(), true));
                     serviceEntities.add(subEntityInfo.getSubEntity());
                 }
                 for (MapRelationInfo mapRelationInfo:entity.getMapRelationInfos()){
                     Entity mapEntity=entity.getMappingRepository().findEntityByClass(mapRelationInfo.getMappingEntityFullClassName());
                     Set<Entity> mapRefEntities=CodeUtils.getRefencingEntities(mapEntity);
                     refEntities.addAll(mapRefEntities);
-                    types.addAll(CodeUtils.getTypeList(mapEntity,true));
+                    typeList.addAll(CodeUtils.getTypeList(mapEntity,true));
+                    typeList.addAll(CodeUtils.getRefencedServiceTypes(mapEntity,module));
                     serviceEntities.add(mapEntity);
                 }
                 refEntities.remove(entity);
@@ -181,6 +191,7 @@ public class ControllerGenerator {
                     builder.append(String.format("Integer.parseInt(%s)",
                             property.getName() + "Val"));
                     break;
+                case "Byte":
                 case "Long":
                 case "Short":
                 case "Double":

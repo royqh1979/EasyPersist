@@ -1,7 +1,7 @@
-public class ExportRowToExcelProcessor implements ${entity.classInfo.name}Persistor.RowProcessor{
-<#list entity.properties as property>
+public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${entityToExport.classInfo.name}Persistor.RowProcessor{
+<#list entityToExport.properties as property>
     <#if property.isReferenceProperty()>
-        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        <#assign refEntity=entityToExport.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
     List<${refEntity.classInfo.name}> list${refEntity.classInfo.name};
     </#if>
 </#list>
@@ -11,15 +11,15 @@ public class ExportRowToExcelProcessor implements ${entity.classInfo.name}Persis
     private HSSFCellStyle dateCellStyle;
     private HSSFCellStyle numberCellStyle;
 
-    public ExportRowToExcelProcessor(<#list entity.properties as property>
+    public ExportRowToExcelProcessor(<#list entityToExport.properties as property>
     <#if property.isReferenceProperty()>
-        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        <#assign refEntity=entityToExport.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
         List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
     </#if>
 </#list>HSSFSheet sheet, int startRow, int startCol) {
-<#list entity.properties as property>
+<#list entityToExport.properties as property>
     <#if property.isReferenceProperty()>
-        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        <#assign refEntity=entityToExport.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
         this.list${refEntity.classInfo.name}=list${refEntity.classInfo.name};
     </#if>
 </#list>
@@ -46,12 +46,12 @@ public class ExportRowToExcelProcessor implements ${entity.classInfo.name}Persis
         int t = startCol;
         cell=row.createCell(t++);
         cell.setCellType(Cell.CELL_TYPE_STRING);
-        cell.setCellValue("${entity.idProperty.chineseAlias}");
-        <#list entity.properties as property>
-            <#if property == entity.idProperty >
+        cell.setCellValue("${entityToExport.idProperty.chineseAlias}");
+        <#list entityToExport.properties as property>
+            <#if property == entityToExport.idProperty >
             <#else>
                 <#if property.isReferenceProperty()>
-                    <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    <#assign refEntity=entityToExport.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                     <#if refEntity.listHeaderProperty??>
                         <#assign listHeader=refEntity.listHeaderProperty>
                     <#else>
@@ -78,24 +78,24 @@ public class ExportRowToExcelProcessor implements ${entity.classInfo.name}Persis
     }
     @Override
     public void processRow(ResultSet rs, int i) throws SQLException {
-        ${entity.classInfo.name} ${entity.name}=persistor.SIMPLE_ROW_MAPPER.mapRow(rs,i);
-        createRow(${entity.name},i);
+        ${entityToExport.classInfo.name} ${entityToExport.name}=${entityToExport.classInfo.name}Persistor.SIMPLE_ROW_MAPPER.mapRow(rs,i);
+        createRow(${entityToExport.name},i);
     }
 
-    public void createRow(${entity.classInfo.name} ${entity.name}, int i) {
+    public void createRow(${entityToExport.classInfo.name} ${entityToExport.name}, int i) {
         HSSFRow row = sheet.createRow(startRow+1+i);
         int t = startCol;
         HSSFCell cell;
 
         cell=row.createCell(t++);
         cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-        cell.setCellValue(${entity.name}.${entity.idProperty.getter}());
-        <#list entity.properties as property>
-            <#if property == entity.idProperty >
+        cell.setCellValue(${entityToExport.name}.${entityToExport.idProperty.getter}());
+        <#list entityToExport.properties as property>
+            <#if property == entityToExport.idProperty >
             <#else>
             cell=row.createCell(t++);
                 <#if property.isReferenceProperty()>
-                    <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    <#assign refEntity=entityToExport.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                     <#if refEntity.listHeaderProperty??>
                         <#assign listHeader=refEntity.listHeaderProperty>
                     <#else>
@@ -104,32 +104,32 @@ public class ExportRowToExcelProcessor implements ${entity.classInfo.name}Persis
                 cell.setCellType(Cell.CELL_TYPE_STRING);
                 cell.setCellValue("");
                 for (${refEntity.classInfo.name} ${refEntity.name}:list${refEntity.classInfo.name}){
-                if (${refEntity.name}.${refEntity.idProperty.getter}()==${entity.name}.${property.getter}()){
+                if (${refEntity.name}.${refEntity.idProperty.getter}()==${entityToExport.name}.${property.getter}()){
                 cell.setCellValue(${refEntity.name}.${listHeader.getter}());
                 }
                 }
                 <#elseif generator.isBooleanProperty(property) >
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                cell.setCellValue(${entityToExport.name}.${property.getter}());
                 <#elseif property.isTemporal() >
                 cell.setCellStyle(dateCellStyle);
                 cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(${entity.name}.${property.getter}());
+                cell.setCellValue(${entityToExport.name}.${property.getter}());
                 <#else>
                     <#if generator.isIntProperty(property) >
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellValue(${entityToExport.name}.${property.getter}());
                     <#elseif generator.isBigDecimalProperty(property) >
                     cell.setCellStyle(numberCellStyle);
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}().doubleValue());
+                    cell.setCellValue(${entityToExport.name}.${property.getter}().doubleValue());
                     <#elseif generator.isNumberProperty(property) >
                     cell.setCellStyle(numberCellStyle);
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellValue(${entityToExport.name}.${property.getter}());
                     <#else>
                     cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue(${entity.name}.${property.getter}());
+                    cell.setCellValue(${entityToExport.name}.${property.getter}());
                     </#if>
                 </#if>
             </#if>

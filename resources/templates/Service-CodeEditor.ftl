@@ -22,6 +22,7 @@ import ${type};
 
 @Service
 public class ${entity.classInfo.name}Service {
+    <#assign entityToExport=entity>
     <#include "service/ExportRowToExcelProcessor.ftl" >
 
     @Autowired
@@ -109,5 +110,4 @@ public class ${entity.classInfo.name}Service {
             dirty=false;
         }
     }
-
 }

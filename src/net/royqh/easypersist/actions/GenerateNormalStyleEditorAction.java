@@ -80,8 +80,8 @@ public class GenerateNormalStyleEditorAction extends AnAction {
 
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
-                                ServiceGenerator.generateService(EditorStyle.NormalStyle,psiFileFactory,  codeStyleManager,entity,psiOutputDir);
-                                ControllerGenerator.generateController(EditorStyle.NormalStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir);
+                                ServiceGenerator.generateService(EditorStyle.NormalStyle,psiFileFactory,  codeStyleManager,entity,psiOutputDir,module);
+                                ControllerGenerator.generateController(EditorStyle.NormalStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
                                 ViewGenerator.generateJspViews(EditorStyle.NormalStyle,entity,psiOutputDir);
                                 Notification notification = new Notification(
                                         "Easy Persist",

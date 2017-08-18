@@ -6,6 +6,16 @@ import com.qui.base.SortType;
 import java.util.Date;
 
 import java.util.List;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 <#list typeList as type>
 import ${type};
@@ -13,7 +23,7 @@ import ${type};
 
 @Service
 public class ${subEntity.classInfo.name}Service {
-    <#assign entity=subEntity>
+    <#assign entityToExport=subEntity>
     <#include "service/ExportRowToExcelProcessor.ftl" >
 
     @Autowired
@@ -27,6 +37,21 @@ public class ${subEntity.classInfo.name}Service {
 
     public List<${subEntity.classInfo.name}> findBy${refProperty.name?cap_first}(${refPropertyType} ${refProperty.name},String orderBy, SortType sortType, Pager pager) {
         return persistor.findBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name},orderBy,sortType==SortType.asc,pager.getStartRow(),pager.getPageSize());
+    }
+
+    public void ExportToExcelByBy${refProperty.name?cap_first}(${refPropertyType} ${refProperty.name}, <#list subEntity.properties as property>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+    List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
+    </#if>
+</#list>HSSFSheet sheet, int startRow, int startCol) {
+        ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list subEntity.properties as property>
+            <#if property.isReferenceProperty()>
+                <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+            list${refEntity.classInfo.name},
+            </#if>
+        </#list>sheet, startRow, startCol);
+        persistor.findBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name},processor);
     }
 
     public ${idType} create(${subEntity.classInfo.name} ${subEntity.name}) {
