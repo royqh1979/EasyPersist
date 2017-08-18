@@ -17,13 +17,13 @@ import java.util.Map;
 /**
  * Created by Roy on 2016/2/24.
  */
-public class MethodGenerator {
+public class PersistorMethodGenerator {
     private SQLGenerator sqlGenerator;
     private static Template CreateFindXXXMappingForAddTemplate = TemplateLoader.loadTemplate("Persistor-Method-CreateFindXXXMappingForAdd.ftl");
     private static Template GetColumnNameByPropertyNameTemplate = TemplateLoader.loadTemplate("Persistor-Method-GetColumnNameByPropertyName.ftl");
     private static Template RowProcessorTemplate = TemplateLoader.loadTemplate("Persistor-RowProcessor.ftl");
 
-    public MethodGenerator(SQLGenerator sqlGenerator) {
+    public PersistorMethodGenerator(SQLGenerator sqlGenerator) {
         this.sqlGenerator = sqlGenerator;
     }
 
@@ -301,8 +301,9 @@ public class MethodGenerator {
         content.append("logger.debug(sql);\n");
         createStatementStatments(content);
         content.append("ResultSet resultSet=stmt.executeQuery(sql);\n");
+        content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet);\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
@@ -522,8 +523,9 @@ public class MethodGenerator {
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet);\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
@@ -623,8 +625,9 @@ public class MethodGenerator {
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet);\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
@@ -896,8 +899,9 @@ public class MethodGenerator {
             }
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet);\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
@@ -1019,8 +1023,9 @@ public class MethodGenerator {
         content.append(String.format("stmt.%s(1,id);\n",
                 JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet);\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
@@ -1093,8 +1098,9 @@ public class MethodGenerator {
         content.append(String.format("stmt.%s(1,id);\n",
                 JdbcUtils.getColumnSetter(entity.getIdProperty())));
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
-        content.append("rowProcessor.processRow(resultSet);\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");

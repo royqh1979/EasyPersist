@@ -14,18 +14,15 @@ import net.royqh.easypersist.MappingRepository;
 import net.royqh.easypersist.model.*;
 import net.royqh.easypersist.utils.TypeUtils;
 
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.OutputStreamWriter;
 import java.util.*;
 
 /**
  * Created by Roy on 2016/2/15.
  */
 public class PersistorsGenerator {
-    MethodGenerator methodGenerator;
+    PersistorMethodGenerator methodGenerator;
 
-    public PersistorsGenerator(MethodGenerator methodGenerator) {
+    public PersistorsGenerator(PersistorMethodGenerator methodGenerator) {
         this.methodGenerator = methodGenerator;
     }
 

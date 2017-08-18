@@ -6,6 +6,8 @@ import com.qui.base.SortType;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.*;
@@ -20,6 +22,8 @@ import ${type};
 
 @Service
 public class ${entity.classInfo.name}Service {
+    <#include "service/ExportRowToExcelProcessor.ftl" >
+
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
     private List<${entity.classInfo.name}> cachedList=null;
@@ -39,104 +43,18 @@ public class ${entity.classInfo.name}Service {
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
         List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
         </#if>
-    </#list>OutputStream outputStream) throws IOException {
-        HSSFWorkbook workbook=new HSSFWorkbook();
-        HSSFSheet sheet=workbook.createSheet();
-        HSSFCellStyle dateCellStyle = workbook.createCellStyle();
-        HSSFDataFormat format= workbook.createDataFormat();
-        dateCellStyle.setDataFormat(format.getFormat("yyyy年m月d日"));
-        HSSFCellStyle numberCellStyle = workbook.createCellStyle();
-        numberCellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
-        HSSFRow row=sheet.createRow(0);
-        HSSFCell cell;
-        int t=0;
-        cell=row.createCell(t++);
-        cell.setCellType(Cell.CELL_TYPE_STRING);
-        cell.setCellValue("${entity.idProperty.chineseAlias}");
-        <#list entity.properties as property>
-            <#if property == entity.idProperty >
-            <#else>
-                <#if property.isReferenceProperty()>
-                    <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    <#if refEntity.listHeaderProperty??>
-                        <#assign listHeader=refEntity.listHeaderProperty>
-                    <#else>
-                        <#assign listHeader=refEntity.idProperty>
-                    </#if>
-            {
-                String[] strings=new String[list${refEntity.classInfo.name}.size()];
-                for (int j=0;j<list${refEntity.classInfo.name}.size();j++){
-                    ${refEntity.classInfo.name} ${refEntity.name}=list${refEntity.classInfo.name}.get(j);
-                    strings[j]=""+${refEntity.name}.${listHeader.getter}();
-                }
-                CellRangeAddressList addressList = new CellRangeAddressList(1, 65534, t, t);
-                DataValidationHelper dvHelper = sheet.getDataValidationHelper();
-                DataValidationConstraint dvConstraint = dvHelper.createExplicitListConstraint(strings);
-                DataValidation validation = dvHelper.createValidation(dvConstraint, addressList);
-                sheet.addValidationData(validation);
-            }
-                </#if>
-            cell=row.createCell(t++);
-            cell.setCellType(Cell.CELL_TYPE_STRING);
-            cell.setCellValue("${property.chineseAlias}");
-            </#if>
-        </#list>
-
+    </#list>HSSFSheet sheet, int startRow, int startCol) throws IOException {
         checkCache();
-        int i=1;
-        for (${entity.classInfo.name} ${entity.name}:cachedList){
-            row=sheet.createRow(i);
-            t=0;
-            cell=row.createCell(t++);
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(${entity.name}.${entity.idProperty.getter}());
-        <#list entity.properties as property>
-            <#if property == entity.idProperty >
-            <#else>
-            cell=row.createCell(t++);
-                <#if property.isReferenceProperty()>
-                    <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    <#if refEntity.listHeaderProperty??>
-                        <#assign listHeader=refEntity.listHeaderProperty>
-                    <#else>
-                        <#assign listHeader=refEntity.idProperty>
-                    </#if>
-            cell.setCellType(Cell.CELL_TYPE_STRING);
-            cell.setCellValue("");
-            for (${refEntity.classInfo.name} ${refEntity.name}:list${refEntity.classInfo.name}){
-                if (${refEntity.name}.${refEntity.idProperty.getter}()==${entity.name}.${property.getter}()){
-                    cell.setCellValue(${refEntity.name}.${listHeader.getter}());
-                }
-            }
-                <#elseif generator.isBooleanProperty(property) >
-            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-            cell.setCellValue(${entity.name}.${property.getter}());
-                <#elseif property.isTemporal() >
-            cell.setCellStyle(dateCellStyle);
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(${entity.name}.${property.getter}());
-                <#else>
-                    <#if generator.isIntProperty(property) >
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(${entity.name}.${property.getter}());
-                    <#elseif generator.isBigDecimalProperty(property) >
-            cell.setCellStyle(numberCellStyle);
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(${entity.name}.${property.getter}().doubleValue());
-                    <#elseif generator.isNumberProperty(property) >
-            cell.setCellStyle(numberCellStyle);
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(${entity.name}.${property.getter}());
-                    <#else>
-            cell.setCellType(Cell.CELL_TYPE_STRING);
-            cell.setCellValue(${entity.name}.${property.getter}());
-                    </#if>
-                </#if>
-            </#if>
-        </#list>
-            i++;
+        ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list entity.properties as property>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        list${refEntity.classInfo.name},
+    </#if>
+</#list>sheet, startRow, startCol);
+        int i = 0;
+        for (${entity.classInfo.name} ${entity.name}: cachedList) {
+            processor.createRow(${entity.name},i++);
         }
-        workbook.write(outputStream);
     }
 
 <#list entity.properties as property>

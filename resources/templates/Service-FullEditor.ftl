@@ -7,6 +7,10 @@ import java.util.Date;
 
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
@@ -19,6 +23,7 @@ import ${type};
 
 @Service
 public class ${entity.classInfo.name}Service {
+    <#include "service/ExportRowToExcelProcessor.ftl" >
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
 
@@ -59,28 +64,13 @@ public class ${entity.classInfo.name}Service {
                 <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                 List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
             </#if>
-    </#list>String orderBy, SortType sortType, Pager pager,OutputStream outputStream) throws IOException {
-        HSSFWorkbook workbook=new HSSFWorkbook();
-        HSSFSheet sheet=workbook.createSheet();
-        HSSFCellStyle dateCellStyle = workbook.createCellStyle();
-        HSSFDataFormat format= workbook.createDataFormat();
-        dateCellStyle.setDataFormat(format.getFormat("yyyy年m月d日"));
-        HSSFCellStyle numberCellStyle = workbook.createCellStyle();
-        numberCellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
-        HSSFRow row=sheet.createRow(0);
-        HSSFCell cell;
-        int t=0;
-        cell=row.createCell(t++);
-        cell.setCellType(Cell.CELL_TYPE_STRING);
-        cell.setCellValue("${entity.idProperty.chineseAlias}");
-<#list entity.properties as property>
-    <#if property == entity.idProperty >
-    <#else>
-        cell=row.createCell(t++);
-        cell.setCellType(Cell.CELL_TYPE_STRING);
-        cell.setCellValue("${property.chineseAlias}");
-    </#if>
-</#list>
+    </#list>String orderBy, SortType sortType, Pager pager, HSSFSheet sheet, int startRow, int startCol) throws IOException {
+        ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list entity.properties as property>
+            <#if property.isReferenceProperty()>
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+            list${refEntity.classInfo.name},
+            </#if>
+        </#list>sheet, startRow, startCol);
         persistor.findAll(<#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
             end${indexProperty.name?cap_first},
             <#elseif generator.isRangeTypeProperty(indexProperty) >
@@ -88,65 +78,8 @@ public class ${entity.classInfo.name}Service {
             <#else>
             ${indexProperty.name},
             </#if></#list>orderBy,sortType==SortType.asc, pager.getStartRow(), pager.getPageSize(),
-            new ${entity.classInfo.name}Persistor.RowProcessor() {
-                int i=1;
-                @Override
-                public void processRow(ResultSet rs) throws SQLException {
-                    HSSFRow row=sheet.createRow(i);
-                    ${entity.classInfo.name} ${entity.name}=persistor.SIMPLE_ROW_MAPPER.mapRow(rs,i);
-                    int t=0;
-                    HSSFCell cell;
-                    cell=row.createCell(t++);
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${entity.idProperty.getter}());
-    <#list entity.properties as property>
-        <#if property == entity.idProperty >
-        <#else>
-                    cell=row.createCell(t++);
-            <#if property.isReferenceProperty()>
-                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                    <#if refEntity.listHeaderProperty??>
-                        <#assign listHeader=refEntity.listHeaderProperty>
-                    <#else>
-                        <#assign listHeader=refEntity.idProperty>
-                    </#if>
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue("");
-                    for (${refEntity.classInfo.name} ${refEntity.name}:list${refEntity.classInfo.name}){
-                        if (${refEntity.name}.${refEntity.idProperty.getter}()==${entity.name}.${property.getter}()){
-                            cell.setCellValue(${refEntity.name}.${listHeader.getter}());
-                        }
-                    }
-            <#elseif generator.isBooleanProperty(property) >
-                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-            <#elseif property.isTemporal() >
-                    cell.setCellStyle(dateCellStyle);
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-            <#else>
-                <#if generator.isIntProperty(property) >
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-                <#elseif generator.isBigDecimalProperty(property) >
-                    cell.setCellStyle(numberCellStyle);
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}().doubleValue());
-                <#elseif generator.isNumberProperty(property) >
-                    cell.setCellStyle(numberCellStyle);
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-                <#else>
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue(${entity.name}.${property.getter}());
-                </#if>
-            </#if>
-        </#if>
-    </#list>
-                    i++;
-                }
-        });
-        workbook.write(outputStream);
+            processor
+        );
     }
 
     public ${idType} create(${entity.classInfo.name} ${entity.name}) {

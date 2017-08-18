@@ -75,7 +75,7 @@ public class GenerateNormalStyleEditorAction extends AnAction {
                                 PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
                                 JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
                                 CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-                                MethodGenerator methodGenerator = new MethodGenerator(new MySQLGenerator());
+                                PersistorMethodGenerator methodGenerator = new PersistorMethodGenerator(new MySQLGenerator());
                                 PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
 
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);

@@ -20,7 +20,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.easypersist.generator.MethodGenerator;
+import net.royqh.easypersist.generator.PersistorMethodGenerator;
 import net.royqh.easypersist.generator.MySQLGenerator;
 import net.royqh.easypersist.generator.PersistorsGenerator;
 import net.royqh.easypersist.model.Entity;
@@ -77,7 +77,7 @@ public class GeneratePersistorAction extends AnAction {
                                 PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
                                 JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
                                 CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-                                MethodGenerator methodGenerator = new MethodGenerator(new MySQLGenerator());
+                                PersistorMethodGenerator methodGenerator = new PersistorMethodGenerator(new MySQLGenerator());
                                 PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);

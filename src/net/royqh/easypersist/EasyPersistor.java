@@ -2,7 +2,6 @@ package net.royqh.easypersist;
 
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -68,7 +67,7 @@ public class EasyPersistor {
                 default:
                     throw new RuntimeException("Wrong dialect in orm-config.xml. Should be MySQL or PostgreSQL!");
             }
-            MethodGenerator methodGenerator = new MethodGenerator(sqlGenerator);
+            PersistorMethodGenerator methodGenerator = new PersistorMethodGenerator(sqlGenerator);
             PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
             persistorsGenerator.generate(project, mappingRepository, indicator);
         } catch (Exception e) {

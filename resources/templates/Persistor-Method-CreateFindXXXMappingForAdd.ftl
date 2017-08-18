@@ -59,7 +59,7 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
 </#list>
         ResultSet resultSet = stmt.executeQuery();
         List<${mapEntity.classInfo.name}> results = new ArrayList<>();
-        i=1;
+        i=0;
         while (resultSet.next()) {
             results.add(__${mapEntity.classInfo.name}Persistor.SIMPLE_ROW_MAPPER.mapRow(resultSet, i++));
         }

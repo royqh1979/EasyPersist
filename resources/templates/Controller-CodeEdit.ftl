@@ -26,6 +26,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
 <#list typeList as type>
 import ${type};
 </#list>
@@ -89,6 +92,8 @@ public class ${entity.classInfo.name}Controller {
             String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}", "UTF-8");
             response.setContentType("application/vnd.ms-excel");
             response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            HSSFSheet sheet = workbook.createSheet();
             ${entity.name}Service.exportToExcel(
         <#list entity.properties as property>
             <#if property.isReferenceProperty()>
@@ -96,7 +101,8 @@ public class ${entity.classInfo.name}Controller {
                 ${refEntity.name}Service.listAll(false),
             </#if>
         </#list>
-            response.getOutputStream());
+            sheet,0,0);
+            workbook.write(response.getOutputStream());
         } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);
             e.printStackTrace();
