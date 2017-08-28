@@ -272,11 +272,11 @@ public class PersistorsGenerator {
     private boolean canGenerateRangeQuery(boolean isUniqueIndex, List<SingleProperty> indexProperties) {
         if (isUniqueIndex) {
             for (SingleProperty singleProperty : indexProperties) {
-                if (!TypeUtils.isRangeTypeProperty(singleProperty) && !TypeUtils.isStringType(singleProperty)) {
-                    //unique and not range type, can't retrive many entity by this property
-                    return false;
+                if (TypeUtils.isRangeTypeProperty(singleProperty) ) {
+                    return true;
                 }
             }
+            return false;
         }
         return true;
     }

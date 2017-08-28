@@ -69,11 +69,14 @@
       * 0.13.7 fix: grid sort <br />
                fix: grid edit <br />
                fix: N-to-N relationship edit <br />
-      * 0.13.8 add: privilege check in editor controller
-      * 0.13.9 add: excel export
-               fix: editor pagination
-               fix: error in excel export when entity's property type is BigDecimal
-               change: persistor to throw normal runtimexception instead of spring exception
+      * 0.13.8 add: privilege check in editor controller  <br />
+      * 0.13.9 add: excel export  <br />
+               fix: editor pagination  <br />
+               fix: error in excel export when entity's property type is BigDecimal  <br />
+               change: persistor to throw normal runtimexception instead of spring exception  <br />
+               add: auto import persitor/service if it is existed in source tree(not generated dir)   <br />
+               fix: property setting error in controller if its type is byte/Byte  <br />
+      * 0.14.0 fix: bug in find method for unique indexes.(Persistor)
     ]]>
   </change-notes>
 
