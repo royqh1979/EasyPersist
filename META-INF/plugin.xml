@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.13.9</version>
+  <version>0.14.0</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -76,7 +76,8 @@
                change: persistor to throw normal runtimexception instead of spring exception  <br />
                add: auto import persitor/service if it is existed in source tree(not generated dir)   <br />
                fix: property setting error in controller if its type is byte/Byte  <br />
-      * 0.14.0 fix: bug in find method for unique indexes.(Persistor)
+      * 0.14.0 fix: bug in find method for unique indexes.(Persistor) <br />
+               fix: parsing error for n-to-n mapping table if foreign key is defined in column definitions. (SQL-to-Entity) <br />
     ]]>
   </change-notes>
 

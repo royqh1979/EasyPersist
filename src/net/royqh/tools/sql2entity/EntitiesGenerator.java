@@ -260,6 +260,7 @@ public class EntitiesGenerator {
         }
         int fkcount = 0;
         List<MappingColumn> mappingColumns = new ArrayList<>();
+        /*
         for (Column column : table.getColumns()) {
             if (column.isPrimaryKey()) {
                 return null;
@@ -273,6 +274,7 @@ public class EntitiesGenerator {
                 fkcount++;
             }
         }
+        */
         fkcount += table.getForeignKeys().size();
         if (fkcount != 2) {
             return null;

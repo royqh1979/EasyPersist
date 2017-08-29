@@ -177,12 +177,7 @@ public class MySQLGenerator extends SQLGenerator {
         for (SingleProperty property:indexProperties) {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
-            } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(property.getType()))  {
-                    clauses.add("`"+property.getColumnName() + "` like ?");
-                }
-                continue;
-            }  else {
+            } else {
                 clauses.add("`"+property.getColumnName() + "` = ?");
             }
         }
