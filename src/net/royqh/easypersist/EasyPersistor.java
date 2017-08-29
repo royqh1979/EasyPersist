@@ -8,10 +8,10 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import net.royqh.easypersist.generator.*;
-import net.royqh.easypersist.model.config.EntitiesConfig;
-import net.royqh.easypersist.parsers.OrmConfigParser;
-import net.royqh.easypersist.parsers.jpa.PackageScanner;
+import net.royqh.easypersist.entity.generator.*;
+import net.royqh.easypersist.entity.model.config.EntitiesConfig;
+import net.royqh.easypersist.entity.parser.OrmConfigParser;
+import net.royqh.easypersist.entity.parser.jpa.PackageScanner;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;

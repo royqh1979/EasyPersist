@@ -20,9 +20,9 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.easypersist.generator.*;
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.parsers.jpa.ClassParser;
+import net.royqh.easypersist.entity.generator.*;
+import net.royqh.easypersist.entity.model.Entity;
+import net.royqh.easypersist.entity.parser.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

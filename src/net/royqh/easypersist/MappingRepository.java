@@ -2,7 +2,7 @@ package net.royqh.easypersist;
 
 import com.intellij.notification.*;
 import com.intellij.psi.PsiClass;
-import net.royqh.easypersist.model.Entity;
+import net.royqh.easypersist.entity.model.Entity;
 
 import java.util.Collection;
 import java.util.HashMap;

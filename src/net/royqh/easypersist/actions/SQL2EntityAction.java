@@ -14,10 +14,10 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
-import net.royqh.parser.model.Model;
-import net.royqh.tools.sql2entity.EntitiesGenerator;
-import net.royqh.tools.sql2entity.ModelParser;
-import net.royqh.tools.sql2entity.MySQLModelParser;
+import net.royqh.easypersist.sql.model.Model;
+import net.royqh.easypersist.sql.generator.EntitiesGenerator;
+import net.royqh.easypersist.sql.parser.sql2entity.ModelParser;
+import net.royqh.easypersist.sql.parser.sql2entity.MySQLModelParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -12,7 +12,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.royqh.easypersist.EasyPersistor;
-import net.royqh.easypersist.parsers.OrmConfigParser;
+import net.royqh.easypersist.entity.parser.OrmConfigParser;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

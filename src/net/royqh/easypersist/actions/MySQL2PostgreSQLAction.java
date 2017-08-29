@@ -17,15 +17,14 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.sql.dialects.SqlLanguageDialect;
-import net.royqh.parser.mysql.MySQLLexer;
-import net.royqh.parser.mysql.MySQLParser;
-import net.royqh.tools.mysql2postgresql.Mysql2PostgresqlVisitor;
+import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLLexer;
+import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLParser;
+import net.royqh.easypersist.sql.parser.mysql2postgresql.Mysql2PostgresqlVisitor;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 

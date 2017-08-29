@@ -20,11 +20,11 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.easypersist.generator.PersistorMethodGenerator;
-import net.royqh.easypersist.generator.MySQLGenerator;
-import net.royqh.easypersist.generator.PersistorsGenerator;
-import net.royqh.easypersist.model.Entity;
-import net.royqh.easypersist.parsers.jpa.ClassParser;
+import net.royqh.easypersist.entity.generator.PersistorMethodGenerator;
+import net.royqh.easypersist.entity.generator.MySQLGenerator;
+import net.royqh.easypersist.entity.generator.PersistorsGenerator;
+import net.royqh.easypersist.entity.model.Entity;
+import net.royqh.easypersist.entity.parser.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
