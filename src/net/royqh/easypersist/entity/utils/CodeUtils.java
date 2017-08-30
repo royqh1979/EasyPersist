@@ -1,4 +1,4 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.utils;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;

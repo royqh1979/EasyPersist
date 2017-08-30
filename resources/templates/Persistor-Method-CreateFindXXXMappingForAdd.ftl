@@ -7,7 +7,7 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
     ${generator.getObjectType(indexProperty.type)} ${indexProperty.name},
         </#if>
     </#list>
-    int mappingId) {
+    int ${entityId}) {
     List<String> params=new ArrayList<>();
         <#list indexProperties as indexProperty>
             <#if generator.isRangeTypeProperty(indexProperty)>
@@ -38,7 +38,7 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
     try {
         stmt = con.prepareStatement(sql);
         int i=1;
-        stmt.setInt(i,mappingId);
+        stmt.setInt(i,${entityId});
         i++;
 <#list indexProperties as indexProperty>
     <#if generator.isRangeTypeProperty(indexProperty)>
@@ -48,6 +48,11 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
         }
         if (max${indexProperty.name?cap_first} != null) {
             ${generator.generateStatementParameterSetter("i", indexProperty, "max" + indexProperty.name?cap_first)}
+            i++;
+        }
+    <#elseif generator.isStringType(indexProperty.type)>
+        if (${indexProperty.name}!=null) {
+            ${generator.generateStatementParameterSetter("i", indexProperty, indexProperty.name+"+\"%\"")}
             i++;
         }
     <#else>

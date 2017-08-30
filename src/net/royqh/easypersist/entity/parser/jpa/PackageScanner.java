@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.psi.*;
-import net.royqh.easypersist.MappingRepository;
+import net.royqh.easypersist.entity.MappingRepository;
 import net.royqh.easypersist.entity.model.config.EntitiesConfig;
 import net.royqh.easypersist.entity.parser.ParseError;
 import net.royqh.easypersist.entity.model.Entity;

@@ -1,7 +1,10 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.generator.persistor;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import net.royqh.easypersist.entity.utils.CodeUtils;
+import net.royqh.easypersist.entity.utils.JdbcUtils;
+import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -407,7 +410,7 @@ public class PersistorMethodGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property,  property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
@@ -513,7 +516,7 @@ public class PersistorMethodGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property,  property.getName() + "+\"%\""));
                     i++;
                 }
             } else {
@@ -614,7 +617,7 @@ public class PersistorMethodGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property, "\"%\"+" + property.getName() + "+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property,  property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
@@ -986,6 +989,7 @@ public class PersistorMethodGenerator {
         Map<String, Object> dataModel = new HashMap<>();
         Entity mapEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
 
+        dataModel.put("entityId",entity.getName()+"Id");
         dataModel.put("mapEntity", mapEntity);
         dataModel.put("mapRelationInfo", relationInfo);
 

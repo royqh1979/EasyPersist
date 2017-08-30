@@ -1,4 +1,4 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.generator.persistor;
 
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -10,7 +10,8 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.easypersist.MappingRepository;
+import net.royqh.easypersist.entity.MappingRepository;
+import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 
@@ -272,7 +273,7 @@ public class PersistorsGenerator {
     private boolean canGenerateRangeQuery(boolean isUniqueIndex, List<SingleProperty> indexProperties) {
         if (isUniqueIndex) {
             for (SingleProperty singleProperty : indexProperties) {
-                if (TypeUtils.isRangeTypeProperty(singleProperty) ) {
+                if (TypeUtils.isRangeTypeProperty(singleProperty) || TypeUtils.isStringType(singleProperty)) {
                     return true;
                 }
             }

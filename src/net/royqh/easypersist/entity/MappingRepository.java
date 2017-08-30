@@ -1,4 +1,4 @@
-package net.royqh.easypersist;
+package net.royqh.easypersist.entity;
 
 import com.intellij.notification.*;
 import com.intellij.psi.PsiClass;

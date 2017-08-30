@@ -1,4 +1,4 @@
-package net.royqh.easypersist;
+package net.royqh.easypersist.entity;
 
 import com.intellij.javaee.ResourceRegistrar;
 import com.intellij.javaee.StandardResourceProvider;

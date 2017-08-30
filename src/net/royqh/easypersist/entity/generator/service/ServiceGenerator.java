@@ -1,11 +1,14 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.generator.service;
 
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
+import net.royqh.easypersist.entity.generator.EditorStyle;
+import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.*;
+import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.StringWriter;
@@ -19,12 +22,12 @@ import java.util.Set;
  */
 public class ServiceGenerator {
 
-    private static Template ServiceForCodeEditorTemplate =TemplateLoader.loadTemplate("Service-CodeEditor.ftl");
+    private static Template ServiceForCodeEditorTemplate = TemplateLoader.loadTemplate("Service-CodeEditor.ftl");
     private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
     private static Template ServiceForSubEntityFullEditorTemplate =TemplateLoader.loadTemplate("Service-SubEntityFullEditor.ftl");
     private static ServiceGenerator generator=new ServiceGenerator();
 
-    public static void generateService(EditorStyle editorStyle,PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
+    public static void generateService(EditorStyle editorStyle, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
         String serviceClassName = CodeUtils.getServiceName(entity);
         String fileName = serviceClassName + ".java";
 

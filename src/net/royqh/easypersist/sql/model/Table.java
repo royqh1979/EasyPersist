@@ -11,6 +11,7 @@ public class Table {
     private List<Index> indexs=new ArrayList<>();
     private List<ForeignKey> foreignKeys=new ArrayList<>();
     private List<Check> checks=new ArrayList<>();
+    private Index primaryKey=null;
     private Set<IndexColumnsSet> indexedColumnsSet=new HashSet<>();
 
     public Table(String name) {
@@ -83,5 +84,13 @@ public class Table {
 
     public void addCheck(Check check) {
         checks.add(check);
+    }
+
+    public Index getPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(Index primaryKey) {
+        this.primaryKey = primaryKey;
     }
 }

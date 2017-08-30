@@ -60,7 +60,7 @@ public class EntitiesGenerator {
             entityBuilder.append("import javax.persistence.*;\n");
 
             entityBuilder.append("@Entity\n");
-            StringBuilder indexBuilder=new StringBuilder();
+            StringBuilder indexBuilder = new StringBuilder();
             for (Index index : table.getIndexs()) {
                 indexBuilder.append("      @Index(columnList = \"");
                 indexBuilder.append(String.join(",", index.getColumns()));
@@ -71,13 +71,13 @@ public class EntitiesGenerator {
                 indexBuilder.append("),\n");
             }
             for (ForeignKey foreignKey : table.getForeignKeys()) {
-                if (foreignKey.getColumns().size()>1) {
+                if (foreignKey.getColumns().size() > 1) {
                     indexBuilder.append("      @Index(columnList = \"");
                     indexBuilder.append(String.join(",", foreignKey.getColumns()));
                     indexBuilder.append("\"),\n");
                 }
             }
-            if (indexBuilder.length()==0) {
+            if (indexBuilder.length() == 0) {
                 entityBuilder.append("@Table(name=\"");
                 entityBuilder.append(table.getName());
                 entityBuilder.append("\")\n");
@@ -112,7 +112,7 @@ public class EntitiesGenerator {
                 //生成column对应的field变量
                 entityBuilder.append("  private ");
                 String propertyName = entity.getPropertyByColumnName(column.getName());
-                String propertyType = getType(column.getName(),column.getType(), column.isNotNull());
+                String propertyType = getType(column.getName(), column.getType(), column.isNotNull());
                 entityBuilder.append(propertyType);
                 entityBuilder.append(" ");
                 entityBuilder.append(propertyName);
@@ -122,7 +122,7 @@ public class EntitiesGenerator {
             for (Column column : table.getColumns()) {
                 //生成column对应的getter
                 String propertyName = entity.getPropertyByColumnName(column.getName());
-                String propertyType = getType(column.getName(),column.getType(), column.isNotNull());
+                String propertyType = getType(column.getName(), column.getType(), column.isNotNull());
 
                 if (column.isPrimaryKey()) {
                     entityBuilder.append("@Id\n");
@@ -147,7 +147,7 @@ public class EntitiesGenerator {
                     entityBuilder.append(getTemporalType(column.getType()));
                     entityBuilder.append(")\n");
                 }
-                boolean  hasReference=false;
+                boolean hasReference = false;
                 /*
                 ColumnReference columnReference=column.getReference();
                 if (columnReference!=null) {
@@ -160,17 +160,17 @@ public class EntitiesGenerator {
                 }
                 */
                 for (ForeignKey foreignKey : table.getForeignKeys()) {
-                    if (foreignKey.getColumns().size()>1) {
+                    if (foreignKey.getColumns().size() > 1) {
                         continue;
                     }
                     if (foreignKey.getColumns().get(0).endsWith(column.getName())) {
                         if (hasReference) {
-                            throw new RuntimeException("Table "+table.getName()+" has duplicate references for column "+column.getName());
+                            throw new RuntimeException("Table " + table.getName() + " has duplicate references for column " + column.getName());
                         }
                         entityBuilder.append("@Reference(refEntityClass = ");
                         {
-                            Entity refEntity =entityModel.getEntityByTableName(foreignKey.getRefTable());
-                            if (refEntity!=null) {
+                            Entity refEntity = entityModel.getEntityByTableName(foreignKey.getRefTable());
+                            if (refEntity != null) {
                                 entityBuilder.append(refEntity.getName());
                             } else {
                                 entityBuilder.append(convertTableName(foreignKey.getRefTable()));
@@ -179,7 +179,7 @@ public class EntitiesGenerator {
                         entityBuilder.append(".class,refEntityColumn = \"");
                         entityBuilder.append(foreignKey.getRefColumns().get(0));
                         entityBuilder.append("\")\n");
-                        hasReference=true;
+                        hasReference = true;
                     }
 
                 }
@@ -210,15 +210,15 @@ public class EntitiesGenerator {
             }
             entityBuilder.append("}\n");
 
-            PsiFileFactory psiFileFactory=PsiFileFactory.getInstance(project);
+            PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
 
-            PsiFile file=psiFileFactory.createFileFromText(entity.getName() + ".java", JavaLanguage.INSTANCE,entityBuilder);
+            PsiFile file = psiFileFactory.createFileFromText(entity.getName() + ".java", JavaLanguage.INSTANCE, entityBuilder);
 
-            PsiFile oldFile=directory.findFile(file.getName());
-            if (oldFile!=null) {
+            PsiFile oldFile = directory.findFile(file.getName());
+            if (oldFile != null) {
                 oldFile.delete();
             }
-            CodeStyleManager codeStyleManager=CodeStyleManager.getInstance(project);
+            CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
             codeStyleManager.reformat(file);
 
             directory.add(file);
@@ -233,8 +233,8 @@ public class EntitiesGenerator {
         builder.append(mapping.getMappingTableName());
         builder.append("\",\n");
         builder.append("            mappingEntityClass = ");
-        Entity mappingEntity=model.getEntityByTableName(refMappingColumn.getRefTable());
-        if (mappingEntity==null) {
+        Entity mappingEntity = model.getEntityByTableName(refMappingColumn.getRefTable());
+        if (mappingEntity == null) {
             throw new RuntimeException(
                     String.format("Can't find reference table \"%s\" in %s: \"FOREIGN KEY (%s) REFERENCES %s (%s)\"",
                             refMappingColumn.getRefTable(),
@@ -258,27 +258,10 @@ public class EntitiesGenerator {
         if (table.getColumns().size() != 2) {
             return null;
         }
-        int fkcount = 0;
-        List<MappingColumn> mappingColumns = new ArrayList<>();
-        /*
-        for (Column column : table.getColumns()) {
-            if (column.isPrimaryKey()) {
-                return null;
-            }
-            if (column.getReference() != null) {
-                MappingColumn mappingColumn = new MappingColumn();
-                mappingColumn.setColumnName(column.getName());
-                mappingColumn.setRefTable(column.getReference().getTable());
-                mappingColumn.setRefColumn(column.getReference().getColumn());
-                mappingColumns.add(mappingColumn);
-                fkcount++;
-            }
-        }
-        */
-        fkcount += table.getForeignKeys().size();
-        if (fkcount != 2) {
+        if (table.getForeignKeys().size() != 2) {
             return null;
         }
+        List<MappingColumn> mappingColumns = new ArrayList<>();
         for (ForeignKey foreignKey : table.getForeignKeys()) {
             if (foreignKey.getColumns().size() != 1) {
                 continue;
@@ -314,7 +297,7 @@ public class EntitiesGenerator {
     }
 
     private static boolean isSerialType(String type) {
-        String t=type.trim().toLowerCase();
+        String t = type.trim().toLowerCase();
         if (t.equals("serial")) {
             return true;
         }
@@ -346,11 +329,12 @@ public class EntitiesGenerator {
         return false;
     }
 
-    private static Pattern typePattern=Pattern.compile("^\\s*(\\w+)(.*)$") ;
-    private static String getType(String name,String type, boolean isNotNull) {
-        Matcher matcher=typePattern.matcher(type);
+    private static Pattern typePattern = Pattern.compile("^\\s*(\\w+)(.*)$");
+
+    private static String getType(String name, String type, boolean isNotNull) {
+        Matcher matcher = typePattern.matcher(type);
         String s = matcher.replaceAll("$1").toLowerCase().trim();
-        System.out.println("type:"+type+" - "+s);
+        System.out.println("type:" + type + " - " + s);
         if (isNotNull) {
             switch (s) {
                 case "serial":
@@ -389,7 +373,7 @@ public class EntitiesGenerator {
                 case "serial8":
                 case "shortserial":
                 case "serial2":
-                    throw new RuntimeException("column "+name+" Serial Type  should be not null!");
+                    throw new RuntimeException("column " + name + " Serial Type  should be not null!");
                 case "int":
                 case "integer":
                 case "int4":
@@ -429,7 +413,7 @@ public class EntitiesGenerator {
             case "decimal":
                 return "BigDecimal";
         }
-        throw new RuntimeException("column "+name+":Unsupported column type :" + type);
+        throw new RuntimeException("column " + name + ":Unsupported column type :" + type);
     }
 
     private static String convertColumnName(String columnName) {
@@ -440,8 +424,8 @@ public class EntitiesGenerator {
             if (isColumnNamePrefix(name)) {
                 continue;
             }
-            if (StringUtils.isAllUpperCase(name)){
-                name=name.toLowerCase();
+            if (StringUtils.isAllUpperCase(name)) {
+                name = name.toLowerCase();
             }
             if (isFirst) {
                 isFirst = false;
@@ -485,8 +469,8 @@ public class EntitiesGenerator {
             if (isTableNamePrefix(name)) {
                 continue;
             }
-            if (StringUtils.isAllUpperCase(name)){
-                name=name.toLowerCase();
+            if (StringUtils.isAllUpperCase(name)) {
+                name = name.toLowerCase();
             }
             builder.append(StringUtils.capitalize(name));
         }

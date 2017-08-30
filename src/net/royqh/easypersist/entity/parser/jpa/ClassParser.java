@@ -3,7 +3,7 @@ package net.royqh.easypersist.entity.parser.jpa;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import net.royqh.easypersist.MappingRepository;
+import net.royqh.easypersist.entity.MappingRepository;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.Constants;
 import net.royqh.easypersist.entity.model.jpa.Index;

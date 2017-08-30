@@ -79,6 +79,7 @@
       * 0.14.0 fix: bug in find method for unique indexes.(Persistor) <br />
                fix: parsing error for n-to-n mapping table if foreign key is defined in column definitions. (SQL-to-Entity) <br />
       * 0.15.0 package structure refactor
+               change: generate find/count method for unique string indexes (Persistor)
     ]]>
   </change-notes>
 
@@ -93,7 +94,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <standardResourceProvider implementation="net.royqh.easypersist.EasyPersistResourceProvider" />
+    <standardResourceProvider implementation="net.royqh.easypersist.entity.EasyPersistResourceProvider" />
   </extensions>
 
   <application-components>

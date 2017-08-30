@@ -1,8 +1,7 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.utils;
 
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.SingleProperty;
-import net.royqh.easypersist.entity.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.EnumType;

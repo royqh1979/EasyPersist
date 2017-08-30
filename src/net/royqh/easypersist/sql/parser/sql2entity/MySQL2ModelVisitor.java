@@ -53,6 +53,9 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
             } else if (attrCtx.K_PRIMARY()!=null ||
                     (attrCtx.K_UNIQUE()==null && attrCtx.K_KEY()!=null)) {
                 column.setPrimaryKey(true);
+                Index index=new Index(Index.Type.PrimaryKey);
+                index.addColumn(columnName);
+                table.setPrimaryKey(index);
             } else if (attrCtx.K_DEFAULT()!=null) {
                 column.setDefaultValue(ParseTool.getFullText(tokenStream,attrCtx.literal_value()));
             } else if (attrCtx.K_COLLATE()!=null) {
@@ -105,6 +108,7 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
             throw new RuntimeException(String.format("Empty Primary Key Column List in table %s at %d:%d",
                     table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
         }
+        table.setPrimaryKey(index);
         if (index.getColumns().size()==1) {
             Column column=table.getColumn(index.getColumns().get(0));
             if (column==null) {

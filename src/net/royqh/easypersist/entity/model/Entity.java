@@ -1,7 +1,7 @@
 package net.royqh.easypersist.entity.model;
 
 import com.intellij.psi.PsiClass;
-import net.royqh.easypersist.MappingRepository;
+import net.royqh.easypersist.entity.MappingRepository;
 import net.royqh.easypersist.entity.model.jpa.ModelError;
 import net.royqh.easypersist.entity.model.jpa.Table;
 import org.apache.commons.lang.StringUtils;

@@ -1,4 +1,4 @@
-package net.royqh.easypersist;
+package net.royqh.easypersist.entity;
 
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -8,7 +8,7 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import net.royqh.easypersist.entity.generator.*;
+import net.royqh.easypersist.entity.generator.persistor.*;
 import net.royqh.easypersist.entity.model.config.EntitiesConfig;
 import net.royqh.easypersist.entity.parser.OrmConfigParser;
 import net.royqh.easypersist.entity.parser.jpa.PackageScanner;

@@ -1,4 +1,4 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.generator.persistor;
 
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;

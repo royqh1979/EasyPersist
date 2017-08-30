@@ -1,14 +1,17 @@
-package net.royqh.easypersist.entity.generator;
+package net.royqh.easypersist.entity.generator.view;
 
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
+import net.royqh.easypersist.entity.generator.EditorStyle;
+import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;
 import net.royqh.easypersist.entity.model.SingleProperty;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
+import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.*;
