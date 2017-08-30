@@ -34,10 +34,14 @@ public class PersistorMethodGenerator {
         return sqlGenerator;
     }
 
-    public void createDeleteMethod(StringBuilder content, Entity entity) {
-        SingleProperty idProperty = entity.getIdProperty();
+    public void createDeleteMethods(StringBuilder content, Entity entity) {
         content.append(sqlGenerator.generateDeleteSQL(entity));
+        createDeleteMethod(content,entity);
+        createDeleteAllMethod(content,entity);
+        createBatchDeleteMethod(content,entity);
+    }
 
+    private void createDeleteAllMethod(StringBuilder content, Entity entity) {
         content.append("public void deleteAll() {\n");
         content.append(String.format("String sql=\"delete from %s%s%s\";\n",
                 sqlGenerator.getQuote(),entity.getTableName(),sqlGenerator.getQuote()));
@@ -49,6 +53,33 @@ public class PersistorMethodGenerator {
         content.append("stmt.execute(sql);\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
+    }
+
+    private void createBatchDeleteMethod(StringBuilder content, Entity entity) {
+        SingleProperty idProperty = entity.getIdProperty();
+
+        content.append("public void batchDelete(List<");
+        content.append(TypeUtils.getObjectType(idProperty.getType()));
+
+        content.append("> ids) {\n");
+        content.append("String sql=DELETE_SQL;\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append(String.format("for (%s id:ids) {\n",
+                TypeUtils.getObjectType(idProperty.getType())));
+        content.append("stmt.");
+        content.append(JdbcUtils.getColumnSetter(idProperty));
+        content.append("(1,id);\n");
+        content.append("stmt.addBatch();\n");
+        content.append("}\n");
+        content.append("stmt.executeBatch();\n");
+        generateExceptionHandleStatements(content);
+        content.append("}\n");
+
+    }
+
+    public void createDeleteMethod(StringBuilder content, Entity entity) {
+        SingleProperty idProperty = entity.getIdProperty();
 
         content.append("public void delete(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
@@ -124,7 +155,7 @@ public class PersistorMethodGenerator {
         content.append("}\n");
     }
 
-    public void createCreateMethod(StringBuilder content, Entity entity) {
+    public void createCreateMethods(StringBuilder content, Entity entity) {
         List<String> insertFields = new ArrayList<>();
         List<SingleProperty> insertProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();

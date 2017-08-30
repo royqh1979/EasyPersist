@@ -291,9 +291,9 @@ public class PersistorsGenerator {
     private void createBasicMethods(Entity entity, StringBuilder content) {
         methodGenerator.createLoadByIdMethod(content, entity);
         methodGenerator.createLoadAllMethod(content, entity);
-        methodGenerator.createCreateMethod(content, entity);
+        methodGenerator.createCreateMethods(content, entity);
         methodGenerator.createUpdateMethod(content, entity);
-        methodGenerator.createDeleteMethod(content, entity);
+        methodGenerator.createDeleteMethods(content, entity);
     }
 
     private void generateImports(Entity entity, StringBuilder content) {
