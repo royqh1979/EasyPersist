@@ -83,6 +83,7 @@
                add: generate batchDelete method (Persistor)  <br />
       * 0.14.2 add: primary key can also be foreign key (SQL to entity) <br />
                change: remove refColumnName in @Reference (SQL to entity, entity editor) <br />
+                add: @FactTable @EntityKey @PropertyKey to support fact table editor <br />
     ]]>
   </change-notes>
 
