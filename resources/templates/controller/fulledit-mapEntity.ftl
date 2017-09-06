@@ -6,7 +6,7 @@
             return TaskRedirector.errorExit(model,"无权访问");
         }
         model.addAttribute("id",id);
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return  jspPrefix+"${entity.name}-mapping-${mapEntity.name}";
     }
 
@@ -17,7 +17,7 @@
             return TaskRedirector.errorExit(model,"无权访问");
         }
         model.addAttribute("id",id);
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return  jspPrefix+"${entity.name}-mapping-add-${mapEntity.name}";
     }
 

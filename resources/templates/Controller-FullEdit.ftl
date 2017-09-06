@@ -32,7 +32,7 @@ import ${type};
 </#list>
 
 @Controller
-@RequestMapping("codes/${entity.name}")
+@RequestMapping(${entity.classInfo.name}Controller.CONTROLLER_URL)
 public class ${entity.classInfo.name}Controller {
     @Autowired
     private ${entity.classInfo.name}Service ${entity.name}Service;
@@ -47,7 +47,8 @@ public class ${entity.classInfo.name}Controller {
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}Controller.class);
     private static final String jspPrefix= "";
-    private static final String pathPrefix = "codes/";
+    public static final String CONTROLLER_URL = "codes/${entity.name}";
+
     private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
@@ -56,7 +57,7 @@ public class ${entity.classInfo.name}Controller {
         if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
             return TaskRedirector.errorExit(model,"无权访问");
         }
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return jspPrefix+"${entity.name}";
     }
 
@@ -172,7 +173,7 @@ public class ${entity.classInfo.name}Controller {
             return TaskRedirector.errorExit(model,"无权访问");
         }
         model.addAttribute("isUpdate",false);
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return  jspPrefix+"${entity.name}-edit";
     }
 
@@ -184,7 +185,7 @@ public class ${entity.classInfo.name}Controller {
         }
         model.addAttribute("isUpdate",true);
         model.addAttribute("id",id);
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return  jspPrefix+"${entity.name}-edit";
     }
 
@@ -195,7 +196,7 @@ public class ${entity.classInfo.name}Controller {
             return TaskRedirector.errorExit(model,"无权访问");
         }
         model.addAttribute("isUpdate",false);
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return  jspPrefix+"${entity.name}-edit-entity";
     }
 
@@ -207,7 +208,7 @@ public class ${entity.classInfo.name}Controller {
         }
         model.addAttribute("isUpdate",true);
         model.addAttribute("id",id);
-        model.addAttribute("ctrlUrl",pathPrefix+"${entity.name}");
+        model.addAttribute("ctrlUrl",CONTROLLER_URL);
         return  jspPrefix+"${entity.name}-edit-entity";
     }
 

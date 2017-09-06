@@ -181,7 +181,6 @@ public class MethodParser {
         if (referenceAnno!=null) {
             ReferenceSingleProperty referenceSingleProperty= new ReferenceSingleProperty(name, type, column);
             referenceSingleProperty.setRefEntityFullClassName(AnnotationUtils.getClassName(referenceAnno,"refEntityClass"));
-            referenceSingleProperty.setRefEntityColumnName(AnnotationUtils.getValue(referenceAnno,"refEntityColumn"));
             property=referenceSingleProperty;
         } else {
             property= new SingleProperty(name, type, column);

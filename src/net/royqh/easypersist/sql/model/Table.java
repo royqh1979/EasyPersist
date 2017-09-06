@@ -78,7 +78,16 @@ public class Table {
 
     public void addForeignKey(ForeignKey foreignKey) {
        // System.out.println("add foreign key:"+String.join(",",foreignKey.getColumns()));
-        addIndexedColumns(foreignKey.getColumns());
+        boolean sameWithPrimaryKey=false;
+        if (getPrimaryKey()!=null) {
+            if (primaryKey.getColumns().containsAll(foreignKey.getColumns()) &&
+                    foreignKey.getColumns().containsAll(primaryKey.getColumns())) {
+                sameWithPrimaryKey=true;
+            }
+        }
+        if (!sameWithPrimaryKey) {
+            addIndexedColumns(foreignKey.getColumns());
+        }
         foreignKeys.add(foreignKey);
     }
 

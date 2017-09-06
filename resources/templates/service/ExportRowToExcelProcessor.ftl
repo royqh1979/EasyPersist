@@ -110,7 +110,7 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
                 }
                 <#elseif generator.isBooleanProperty(property) >
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                cell.setCellValue(${entityToExport.name}.${property.getter}());
+                cell.setCellValue(${entityToExport.name}.${property.getter}()?"是":"否");
                 <#elseif property.isTemporal() >
                 cell.setCellStyle(dateCellStyle);
                 cell.setCellType(Cell.CELL_TYPE_NUMERIC);

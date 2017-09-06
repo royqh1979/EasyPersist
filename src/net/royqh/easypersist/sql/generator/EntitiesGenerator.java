@@ -176,9 +176,7 @@ public class EntitiesGenerator {
                                 entityBuilder.append(convertTableName(foreignKey.getRefTable()));
                             }
                         }
-                        entityBuilder.append(".class,refEntityColumn = \"");
-                        entityBuilder.append(foreignKey.getRefColumns().get(0));
-                        entityBuilder.append("\")\n");
+                        entityBuilder.append(".class)\n");
                         hasReference = true;
                     }
 

@@ -117,9 +117,8 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
                         index.getColumns().get(0),table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
             }
             column.setPrimaryKey(true);
-        } else {
-            table.addIndex(index);
         }
+        table.addIndex(index);
         return null;
     }
 

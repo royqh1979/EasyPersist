@@ -258,21 +258,21 @@ public class ClassParser {
             Entity subEntity=doParseEntityClassWithReferences(mappingClass,
                     module,repository,facade,searchScope,checkChineseAlias);
             subEntityInfo.setSubEntity(subEntity);
-            subEntityInfo.setSubEntityReferenceProperty(findReferenceProperty(subEntity,entity.getIdProperty()));
+            subEntityInfo.setSubEntityReferenceProperty(findReferenceProperty(subEntity,entity.getClassInfo().getQualifiedName()));
         }
         return entity;
     }
 
-    private static ReferenceSingleProperty findReferenceProperty(Entity subEntity, SingleProperty idProperty) {
+    private static ReferenceSingleProperty findReferenceProperty(Entity subEntity, String entityFullClassName) {
         for (Property property: subEntity.getProperties()) {
             if (property instanceof ReferenceSingleProperty)  {
                 ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
-                if (referenceSingleProperty.getRefEntityColumnName().equals(idProperty.getColumnName())){
+                if (referenceSingleProperty.getRefEntityFullClassName().equals(entityFullClassName)){
                     return referenceSingleProperty;
                 }
             }
         }
-        throw new RuntimeException("Can't find property referencing \""+idProperty+"\" in entity "+subEntity.getClassInfo().getQualifiedName());
+        throw new RuntimeException("Can't find property referencing \""+entityFullClassName+"\" in entity "+subEntity.getClassInfo().getQualifiedName());
     }
 
     public static boolean isEntityClass(PsiClass psiClass) {

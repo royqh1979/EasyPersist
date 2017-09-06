@@ -70,11 +70,11 @@
                             </#if>
                         <#elseif generator.isIntProperty(indexProperty) >
                             <td colspan="4">
-                                <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
+                                <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly" />
                             </td>
                         <#elseif generator.isNumberProperty(indexProperty) >
                             <td colspan="4">
-                                <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"  watermark="请输入合法数字"/>
+                                <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"/>
                             </td>
                         <#elseif generator.isDateProperty(indexProperty) >
                             <td>查询开始日期</td>
