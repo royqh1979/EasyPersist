@@ -226,7 +226,7 @@ public class ClassParser {
         if (repository.isClassExist(psiClass)) {
             return repository.findEntityByClass(psiClass.getQualifiedName());
         }
-        if (!ClassParser.isEntityClass(psiClass)) {
+        if (!ClassParser.isNormalEntityClass(psiClass)) {
             throw new RuntimeException("Class "+psiClass.getQualifiedName()+"is NOT a entity class!");
         }
         Entity entity=parseEntityClass(psiClass,checkChineseAlias);
@@ -275,9 +275,19 @@ public class ClassParser {
         throw new RuntimeException("Can't find property referencing \""+entityFullClassName+"\" in entity "+subEntity.getClassInfo().getQualifiedName());
     }
 
-    public static boolean isEntityClass(PsiClass psiClass) {
+    public static boolean isNormalEntityClass(PsiClass psiClass) {
         PsiAnnotation entityAnnotation = AnnotationUtils.findAnnotation(psiClass,
                 Constants.ENTITY);
-        return entityAnnotation!=null;
+        PsiAnnotation factTableAnnotation = AnnotationUtils.findAnnotation(psiClass,
+                Constants.FACT_TABLE);
+        return entityAnnotation!=null && factTableAnnotation==null;
+    }
+
+    public static boolean isFactTableClass(PsiClass psiClass) {
+        PsiAnnotation entityAnnotation = AnnotationUtils.findAnnotation(psiClass,
+                Constants.ENTITY);
+        PsiAnnotation factTableAnnotation = AnnotationUtils.findAnnotation(psiClass,
+                Constants.FACT_TABLE);
+        return entityAnnotation!=null && factTableAnnotation!=null;
     }
 }

@@ -20,29 +20,30 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.easypersist.entity.generator.*;
-import net.royqh.easypersist.entity.generator.service.ServiceGenerator;
-import net.royqh.easypersist.entity.generator.view.ControllerGenerator;
+import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.persistor.MySQLGenerator;
 import net.royqh.easypersist.entity.generator.persistor.PersistorMethodGenerator;
 import net.royqh.easypersist.entity.generator.persistor.PersistorsGenerator;
+import net.royqh.easypersist.entity.generator.service.ServiceGenerator;
+import net.royqh.easypersist.entity.generator.view.ControllerGenerator;
 import net.royqh.easypersist.entity.generator.view.ViewGenerator;
 import net.royqh.easypersist.entity.model.Entity;
+import net.royqh.easypersist.entity.model.FactTable;
+import net.royqh.easypersist.entity.parser.FactTableParser;
 import net.royqh.easypersist.entity.parser.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 /**
- * Created by Roy on 2017/6/12.
+ * Created by roy on 2017/9/6.
  */
-public class GenerateNormalStyleEditorAction extends AnAction {
-    private static Logger logger = Logger.getInstance(GenerateNormalStyleEditorAction.class);
-
+public class GenerateFactTableEditorAction extends AnAction {
+    private static Logger logger = Logger.getInstance(GenerateExcelStyleEditorAction.class);
     @Override
     public void actionPerformed(AnActionEvent e) {
         ProgressManager progressManager = ProgressManager.getInstance();
-        progressManager.run(new Task.Backgroundable(e.getProject(), "Generate Editor Persistor") {
+        progressManager.run(new Task.Backgroundable(e.getProject(), "Generate Fact Table ") {
 
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -51,14 +52,23 @@ public class GenerateNormalStyleEditorAction extends AnAction {
                     PsiClass psiClass = (PsiClass) e.getData(CommonDataKeys.PSI_ELEMENT);
                     Project project = e.getProject();
                     Module module = ModuleUtil.findModuleForFile(psiClass.getContainingFile().getVirtualFile(), project);
-                    Entity entity=ApplicationManager.getApplication().runReadAction(new Computable<Entity>() {
+                    Entity entity= ApplicationManager.getApplication().runReadAction(new Computable<Entity>() {
                         @Override
                         public Entity compute() {
                             indicator.setFraction(0.2);
-                            indicator.setText("Parsing Entity " + psiClass.getQualifiedName());
+                            indicator.setText("Parsing FactTable " + psiClass.getQualifiedName());
                             return ClassParser.parseEntityClassWithReferences(psiClass, module,true);
                         }
                     });
+                    FactTable factTable=ApplicationManager.getApplication().runReadAction(new Computable<FactTable>() {
+                        @Override
+                        public FactTable compute() {
+                            indicator.setFraction(0.3);
+                            indicator.setText("Parsing FactTable " + psiClass.getQualifiedName());
+                            return FactTableParser.parse(entity,psiClass, module);
+                        }
+                    });
+
 
                     VirtualFile root = ProjectRootManager.getInstance(project)
                             .getFileIndex().getContentRootForFile(psiClass.getContainingFile().getVirtualFile());
@@ -86,9 +96,10 @@ public class GenerateNormalStyleEditorAction extends AnAction {
 
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
-                                ServiceGenerator.generateService(EditorStyle.NormalStyle,psiFileFactory,  codeStyleManager,entity,psiOutputDir,module);
-                                ControllerGenerator.generateController(EditorStyle.NormalStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
-                                ViewGenerator.generateJspViews(EditorStyle.NormalStyle,entity,psiOutputDir);
+                                /*
+                                ServiceGenerator.generateService(EditorStyle.ExcelStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
+                                ControllerGenerator.generateController(EditorStyle.ExcelStyle, psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
+                                ViewGenerator.generateJspViews(EditorStyle.ExcelStyle,entity,psiOutputDir);
                                 Notification notification = new Notification(
                                         "Easy Persist",
                                         "Success",
@@ -96,6 +107,7 @@ public class GenerateNormalStyleEditorAction extends AnAction {
                                         NotificationType.INFORMATION
                                 );
                                 Notifications.Bus.notify(notification, e.getProject());
+                                */
                             }  catch (IOException e1) {
                                 throw new RuntimeException(e1);
                             }
@@ -113,9 +125,9 @@ public class GenerateNormalStyleEditorAction extends AnAction {
                     logger.error(exception);
                 }
 
+
             }
         });
-
     }
 
     @Override
@@ -123,7 +135,7 @@ public class GenerateNormalStyleEditorAction extends AnAction {
         PsiElement element = e.getData(CommonDataKeys.PSI_ELEMENT);
         if (element instanceof PsiClass) {
             PsiClass psiClass = (PsiClass) element;
-            if (ClassParser.isNormalEntityClass(psiClass)) {
+            if (ClassParser.isFactTableClass(psiClass) ) {
                 e.getPresentation().setVisible(true);
                 return;
             }

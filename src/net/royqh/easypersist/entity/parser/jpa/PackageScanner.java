@@ -46,7 +46,7 @@ public class PackageScanner {
     }
 
     private static void scanClass(PsiClass psiClass, MappingRepository mappingRepository, String entitiesPackage, String persistorPackage) {
-        if (!ClassParser.isEntityClass(psiClass)) {
+        if (!ClassParser.isNormalEntityClass(psiClass)) {
              return;
         }
 

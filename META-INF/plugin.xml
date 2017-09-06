@@ -159,6 +159,15 @@
       <add-to-group group-id="EditorTabPopupMenu" />
     </action>
     <action
+            id="net.royqh.easypersist.actions.GenerateFactTableEditorAction"
+            class="net.royqh.easypersist.actions.GenerateFactTableEditorAction"
+            text="Generate Fact Table Editor" >
+      <add-to-group group-id="ToolsMenu" anchor="first"/>
+      <add-to-group group-id="EditorPopupMenu" />
+      <add-to-group group-id="ProjectViewPopupMenu" />
+      <add-to-group group-id="EditorTabPopupMenu" />
+    </action>
+    <action
             id="net.royqh.easypersist.actions.SQL2EntityAction"
             class="net.royqh.easypersist.actions.SQL2EntityAction"
             text="Generate Entity" >

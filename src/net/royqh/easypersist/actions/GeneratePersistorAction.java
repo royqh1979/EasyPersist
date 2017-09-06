@@ -116,7 +116,7 @@ public class GeneratePersistorAction extends AnAction {
         PsiElement element = e.getData(CommonDataKeys.PSI_ELEMENT);
         if (element instanceof PsiClass) {
             PsiClass psiClass = (PsiClass) element;
-            if (ClassParser.isEntityClass(psiClass)) {
+            if (ClassParser.isNormalEntityClass(psiClass)) {
                 e.getPresentation().setVisible(true);
                 return;
             }

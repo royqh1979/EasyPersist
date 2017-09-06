@@ -16,10 +16,7 @@
  */
 package net.royqh.easypersist.entity.model.jpa;
 
-import net.royqh.easypersist.annotations.ChineseAlias;
-import net.royqh.easypersist.annotations.ListHeader;
-import net.royqh.easypersist.annotations.Reference;
-import net.royqh.easypersist.annotations.SubEntities;
+import net.royqh.easypersist.annotations.*;
 
 import java.util.*;
 
@@ -63,8 +60,11 @@ public final class Constants {
 	public static final String LIST_HEADER = ListHeader.class.getCanonicalName();
 	public static final String REFERENCE = Reference.class.getCanonicalName();
 	public static final String SUB_ENTITIES = SubEntities.class.getCanonicalName();
+	public static final String FACT_TABLE = FactTable.class.getCanonicalName();
+	public static final String ENTITY_KEY = EntityKey.class.getCanonicalName();
+	public static final String PROPERTY_KEY = PropertyKey.class.getCanonicalName();
 
-    static {
+	static {
 		COLLECTIONS.add(SET);
 		COLLECTIONS.add(LIST);
 		COLLECTIONS.add(COLLECTION);
