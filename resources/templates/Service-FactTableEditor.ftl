@@ -22,8 +22,6 @@ import ${type};
 
 @Service
 public class ${entity.classInfo.name}Service {
-    <#assign entityToExport=entity>
-    <#include "service/ExportRowToExcelProcessor.ftl" >
 
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
@@ -38,25 +36,6 @@ public class ${entity.classInfo.name}Service {
         return cachedList;
     }
 
-    public void exportToExcel(
-    <#list entity.properties as property>
-        <#if property.isReferenceProperty()>
-            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-        List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
-        </#if>
-    </#list>HSSFSheet sheet, int startRow, int startCol) throws IOException {
-        checkCache();
-        ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list entity.properties as property>
-    <#if property.isReferenceProperty()>
-        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-        list${refEntity.classInfo.name},
-    </#if>
-</#list>sheet, startRow, startCol);
-        int i = 0;
-        for (${entity.classInfo.name} ${entity.name}: cachedList) {
-            processor.createRow(${entity.name},i++);
-        }
-    }
 
 <#list entity.properties as property>
         <#if property.isReferenceProperty()>

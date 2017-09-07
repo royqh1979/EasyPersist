@@ -108,7 +108,7 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
                 cell.setCellValue(${refEntity.name}.${listHeader.getter}());
                 }
                 }
-                <#elseif generator.isBooleanProperty(property) >
+                <#elseif templateUtils.isBooleanProperty(property) >
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
                 cell.setCellValue(${entityToExport.name}.${property.getter}()?"是":"否");
                 <#elseif property.isTemporal() >
@@ -116,14 +116,14 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
                 cell.setCellType(Cell.CELL_TYPE_NUMERIC);
                 cell.setCellValue(${entityToExport.name}.${property.getter}());
                 <#else>
-                    <#if generator.isIntProperty(property) >
+                    <#if templateUtils.isIntProperty(property) >
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
                     cell.setCellValue(${entityToExport.name}.${property.getter}());
-                    <#elseif generator.isBigDecimalProperty(property) >
+                    <#elseif templateUtils.isBigDecimalProperty(property) >
                     cell.setCellStyle(numberCellStyle);
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
                     cell.setCellValue(${entityToExport.name}.${property.getter}().doubleValue());
-                    <#elseif generator.isNumberProperty(property) >
+                    <#elseif templateUtils.isNumberProperty(property) >
                     cell.setCellStyle(numberCellStyle);
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
                     cell.setCellValue(${entityToExport.name}.${property.getter}());

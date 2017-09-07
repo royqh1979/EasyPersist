@@ -29,13 +29,13 @@ public class ${entity.classInfo.name}Service {
     private ${entity.classInfo.name}Persistor persistor;
 
     public int countAll(<#list indexedProperties as indexProperty>
-        <#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
+        <#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
             Date end${indexProperty.name?cap_first}
-        <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name}</#if><#sep>,</#sep></#list>) {
+        <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name}</#if><#sep>,</#sep></#list>) {
         return persistor.countAll(<#list indexedProperties as indexProperty>
-            <#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
+            <#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
                 end${indexProperty.name?cap_first}
-            <#elseif generator.isRangeTypeProperty(indexProperty) >
+            <#elseif templateUtils.isRangeTypeProperty(indexProperty) >
                 ${indexProperty.name},${indexProperty.name}
             <#else>
                 ${indexProperty.name}
@@ -43,13 +43,13 @@ public class ${entity.classInfo.name}Service {
     }
 
     public List<${entity.classInfo.name}> findAll(
-        <#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
+        <#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
         Date end${indexProperty.name?cap_first},
-        <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
+        <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
         </#list>String orderBy, SortType sortType, Pager pager) {
-    return persistor.findAll(<#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
+    return persistor.findAll(<#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
             end${indexProperty.name?cap_first},
-        <#elseif generator.isRangeTypeProperty(indexProperty) >
+        <#elseif templateUtils.isRangeTypeProperty(indexProperty) >
             ${indexProperty.name},${indexProperty.name},
         <#else>
             ${indexProperty.name},
@@ -57,9 +57,9 @@ public class ${entity.classInfo.name}Service {
     }
 
     public void exportToExcel(
-    <#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
+    <#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
     Date end${indexProperty.name?cap_first},
-    <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
+    <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
     </#list><#list entity.properties as property>
             <#if property.isReferenceProperty()>
                 <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
@@ -72,9 +72,9 @@ public class ${entity.classInfo.name}Service {
             list${refEntity.classInfo.name},
             </#if>
         </#list>sheet, startRow, startCol);
-        persistor.findAll(<#list indexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
+        persistor.findAll(<#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
             end${indexProperty.name?cap_first},
-            <#elseif generator.isRangeTypeProperty(indexProperty) >
+            <#elseif templateUtils.isRangeTypeProperty(indexProperty) >
             ${indexProperty.name},${indexProperty.name},
             <#else>
             ${indexProperty.name},

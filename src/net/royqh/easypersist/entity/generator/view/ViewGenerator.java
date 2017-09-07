@@ -12,6 +12,7 @@ import net.royqh.easypersist.entity.model.MapRelationInfo;
 import net.royqh.easypersist.entity.model.SingleProperty;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.utils.CodeUtils;
+import net.royqh.easypersist.entity.utils.TemplateUtils;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.IOException;
@@ -31,7 +32,6 @@ public class ViewGenerator {
     private static Template JspSubEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-SubEntity.jsp.ftl");
     private static Template JspNtoNMappingEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping.jsp.ftl");
     private static Template JspNtoNMappingAddEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping-Add.jsp.ftl");
-    private static ViewGenerator generator = new ViewGenerator();
 
     private static void generateJspView(Entity entity, PsiDirectory psiOutputDir, String jspFileName, Template template, Map<String, Object> dataModel) {
         PsiFile oldFile = psiOutputDir.findFile(jspFileName);
@@ -91,7 +91,7 @@ public class ViewGenerator {
         dataModel.put("mapRelationInfo",mapRelationInfo);
         dataModel.put("mapRelationEntity",relationEntity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator", generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(relationEntity));
 
         generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-add-"+relationEntity.getName()+".jsp", JspNtoNMappingAddEditViewForFullEditorTemplate, dataModel);
@@ -106,7 +106,7 @@ public class ViewGenerator {
         dataModel.put("mapRelationInfo", mapRelationInfo);
         dataModel.put("mapRelationEntity", relationEntity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator", generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
 
         generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-" + relationEntity.getName() + ".jsp", JspNtoNMappingEditViewForFullEditorTemplate, dataModel);
     }
@@ -125,7 +125,7 @@ public class ViewGenerator {
         dataModel.put("subEntityInfo",subEntityInfo);
         dataModel.put("subEntity",subEntityInfo.getSubEntity());
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator", generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
 
         generateJspView(entity, psiOutputDir, entity.getName() + "-edit-"+subEntityInfo.getSubEntity().getName()+".jsp", JspSubEntityEditViewForFullEditorTemplate, dataModel);
 
@@ -141,7 +141,7 @@ public class ViewGenerator {
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator", generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
         generateJspView(entity, psiOutputDir, entity.getName() + "-edit-entity.jsp", JspEntityEditViewForFullEditorTemplate, dataModel);
     }
@@ -168,7 +168,7 @@ public class ViewGenerator {
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator", generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
         generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
 
@@ -180,54 +180,8 @@ public class ViewGenerator {
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator", generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
         generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorTemplate, dataModel);
     }
 
-    public String getDefaultValue(String type) {
-        String shortTypeName = TypeUtils.getShortTypeName(type);
-        switch (shortTypeName) {
-            case "int":
-            case "long":
-            case "short":
-                return "0";
-            case "String":
-                return "\"\"";
-            case "Date":
-                return "\"\"";
-            case "boolean":
-                return "\"n\"";
-            case "BigDecimal":
-            case "float":
-            case "double":
-                return "0";
-            default:
-                return "\"\"";
-        }
-    }
-
-    public boolean isIntProperty(SingleProperty property) {
-        return TypeUtils.isIntProperty(property);
-
-    }
-
-    public boolean isNumberProperty(SingleProperty property) {
-        return TypeUtils.isNumberProperty(property);
-    }
-
-    public boolean isBooleanProperty(SingleProperty property) {
-        return TypeUtils.isBooleanProperty(property);
-    }
-
-    public boolean isDateProperty(SingleProperty property) {
-        return TypeUtils.isDateProperty(property);
-    }
-
-    public boolean isDepartmentInfoType(Entity entity) {
-        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
-    }
-
-    public boolean isFileInfoType(Entity entity) {
-        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
-    }
 }

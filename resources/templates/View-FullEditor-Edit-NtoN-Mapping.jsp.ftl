@@ -116,7 +116,7 @@
             }
             return "未选择";
         }
-        <#elseif generator.isBooleanProperty(property)>
+        <#elseif templateUtils.isBooleanProperty(property)>
         function render${property.name?cap_first}(item) {
             if (item==null) {
                 return "未选择";
@@ -139,18 +139,18 @@
                     <#if property.isReferenceProperty()>
                         <#assign refEntity=mapRelationEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                         <#if refEntity!=entity>
-                            <#if generator.isDepartmentInfoType(refEntity)>
+                            <#if templateUtils.isDepartmentInfoType(refEntity)>
                                 { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:true,type:'string',render:render${property.name?cap_first}},
                             <#else>
                                 { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,isSort:true,type:'string',render:render${property.name?cap_first}},
                             </#if>
                         </#if>
-                    <#elseif generator.isBooleanProperty(property) >
+                    <#elseif templateUtils.isBooleanProperty(property) >
                         { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,isSort:true,type:'string',render:render${property.name?cap_first}},
                     <#else>
-                        <#if generator.isIntProperty(property) >
+                        <#if templateUtils.isIntProperty(property) >
                             <#assign sortType="int" >
-                        <#elseif generator.isNumberProperty(property) >
+                        <#elseif templateUtils.isNumberProperty(property) >
                             <#assign sortType="float" >
                         <#elseif property.isTemporal()>
                             <#assign sortType='date' >

@@ -1,16 +1,16 @@
 public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
     <#list indexProperties as indexProperty>
-        <#if generator.isRangeTypeProperty(indexProperty)>
-    ${generator.getObjectType(indexProperty.type)} min${indexProperty.name?cap_first},
-    ${generator.getObjectType(indexProperty.type)} max${indexProperty.name?cap_first},
+        <#if templateUtils.isRangeTypeProperty(indexProperty)>
+    ${templateUtils.getObjectType(indexProperty.type)} min${indexProperty.name?cap_first},
+    ${templateUtils.getObjectType(indexProperty.type)} max${indexProperty.name?cap_first},
         <#else>
-    ${generator.getObjectType(indexProperty.type)} ${indexProperty.name},
+    ${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},
         </#if>
     </#list>
     int ${entityId}) {
     List<String> params=new ArrayList<>();
         <#list indexProperties as indexProperty>
-            <#if generator.isRangeTypeProperty(indexProperty)>
+            <#if templateUtils.isRangeTypeProperty(indexProperty)>
     if (min${indexProperty.name?cap_first}!=null && max${indexProperty.name?cap_first}!=null) {
         params.add("(${quote}${indexProperty.columnName}${quote} between ? and ? )");
     } else if (min${indexProperty.name?cap_first} != null) {
@@ -18,7 +18,7 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
     } else if (max${indexProperty.name?cap_first} != null) {
         params.add("(${quote}${indexProperty.columnName}${quote} < ? )");
     }
-            <#elseif generator.isStringType(indexProperty.type)>
+            <#elseif templateUtils.isStringType(indexProperty.type)>
     if (${indexProperty.name}!=null) {
         params.add("${quote}${indexProperty.columnName}${quote} like ?");
     }
@@ -41,23 +41,23 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
         stmt.setInt(i,${entityId});
         i++;
 <#list indexProperties as indexProperty>
-    <#if generator.isRangeTypeProperty(indexProperty)>
+    <#if templateUtils.isRangeTypeProperty(indexProperty)>
         if (min${indexProperty.name?cap_first} != null) {
-            ${generator.generateStatementParameterSetter("i", indexProperty, "min" + indexProperty.name?cap_first)}
+            ${templateUtils.generateStatementParameterSetter("i", indexProperty, "min" + indexProperty.name?cap_first)}
             i++;
         }
         if (max${indexProperty.name?cap_first} != null) {
-            ${generator.generateStatementParameterSetter("i", indexProperty, "max" + indexProperty.name?cap_first)}
+            ${templateUtils.generateStatementParameterSetter("i", indexProperty, "max" + indexProperty.name?cap_first)}
             i++;
         }
-    <#elseif generator.isStringType(indexProperty.type)>
+    <#elseif templateUtils.isStringType(indexProperty.type)>
         if (${indexProperty.name}!=null) {
-            ${generator.generateStatementParameterSetter("i", indexProperty, indexProperty.name+"+\"%\"")}
+            ${templateUtils.generateStatementParameterSetter("i", indexProperty, indexProperty.name+"+\"%\"")}
             i++;
         }
     <#else>
         if (${indexProperty.name}!=null) {
-            ${generator.generateStatementParameterSetter("i", indexProperty, indexProperty.name)}
+            ${templateUtils.generateStatementParameterSetter("i", indexProperty, indexProperty.name)}
             i++;
         }
     </#if>

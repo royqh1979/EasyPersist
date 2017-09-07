@@ -24,9 +24,9 @@
             return new Result(ProcessingResultType.Fail, "无权访问");
         }
         try {
-            ${generator.getObjectType(subRefProperty.type)} ${subRefProperty.name}Var=null;
+            ${templateUtils.getObjectType(subRefProperty.type)} ${subRefProperty.name}Var=null;
             if (!StringUtils.isEmpty(${subRefProperty.name}Val)){
-                ${subRefProperty.name}Var = ${generator.getConvertParameterStatement(subRefProperty)};
+                ${subRefProperty.name}Var = ${templateUtils.getConvertParameterStatement(subRefProperty)};
             }
             Pager pager = new Pager(pageSize, pageNo);
             pager.setTotalRows(${subEntity.name}Service.countBy${subRefProperty.name?cap_first}(${subRefProperty.name}Var));
@@ -58,7 +58,7 @@
             ${subEntity.classInfo.name} ${subEntity.name} = new ${subEntity.classInfo.name}();
             <#list subEntity.properties as property>
                 <#if property!=subEntity.idProperty>
-                ${generator.generateEntityPropertySetting(subEntity,property)}
+                ${templateUtils.generateEntityPropertySetting(subEntity,property)}
                 </#if>
             </#list>
             ${subEntity.name}Service.create(${subEntity.name});
@@ -92,7 +92,7 @@
             }
             <#list subEntity.properties as property>
                 <#if property!=subEntity.idProperty>
-                ${generator.generateEntityPropertySetting(subEntity,property)}
+                ${templateUtils.generateEntityPropertySetting(subEntity,property)}
                 </#if>
             </#list>
             ${subEntity.name}Service.update(${subEntity.name});

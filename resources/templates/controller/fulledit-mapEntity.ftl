@@ -99,12 +99,12 @@
         }
     }
 
-    <#assign mapIndexedProperties=generator.getIndexedProperties(mapEntity) >
+    <#assign mapIndexedProperties=templateUtils.getIndexedProperties(mapEntity) >
     @RequestMapping(value = "/list${mapEntity.classInfo.name}ForAdd", method = RequestMethod.POST,
         produces = "application/json")
     @ResponseBody
     public Object list${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty>
-        <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+        <#if templateUtils.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
         @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
         <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
         @RequestParam("mapping-id") int mappingId) {
@@ -112,7 +112,7 @@
             return new Result(ProcessingResultType.Fail, "无权访问");
         }
         try {<#list mapIndexedProperties as indexProperty>
-        <#if generator.isDateProperty(indexProperty) >
+        <#if templateUtils.isDateProperty(indexProperty) >
             Date start${indexProperty.name?cap_first}Var=null;
             if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
                 start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
@@ -122,13 +122,13 @@
                 end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
             }
         <#else >
-            ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            ${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
             if (!StringUtils.isEmpty(${indexProperty.name}Val)){
-                ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+                ${indexProperty.name}Var = ${templateUtils.getConvertParameterStatement(indexProperty)};
             }
         </#if>
     </#list>
-            List<${mapEntity.classInfo.name}> ${mapEntity.name}List = ${entity.name}Service.find${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >
+            List<${mapEntity.classInfo.name}> ${mapEntity.name}List = ${entity.name}Service.find${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >
                 start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
             <#else >${indexProperty.name}Var</#if>,</#list>mappingId);
             Pager pager=new Pager(50000,1);

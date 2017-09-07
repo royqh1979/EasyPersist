@@ -1,4 +1,4 @@
-<#if generator.isDepartmentInfoType(refEntity)>
+<#if templateUtils.isDepartmentInfoType(refEntity)>
     @RequestMapping(value="/listDepartmentInfoTree",method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody

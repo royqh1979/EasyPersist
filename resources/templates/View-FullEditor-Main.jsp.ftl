@@ -59,7 +59,7 @@
                     <td>${indexProperty.chineseAlias}：</td>
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                            <#if generator.isDepartmentInfoType(refEntity)>
+                            <#if templateUtils.isDepartmentInfoType(refEntity)>
                                 <td colspan="4">
                                     <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${indexProperty.name}" name="${indexProperty.name}" relValue=""></div>
                                 </td>
@@ -68,15 +68,15 @@
                                 <select prompt="请选择${refEntity.chineseAlias}" id="${indexProperty.name}" name="${indexProperty.name}"></select>
                                 </td>
                             </#if>
-                        <#elseif generator.isIntProperty(indexProperty) >
+                        <#elseif templateUtils.isIntProperty(indexProperty) >
                             <td colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly" />
                             </td>
-                        <#elseif generator.isNumberProperty(indexProperty) >
+                        <#elseif templateUtils.isNumberProperty(indexProperty) >
                             <td colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"/>
                             </td>
-                        <#elseif generator.isDateProperty(indexProperty) >
+                        <#elseif templateUtils.isDateProperty(indexProperty) >
                             <td>查询开始日期</td>
                             <td><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
                             <td>查询结束日期</td>
@@ -129,7 +129,7 @@
                         <#list indexedProperties as indexProperty>
                             <#if indexProperty.isReferenceProperty() >
                                 <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                                <#if !generator.isDepartmentInfoType(refEntity)>
+                                <#if !templateUtils.isDepartmentInfoType(refEntity)>
                         if (name == '${refEntity.name}') {
                             var ctrl=$("#${indexProperty.name}");
                             ctrl.data("data",list);
@@ -165,7 +165,7 @@
         }
         return "未选择";
     }
-        <#elseif generator.isBooleanProperty(property)>
+        <#elseif templateUtils.isBooleanProperty(property)>
     function render${property.name?cap_first}(item) {
         if (item==null) {
             return "未选择";
@@ -199,12 +199,12 @@
                     <#if property.isReferenceProperty()>
                         <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                         {display: '${property.chineseAlias}', name: '${property.name}',align: 'left', width: "120",type:'string',render:render${property.name?cap_first}},
-                    <#elseif generator.isBooleanProperty(property) >
+                    <#elseif templateUtils.isBooleanProperty(property) >
                         { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',render:render${property.name?cap_first}},
                     <#else >
-                        <#if generator.isIntProperty(property) >
+                        <#if templateUtils.isIntProperty(property) >
                             <#assign sortType="int" >
-                        <#elseif generator.isNumberProperty(property) >
+                        <#elseif templateUtils.isNumberProperty(property) >
                             <#assign sortType="float" >
                         <#elseif property.isTemporal()>
                             <#assign sortType='date' >
@@ -227,7 +227,7 @@
             ],
             url:"${"$"}{baseDir}/${"$"}{ctrlUrl}/list", params:[
     <#list indexedProperties as indexProperty>
-        <#if generator.isDateProperty(indexProperty) >
+        <#if templateUtils.isDateProperty(indexProperty) >
                 {name:"start${indexProperty.name?cap_first}",value: ""},
                 {name:"end${indexProperty.name?cap_first}",value: ""}
         <#else>
@@ -265,12 +265,12 @@
             <#list indexedProperties as indexProperty>
                 <#if indexProperty.isReferenceProperty() >
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                    <#if generator.isDepartmentInfoType(refEntity)>
+                    <#if templateUtils.isDepartmentInfoType(refEntity)>
                 {name:"${indexProperty.name}",value:$('#${indexProperty.name}').attr('relValue')}
                     <#else>
                 {name:"${indexProperty.name}", value: $('#${indexProperty.name}').val()}
                     </#if>
-                <#elseif generator.isDateProperty(indexProperty) >
+                <#elseif templateUtils.isDateProperty(indexProperty) >
                 {name:"start${indexProperty.name?cap_first}",value: $('#start${indexProperty.name?cap_first}').val()},
                 {name:"end${indexProperty.name?cap_first}",value: $('#end${indexProperty.name?cap_first}').val()}
                 <#else>
@@ -291,7 +291,7 @@
         form.attr('method', 'post');
         var input;
     <#list indexedProperties as indexProperty>
-        <#if generator.isDateProperty(indexProperty) >
+        <#if templateUtils.isDateProperty(indexProperty) >
         input= $('<input type="text" />');
         input.attr('name', "start${indexProperty.name?cap_first}");
         input.attr('value', $('#start${indexProperty.name?cap_first}').val());
@@ -305,7 +305,7 @@
         input.attr('name', "${indexProperty.name}");
             <#if indexProperty.isReferenceProperty() >
                 <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                <#if generator.isDepartmentInfoType(refEntity)>
+                <#if templateUtils.isDepartmentInfoType(refEntity)>
         input.attr('value', $('#${indexProperty.name}').attr('relValue'));
                 <#else>
         input.attr('value', $('#${indexProperty.name}').val());

@@ -39,7 +39,7 @@ public class ${entity.classInfo.name}Controller {
     @Autowired
     private ${entity.classInfo.name}Service ${entity.name}Service;
     <#list refEntities as refEntity>
-        <#if generator.isDepartmentInfoType(refEntity)>
+        <#if templateUtils.isDepartmentInfoType(refEntity)>
     @Autowired
     private DepartmentService ${refEntity.name}Service;
         <#else >
@@ -130,7 +130,7 @@ public class ${entity.classInfo.name}Controller {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
             <#list entity.properties as property>
                 <#if property!=entity.idProperty || !entity.isAutoGenerateId() >
-                ${generator.generateEntityPropertySetting(entity,property)}
+                ${templateUtils.generateEntityPropertySetting(entity,property)}
                 </#if>
             </#list>
             ${entity.name}Service.create(${entity.name});
@@ -169,7 +169,7 @@ public class ${entity.classInfo.name}Controller {
             }
         <#list entity.properties as property>
             <#if property!=entity.idProperty>
-            ${generator.generateEntityPropertySetting(entity,property)}
+            ${templateUtils.generateEntityPropertySetting(entity,property)}
             </#if>
         </#list>
 <#if entity.isAutoGenerateId() >

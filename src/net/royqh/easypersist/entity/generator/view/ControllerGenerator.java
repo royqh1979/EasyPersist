@@ -12,6 +12,7 @@ import net.royqh.easypersist.entity.model.MapRelationInfo;
 import net.royqh.easypersist.entity.model.SingleProperty;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.utils.CodeUtils;
+import net.royqh.easypersist.entity.utils.TemplateUtils;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.*;
@@ -23,7 +24,6 @@ import java.util.*;
 public class ControllerGenerator {
     private static Template ControllerForCodeEditorTemplate = TemplateLoader.loadTemplate("Controller-CodeEdit.ftl");
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
-    private static ControllerGenerator generator=new ControllerGenerator();
 
     public static void generateController(EditorStyle editorStyle, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
         String controllerClassName = CodeUtils.getControllerName(entity);
@@ -59,7 +59,7 @@ public class ControllerGenerator {
         dataModel.put("typeList", typeList);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("generator",generator);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
         
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
@@ -119,113 +119,5 @@ public class ControllerGenerator {
                 writer.toString());
     }
 
-    public  void generateEntityPropertySetting(StringBuilder content, Entity entity, SingleProperty property) {
-            String shortTypeName = TypeUtils.getShortTypeName(property.getType());
-
-            content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
-                    property.getName() + "Val"));
-            if (property.getColumn().isNullable() && !TypeUtils.isPrimitiveType(property.getType())) {
-                content.append(entity.getName());
-                content.append(".");
-                content.append(property.getSetter());
-                content.append("(null);\n");
-            } else {
-                if ("Date".equals(shortTypeName)) {
-                    content.append("//if date is empty, let it be now.\n");
-                    content.append(entity.getName());
-                    content.append(".");
-                    content.append(property.getSetter());
-                    content.append("(");
-                    content.append("new Date()");
-                    content.append(");\n");
-                } else if ("String".equals(shortTypeName)){
-                    content.append(entity.getName());
-                    content.append(".");
-                    content.append(property.getSetter());
-                    content.append("(\"\");\n");
-                } else {
-                    content.append(" throw new RuntimeException(\"param for " + property.getName() + " is empty!\");\n");
-                }
-            }
-            content.append("} else {\n");
-            content.append(entity.getName());
-            content.append(".");
-            content.append(property.getSetter());
-            content.append("(");
-            generateConvertParameterStatement(property, content);
-            content.append(");\n");
-            content.append("}\n");
-    }
-
-    public String generateEntityPropertySetting(Entity entity, SingleProperty property) {
-        StringBuilder builder=new StringBuilder();
-        generateEntityPropertySetting(builder,entity, property);
-        return builder.toString();
-    }
-
-    public String getObjectType(String type) {
-        return TypeUtils.getObjectType(type);
-    }
-
-    public String getConvertParameterStatement(SingleProperty property) {
-        StringBuilder builder = new StringBuilder();
-        generateConvertParameterStatement(property, builder);
-        return builder.toString();
-    }
-
-    public void generateConvertParameterStatement(SingleProperty property, StringBuilder builder) {
-        String shortTypeName = TypeUtils.getObjectType(property.getType());
-        if (property.getEnumType() != null) {
-            builder.append(String.format("%s.values()[%s]",
-                    shortTypeName,
-                    property.getName() + "Val"));
-        } else {
-            switch (shortTypeName) {
-                case "Date":
-                    builder.append("DateTools.parseDate(");
-                    builder.append(property.getName() + "Val");
-                    builder.append(")");
-                    break;
-                case "Boolean":
-                    builder.append(String.format("\"y\".equals(%s)",
-                            property.getName() + "Val"));
-                    break;
-                case "Integer":
-                    builder.append(String.format("Integer.parseInt(%s)",
-                            property.getName() + "Val"));
-                    break;
-                case "Byte":
-                case "Long":
-                case "Short":
-                case "Double":
-                case "Float":
-                    builder.append(String.format("%s.parse%s(%s)",
-                            shortTypeName, shortTypeName, property.getName() + "Val"));
-                    break;
-                case "BigDecimal":
-                    builder.append(String.format("new BigDecimal(%s)",
-                            property.getName() + "Val"));
-                    break;
-                default:
-                    builder.append(property.getName() + "Val");
-            }
-        }
-    }
-    
-    public boolean isDateProperty(SingleProperty property){
-        return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
-    }
-
-    public boolean isDepartmentInfoType(Entity entity) {
-        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
-    }
-
-    public boolean isFileInfoType(Entity entity) {
-        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
-    }
-
-    public List<SingleProperty> getIndexedProperties(Entity entity) {
-        return CodeUtils.getAllIndexProperties(entity);
-    }
 }
 

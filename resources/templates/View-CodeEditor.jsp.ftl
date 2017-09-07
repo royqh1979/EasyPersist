@@ -136,7 +136,7 @@
         }
         return "未选择";
     }
-        <#elseif generator.isBooleanProperty(property)>
+        <#elseif templateUtils.isBooleanProperty(property)>
     function render${property.name?cap_first}(item) {
         if (item==null) {
             return "未选择";
@@ -166,23 +166,23 @@
                     <#if !firstColumn>,<#else><#assign firstColumn=false ></#if>
                     <#if property.isReferenceProperty()>
                     <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                        <#if generator.isDepartmentInfoType(refEntity)>
+                        <#if templateUtils.isDepartmentInfoType(refEntity)>
                             { name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree" ,selWidth:145 },type:'string',isSort:false,render:render${property.name?cap_first},
                                 headerRender:genHeaderRender("${property.chineseAlias}")}
                         <#else>
                             { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,type:'string',render:render${property.name?cap_first},
                                 headerRender:genHeaderRender("${property.chineseAlias}")}
                         </#if>
-                    <#elseif generator.isBooleanProperty(property) >
+                    <#elseif templateUtils.isBooleanProperty(property) >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: booleanData,selWidth:50 },isSort:false,type:'string',render:render${property.name?cap_first},
                             headerRender:genHeaderRender("${property.chineseAlias}")}
                     <#elseif property.isTemporal() >
                     { name: '${property.name}', align: 'left', width: 120,editor: { type: 'date',dateFmt:'yyyy-MM-dd'},type:'date',isSort:false,headerRender:genHeaderRender("${property.chineseAlias}")}
                     <#else>
-                        <#if generator.isIntProperty(property) >
+                        <#if templateUtils.isIntProperty(property) >
                             <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
                             <#assign sortType="int" >
-                        <#elseif generator.isNumberProperty(property) >
+                        <#elseif templateUtils.isNumberProperty(property) >
                             <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
                             <#assign sortType="float" >
                         <#else>
@@ -312,7 +312,7 @@
     <#list entity.properties as property>
         <#if property == entity.idProperty >
             <#if entity.isAutoGenerateId() >
-            '${property.name}': ${generator.getDefaultValue(property.type)}
+            '${property.name}': ${templateUtils.getDefaultJSValue(property.type)}
             <#else>
             '${property.name}': getNextId()
             </#if>
@@ -320,7 +320,7 @@
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
             ${property.name}: ${refEntity.name}Data.list[0].value
         <#else>
-             ${property.name}: ${generator.getDefaultValue(property.type)}
+             ${property.name}: ${templateUtils.getDefaultJSValue(property.type)}
         </#if>
         <#sep>,</#sep>
     </#list>
@@ -395,7 +395,7 @@
         $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update",{
             <#if !entity.isAutoGenerateId() >idForUpdate: editId ,</#if>
     <#list entity.properties as property>
-        <#if generator.isBooleanProperty(property)>
+        <#if templateUtils.isBooleanProperty(property)>
         ${property.name}:obj.${property.name}.toString()=="true" ? "y": "n"
         <#else>
         ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""

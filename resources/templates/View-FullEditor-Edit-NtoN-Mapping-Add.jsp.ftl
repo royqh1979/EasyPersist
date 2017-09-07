@@ -69,7 +69,7 @@
                 <td>${indexProperty.chineseAlias}：</td>
                 <#if indexProperty.isReferenceProperty() >
                     <#assign refEntity=mapRelationEntity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                    <#if generator.isDepartmentInfoType(refEntity)>
+                    <#if templateUtils.isDepartmentInfoType(refEntity)>
                         <td colspan="4">
                             <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${indexProperty.name}" name="${indexProperty.name}" relValue=""></div>
                         </td>
@@ -78,15 +78,15 @@
                             <select prompt="请选择${refEntity.chineseAlias}" id="${indexProperty.name}" name="${indexProperty.name}"></select>
                         </td>
                     </#if>
-                <#elseif generator.isIntProperty(indexProperty) >
+                <#elseif templateUtils.isIntProperty(indexProperty) >
                     <td colspan="4">
                         <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
                     </td>
-                <#elseif generator.isNumberProperty(indexProperty) >
+                <#elseif templateUtils.isNumberProperty(indexProperty) >
                     <td colspan="4">
                         <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"  watermark="请输入合法数字"/>
                     </td>
-                <#elseif generator.isDateProperty(indexProperty) >
+                <#elseif templateUtils.isDateProperty(indexProperty) >
                     <td>查询开始日期</td>
                     <td><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
                     <td>查询结束日期</td>
@@ -133,7 +133,7 @@
                     <#list indexedProperties as indexProperty>
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=mapRelationEntity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                            <#if !generator.isDepartmentInfoType(refEntity)>
+                            <#if !templateUtils.isDepartmentInfoType(refEntity)>
                                 if (name == '${refEntity.name}') {
                                     var ctrl=$("#${indexProperty.name}");
                                     ctrl.data("data",list);
@@ -179,7 +179,7 @@
             }
             return "未选择";
         }
-        <#elseif generator.isBooleanProperty(property)>
+        <#elseif templateUtils.isBooleanProperty(property)>
         function render${property.name?cap_first}(item) {
             if (item==null) {
                 return "未选择";
@@ -202,18 +202,18 @@
                     <#if property.isReferenceProperty()>
                         <#assign refEntity=mapRelationEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                         <#if refEntity!=mapRelationEntity>
-                            <#if generator.isDepartmentInfoType(refEntity)>
+                            <#if templateUtils.isDepartmentInfoType(refEntity)>
                                 { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,type:'string',isSort:true,render:render${property.name?cap_first}},
                             <#else>
                                 { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,type:'string',isSort:true,render:render${property.name?cap_first}},
                             </#if>
                         </#if>
-                    <#elseif generator.isBooleanProperty(property) >
+                    <#elseif templateUtils.isBooleanProperty(property) >
                         { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',isSort:true,render:render${property.name?cap_first}},
                     <#else>
-                        <#if generator.isIntProperty(property) >
+                        <#if templateUtils.isIntProperty(property) >
                             <#assign sortType="int" >
-                        <#elseif generator.isNumberProperty(property) >
+                        <#elseif templateUtils.isNumberProperty(property) >
                             <#assign sortType="float" >
                         <#elseif property.isTemporal()>
                             <#assign sortType='date' >
@@ -255,12 +255,12 @@
     <#list indexedProperties as indexProperty>
         <#if indexProperty.isReferenceProperty() >
             <#assign refEntity=mapRelationEntity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-            <#if generator.isDepartmentInfoType(refEntity)>
+            <#if templateUtils.isDepartmentInfoType(refEntity)>
                     ${indexProperty.name}: $('#${indexProperty.name}').attr('relValue'),
             <#else>
                     ${indexProperty.name}: $('#${indexProperty.name}').val(),
             </#if>
-        <#elseif generator.isDateProperty(indexProperty) >
+        <#elseif templateUtils.isDateProperty(indexProperty) >
                     start${indexProperty.name?cap_first}: $('#start${indexProperty.name?cap_first}').val(),
                     end${indexProperty.name?cap_first}: $('#end${indexProperty.name?cap_first}').val(),
         <#else>

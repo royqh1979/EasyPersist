@@ -115,7 +115,7 @@
         }
         return "未选择";
     }
-            <#elseif generator.isBooleanProperty(property)>
+            <#elseif templateUtils.isBooleanProperty(property)>
     function render${property.name?cap_first}ForGrid(item) {
         if (item==null) {
             return "未选择";
@@ -138,21 +138,21 @@
                         <#if property.isReferenceProperty()>
                             <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
                             <#if refEntity!=entity>
-                                <#if generator.isDepartmentInfoType(refEntity)>
+                                <#if templateUtils.isDepartmentInfoType(refEntity)>
                                     { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'selectTree', url: "${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree",selWidth:145 },isSort:false,render:render${property.name?cap_first}ForGrid},
                                 <#else>
                                     { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,editor: { type: 'select', data: ${refEntity.name}Data,selWidth:50 },isSort:false,render:render${property.name?cap_first}ForGrid},
                                 </#if>
                             </#if>
-                        <#elseif generator.isBooleanProperty(property) >
+                        <#elseif templateUtils.isBooleanProperty(property) >
                             { display: '${property.chineseAlias}',name: '${property.name}', align: 'left', width: 120,type:'string',editor: { type: 'select', data: booleanData,selWidth:50 },isSort:true,render:render${property.name?cap_first}ForGrid},
                         <#elseif property.isTemporal() >
                             { display: '${property.chineseAlias}', name: '${property.name}', align: 'left', width: 120,type:'date',editor: { type: 'date',dateFmt:'yyyy-MM-dd'},isSort:true},
                         <#else>
-                            <#if generator.isIntProperty(property) >
+                            <#if templateUtils.isIntProperty(property) >
                                 <#assign limit=",inputMode:\"numberOnly\",tip:\"请输入合法整数数字\"" >
                                 <#assign sortType="int" >
-                            <#elseif generator.isNumberProperty(property) >
+                            <#elseif templateUtils.isNumberProperty(property) >
                                 <#assign limit=",inputMode:\"positiveDecimal\",tip:\"请输入合法数字\"" >
                                 <#assign sortType="float" >
                             <#else>
@@ -265,7 +265,7 @@
             ${property.name}: ${refEntity.name}Data.list[0].value
                 </#if>
             <#else>
-            ${property.name}: ${generator.getDefaultValue(property.type)}
+            ${property.name}: ${templateUtils.getDefaultJSValue(property.type)}
             </#if>
             <#sep>,</#sep>
         </#list>
@@ -346,7 +346,7 @@
         <#list subEntity.properties as property>
             <#if property.name == subEntityInfo.subEntityReferenceProperty.name>
             ${property.name}:id
-            <#elseif generator.isBooleanProperty(property)>
+            <#elseif templateUtils.isBooleanProperty(property)>
             ${property.name}:obj.${property.name}.toString()=="true" ? "y": "n"
             <#else>
             ${property.name}:obj.${property.name}!=null ? obj.${property.name} : ""

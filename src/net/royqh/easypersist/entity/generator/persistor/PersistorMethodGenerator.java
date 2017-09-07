@@ -6,6 +6,7 @@ import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.JdbcUtils;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.*;
+import net.royqh.easypersist.entity.utils.TemplateUtils;
 import net.royqh.easypersist.entity.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -1025,7 +1026,7 @@ public class PersistorMethodGenerator {
         dataModel.put("mapRelationInfo", relationInfo);
 
         dataModel.put("indexProperties", CodeUtils.getAllIndexProperties(mapEntity));
-        dataModel.put("generator", this);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("quote", sqlGenerator.getQuote());
         generateMethodView(content, CreateFindXXXMappingForAddTemplate, dataModel);
     }
@@ -1371,23 +1372,7 @@ public class PersistorMethodGenerator {
             }
         }
     }
-
-    public boolean isRangeTypeProperty(SingleProperty property) {
-        return TypeUtils.isRangeTypeProperty(property);
-    }
-
-    public String getObjectType(String type) {
-        return TypeUtils.getObjectType(type);
-    }
-
-    public boolean isStringType(String type) {
-        return TypeUtils.isStringType(type);
-    }
-
-    public String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar) {
-        return JdbcUtils.generateStatementParameterSetter(paramIndex, property, paramVar);
-    }
-
+    
     public void createRowProcessor(Entity entity, StringBuilder content) {
         Map<String,Object> dataModel=new HashMap<>();
         dataModel.put("entity",entity);

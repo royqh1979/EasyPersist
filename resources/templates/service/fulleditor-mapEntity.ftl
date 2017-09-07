@@ -11,7 +11,7 @@ public void add${mapEntity.classInfo.name}To${entity.classInfo.name}(${entity.id
     persistor.add${mapEntity.classInfo.name}To${entity.classInfo.name}(id, ${mapEntity.name}Id);
 }
 
-public void add${mapEntity.classInfo.name}sTo${entity.classInfo.name}(${entity.idProperty.type} id,Iterable<${generator.getObjectType(mapEntity.idProperty.type)}> ${mapEntity.name}Ids) {
+public void add${mapEntity.classInfo.name}sTo${entity.classInfo.name}(${entity.idProperty.type} id,Iterable<${templateUtils.getObjectType(mapEntity.idProperty.type)}> ${mapEntity.name}Ids) {
     persistor.add${mapEntity.classInfo.name}sTo${entity.classInfo.name}(id, ${mapEntity.name}Ids);
 }
 
@@ -19,19 +19,19 @@ public void delete${mapEntity.classInfo.name}From${entity.classInfo.name}(${enti
     persistor.delete${mapEntity.classInfo.name}From${entity.classInfo.name}(id, ${mapEntity.name}Id);
 }
 
-public void delete${mapEntity.classInfo.name}sFrom${entity.classInfo.name}(${entity.idProperty.type} id,Iterable<${generator.getObjectType(mapEntity.idProperty.type)}> ${mapEntity.name}Ids) {
+public void delete${mapEntity.classInfo.name}sFrom${entity.classInfo.name}(${entity.idProperty.type} id,Iterable<${templateUtils.getObjectType(mapEntity.idProperty.type)}> ${mapEntity.name}Ids) {
     persistor.delete${mapEntity.classInfo.name}sFrom${entity.classInfo.name}(id, ${mapEntity.name}Ids);
 }
 
-<#assign mapIndexedProperties=generator.getIndexedProperties(mapEntity)>
+<#assign mapIndexedProperties=templateUtils.getIndexedProperties(mapEntity)>
 public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
-    <#list mapIndexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
+    <#list mapIndexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
     Date end${indexProperty.name?cap_first},
-    <#else>${generator.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
+    <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
     </#list>int mappingId) {
-    return persistor.find${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty><#if generator.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
+    return persistor.find${mapEntity.classInfo.name}ForAdd(<#list mapIndexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
         end${indexProperty.name?cap_first},
-        <#elseif generator.isRangeTypeProperty(indexProperty) >
+        <#elseif templateUtils.isRangeTypeProperty(indexProperty) >
         ${indexProperty.name},${indexProperty.name},
         <#else>
         ${indexProperty.name},

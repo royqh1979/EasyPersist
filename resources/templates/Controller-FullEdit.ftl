@@ -37,7 +37,7 @@ public class ${entity.classInfo.name}Controller {
     @Autowired
     private ${entity.classInfo.name}Service ${entity.name}Service;
     <#list serviceEntities as servEntity>
-    <#if generator.isDepartmentInfoType(servEntity)>
+    <#if templateUtils.isDepartmentInfoType(servEntity)>
     @Autowired
     private DepartmentService ${servEntity.name}Service;
     <#else >
@@ -65,7 +65,7 @@ public class ${entity.classInfo.name}Controller {
             produces = "application/json")
     @ResponseBody
     public Object list(<#list indexedProperties as indexProperty>
-    <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+    <#if templateUtils.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
     @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
     <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
             @RequestParam("pager.pageNo") int pageNo,
@@ -76,7 +76,7 @@ public class ${entity.classInfo.name}Controller {
             return new Result(ProcessingResultType.Fail, "无权访问");
         }
         try {<#list indexedProperties as indexProperty>
-                <#if generator.isDateProperty(indexProperty) >
+                <#if templateUtils.isDateProperty(indexProperty) >
                 Date start${indexProperty.name?cap_first}Var=null;
                 if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
                     start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
@@ -86,19 +86,19 @@ public class ${entity.classInfo.name}Controller {
                     end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
                 }
                 <#else >
-            ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            ${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
             if (!StringUtils.isEmpty(${indexProperty.name}Val)){
-                ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+                ${indexProperty.name}Var = ${templateUtils.getConvertParameterStatement(indexProperty)};
             }
                 </#if>
             </#list>
             Pager pager = new Pager(pageSize, pageNo);
             pager.setTotalRows(${entity.name}Service.countAll(<#list indexedProperties as indexProperty>
-                <#if generator.isDateProperty(indexProperty) >
+                <#if templateUtils.isDateProperty(indexProperty) >
                     start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
                 <#else >${indexProperty.name}Var</#if><#sep>,</#sep></#list>));
             List<${entity.classInfo.name}> ${entity.name}List = ${entity.name}Service.findAll(<#list indexedProperties as indexProperty>
-    <#if generator.isDateProperty(indexProperty) >
+    <#if templateUtils.isDateProperty(indexProperty) >
     start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
     <#else >${indexProperty.name}Var</#if>,</#list>orderBy, sortType, pager);
             Grid<${entity.classInfo.name}> result = new Grid<>(pager, ${entity.name}List, orderBy, sortType);
@@ -111,7 +111,7 @@ public class ${entity.classInfo.name}Controller {
 
     @RequestMapping(value = "/exportList", method = RequestMethod.POST)
     public void exportList(<#list indexedProperties as indexProperty>
-        <#if generator.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+        <#if templateUtils.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
         @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
         <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
     @RequestParam("sort") String orderBy,
@@ -122,7 +122,7 @@ public class ${entity.classInfo.name}Controller {
             return;
         }
         try {<#list indexedProperties as indexProperty>
-            <#if generator.isDateProperty(indexProperty) >
+            <#if templateUtils.isDateProperty(indexProperty) >
             Date start${indexProperty.name?cap_first}Var=null;
             if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
             start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
@@ -132,9 +132,9 @@ public class ${entity.classInfo.name}Controller {
             end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
             }
             <#else >
-            ${generator.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            ${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
             if (!StringUtils.isEmpty(${indexProperty.name}Val)){
-            ${indexProperty.name}Var = ${generator.getConvertParameterStatement(indexProperty)};
+            ${indexProperty.name}Var = ${templateUtils.getConvertParameterStatement(indexProperty)};
             }
             </#if>
         </#list>
@@ -145,7 +145,7 @@ public class ${entity.classInfo.name}Controller {
             HSSFWorkbook workbook = new HSSFWorkbook();
             HSSFSheet sheet = workbook.createSheet();
             ${entity.name}Service.exportToExcel(<#list indexedProperties as indexProperty>
-            <#if generator.isDateProperty(indexProperty) >
+            <#if templateUtils.isDateProperty(indexProperty) >
             start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
             <#else >${indexProperty.name}Var</#if>,</#list>
             <#list entity.properties as property>
@@ -230,7 +230,7 @@ public class ${entity.classInfo.name}Controller {
             ${entity.classInfo.name} ${entity.name} = new ${entity.classInfo.name}();
             <#list entity.properties as property>
                 <#if property!=entity.idProperty>
-            ${generator.generateEntityPropertySetting(entity,property)}
+            ${templateUtils.generateEntityPropertySetting(entity,property)}
                 </#if>
             </#list>
             ${entity.name}Service.create(${entity.name});
@@ -264,7 +264,7 @@ public class ${entity.classInfo.name}Controller {
             }
             <#list entity.properties as property>
                 <#if property!=entity.idProperty>
-                ${generator.generateEntityPropertySetting(entity,property)}
+                ${templateUtils.generateEntityPropertySetting(entity,property)}
                 </#if>
             </#list>
             ${entity.name}Service.update(${entity.name});

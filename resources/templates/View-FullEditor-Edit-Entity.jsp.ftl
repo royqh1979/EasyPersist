@@ -74,18 +74,18 @@
                     <td>
                     <#if property.isReferenceProperty() >
                         <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                        <#if generator.isDepartmentInfoType(refEntity) >
+                        <#if templateUtils.isDepartmentInfoType(refEntity) >
                             <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${property.name}" name="${property.name}"></div>
                         <#else>
                             <select prompt="请选择${refEntity.chineseAlias}" id="${property.name}" name="${property.name}" relValue=""></select>
                         </#if>
-                    <#elseif generator.isBooleanProperty(property) >
+                    <#elseif templateUtils.isBooleanProperty(property) >
                         <select prompt="${property.chineseAlias}" id="${property.name}" name="${property.name}" ></select>
-                    <#elseif generator.isIntProperty(property) >
+                    <#elseif templateUtils.isIntProperty(property) >
                         <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="numberOnly"  watermark="请输入合法整数"/>
-                    <#elseif generator.isNumberProperty(property) >
+                    <#elseif templateUtils.isNumberProperty(property) >
                         <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" inputMode="positiveDecimal"  watermark="请输入合法数字"/>
-                    <#elseif generator.isDateProperty(property) >
+                    <#elseif templateUtils.isDateProperty(property) >
                         <input type="text" id="${property.name}" name="${property.name}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/>
                     <#else>
                         <input type="text" id="${property.name}" name="${property.name}" style="width:200px;" />
@@ -134,7 +134,7 @@
                     <#list indexedProperties as indexProperty>
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
-                            <#if !generator.isDepartmentInfoType(refEntity)>
+                            <#if !templateUtils.isDepartmentInfoType(refEntity)>
                             if (name == '${refEntity.name}') {
                                 var ctrl=$("#${indexProperty.name}");
                                 ctrl.data("data",list);
@@ -170,7 +170,7 @@
         }
         return "未选择";
     }
-        <#elseif generator.isBooleanProperty(property)>
+        <#elseif templateUtils.isBooleanProperty(property)>
     function render${property.name?cap_first}(item) {
         if (item==null) {
             return "未选择";
@@ -185,7 +185,7 @@
 
     function initBooleans() {
         <#list entity.properties as property>
-            <#if generator.isBooleanProperty(property) >
+            <#if templateUtils.isBooleanProperty(property) >
                 ${property.name}FormCtrl[0].data=booleanData;
             </#if>
         </#list>
@@ -279,11 +279,11 @@
     function formToEntity() {
         return {
     <#list entity.properties as property>
-        <#if generator.isBooleanProperty(property)>
+        <#if templateUtils.isBooleanProperty(property)>
         ${property.name}:${property.name}FormCtrl.val().toString()=="true" ? "y": "n"
         <#elseif property.isReferenceProperty()>
             <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-            <#if generator.isDepartmentInfoType(refEntity)>
+            <#if templateUtils.isDepartmentInfoType(refEntity)>
         ${property.name}:${property.name}FormCtrl.attr('relValue')
             <#else>
         ${property.name}: ${property.name}FormCtrl.val()
@@ -299,7 +299,7 @@
     function entityToForm(entity) {
         id=entity.${entity.idProperty.name};
         <#list entity.properties as property>
-            <#if generator.isBooleanProperty(property) || property.isReferenceProperty() >
+            <#if templateUtils.isBooleanProperty(property) || property.isReferenceProperty() >
                 ${property.name}FormCtrl.setValue(entity.${property.name});
             <#else>
                 ${property.name}FormCtrl.val(entity.${property.name});

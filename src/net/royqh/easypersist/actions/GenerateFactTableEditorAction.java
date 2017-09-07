@@ -96,8 +96,9 @@ public class GenerateFactTableEditorAction extends AnAction {
 
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
+
+                                //ServiceGenerator.generateService(EditorStyle.FactTableStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
                                 /*
-                                ServiceGenerator.generateService(EditorStyle.ExcelStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
                                 ControllerGenerator.generateController(EditorStyle.ExcelStyle, psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
                                 ViewGenerator.generateJspViews(EditorStyle.ExcelStyle,entity,psiOutputDir);
                                 Notification notification = new Notification(
