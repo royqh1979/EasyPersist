@@ -31,6 +31,19 @@ public class Entity {
     private String packageName;
     private String persistorPackageName;
     private Set<SubEntityInfo> subEntities=Collections.EMPTY_SET;
+    private FactTableInfo factTable=null;
+
+    public FactTableInfo getFactTableInfo() {
+        return factTable;
+    }
+
+    public void setFactTableInfo(FactTableInfo factTable) {
+        this.factTable = factTable;
+    }
+
+    public boolean isFactTable() {
+        return factTable!=null;
+    }
 
     public Entity(String name, ClassInfo classInfo, PsiClass psiClass) {
         this.name=name;

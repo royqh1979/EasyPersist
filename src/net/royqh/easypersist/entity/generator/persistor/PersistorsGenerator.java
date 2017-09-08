@@ -90,7 +90,6 @@ public class PersistorsGenerator {
         content.append("@Repository\n");
         content.append("@Transactional\n");
         content.append("public class " + className + " extends "+CodeUtils.getPersistorName(entity)+"{\n");
-        content.append("    @Override\n");
         content.append("    @Autowired\n");
         content.append("public void setDataSource(DataSource dataSource) {\n");
         content.append("    super.setDataSource(dataSource);\n");
@@ -178,6 +177,12 @@ public class PersistorsGenerator {
 
         //System.out.println("Generating Mapping List Methods for "+entity.getName());
         createMappingListMethods(entity, content);
+
+        /*
+        if (entity.isFactTable()) {
+            methodGenerator.createDeleteByEntityKeyMethods(entity,content);
+        }
+        */
 
         //System.out.println("Generating Util Methods for "+entity.getName());
         createUtilMethods(content);
@@ -319,7 +324,7 @@ public class PersistorsGenerator {
         content.append("import javax.sql.rowset.serial.SerialClob;\n");
         content.append("import org.apache.commons.lang3.SerializationUtils;\n");
         content.append("import " + entity.getClassInfo().getQualifiedName() + ";\n");
-        Set<String> types = CodeUtils.getTypeList(entity);
+        Set<String> types = CodeUtils.getPropertyTypes(entity);
         for (String type : types) {
             content.append("import ");
             content.append(type);

@@ -15,6 +15,10 @@ public class TemplateUtils {
         return TypeUtils.getObjectType(type);
     }
 
+    public String getObjectType(SingleProperty property) {
+        return TypeUtils.getObjectType(property.getType());
+    }
+
     public boolean isRangeTypeProperty(SingleProperty property){
         return TypeUtils.isRangeTypeProperty(property);
     }
@@ -53,12 +57,11 @@ public class TemplateUtils {
     }
 
     public boolean isFileInfoType(Entity entity) {
-        return TypeUtils.isDepartmentInfoType(entity.getClassInfo().getName());
+        return TypeUtils.isFileInfoType(entity.getClassInfo().getName());
     }
 
     public  void generateEntityPropertySetting(StringBuilder content, Entity entity, SingleProperty property) {
         String shortTypeName = TypeUtils.getShortTypeName(property.getType());
-
         content.append(String.format("if (StringUtils.isEmpty(%s)){\n",
                 property.getName() + "Val"));
         if (property.getColumn().isNullable() && !TypeUtils.isPrimitiveType(property.getType())) {
@@ -106,26 +109,36 @@ public class TemplateUtils {
         return builder.toString();
     }
 
+    public String getConvertParameterStatement(SingleProperty property, String paramName) {
+        StringBuilder builder = new StringBuilder();
+        generateConvertParameterStatement(property, paramName,builder);
+        return builder.toString();
+    }
+    
     public void generateConvertParameterStatement(SingleProperty property, StringBuilder builder) {
+        generateConvertParameterStatement(property,property.getName() + "Val",builder);
+    }
+
+    public void generateConvertParameterStatement(SingleProperty property, String paramName,StringBuilder builder) {
         String shortTypeName = TypeUtils.getObjectType(property.getType());
         if (property.getEnumType() != null) {
             builder.append(String.format("%s.values()[%s]",
                     shortTypeName,
-                    property.getName() + "Val"));
+                    paramName));
         } else {
             switch (shortTypeName) {
                 case "Date":
                     builder.append("DateTools.parseDate(");
-                    builder.append(property.getName() + "Val");
+                    builder.append(paramName);
                     builder.append(")");
                     break;
                 case "Boolean":
                     builder.append(String.format("\"y\".equals(%s)",
-                            property.getName() + "Val"));
+                            paramName));
                     break;
                 case "Integer":
                     builder.append(String.format("Integer.parseInt(%s)",
-                            property.getName() + "Val"));
+                            paramName));
                     break;
                 case "Byte":
                 case "Long":
@@ -133,14 +146,14 @@ public class TemplateUtils {
                 case "Double":
                 case "Float":
                     builder.append(String.format("%s.parse%s(%s)",
-                            shortTypeName, shortTypeName, property.getName() + "Val"));
+                            shortTypeName, shortTypeName, paramName));
                     break;
                 case "BigDecimal":
                     builder.append(String.format("new BigDecimal(%s)",
-                            property.getName() + "Val"));
+                            paramName));
                     break;
                 default:
-                    builder.append(property.getName() + "Val");
+                    builder.append(paramName);
             }
         }
     }
@@ -169,6 +182,10 @@ public class TemplateUtils {
 
     public String generateStatementParameterSetter(String paramIndex, SingleProperty property, String paramVar) {
         return JdbcUtils.generateStatementParameterSetter(paramIndex, property, paramVar);
+    }
+
+    public String getShortType(SingleProperty property) {
+        return TypeUtils.getShortTypeName(property.getType());
     }
 
 }

@@ -37,15 +37,15 @@ public class PersistorMethodGenerator {
 
     public void createDeleteMethods(StringBuilder content, Entity entity) {
         content.append(sqlGenerator.generateDeleteSQL(entity));
-        createDeleteMethod(content,entity);
-        createDeleteAllMethod(content,entity);
-        createBatchDeleteMethod(content,entity);
+        createDeleteMethod(content, entity);
+        createDeleteAllMethod(content, entity);
+        createBatchDeleteMethod(content, entity);
     }
 
     private void createDeleteAllMethod(StringBuilder content, Entity entity) {
         content.append("public void deleteAll() {\n");
         content.append(String.format("String sql=\"delete from %s%s%s\";\n",
-                sqlGenerator.getQuote(),entity.getTableName(),sqlGenerator.getQuote()));
+                sqlGenerator.getQuote(), entity.getTableName(), sqlGenerator.getQuote()));
         content.append("logger.debug(sql);\n");
         content.append("Connection con = DataSourceUtils.getConnection(getDataSource());\n");
         content.append("Statement stmt = null;\n");
@@ -176,7 +176,7 @@ public class PersistorMethodGenerator {
         } else {
             createCreateWithoutAutoGenerateIdMethod(content, entity, insertProperties);
         }
-        createBatchCreateMethod(content,entity);
+        createBatchCreateMethod(content, entity);
     }
 
     private void createBatchCreateMethod(StringBuilder content, Entity entity) {
@@ -186,17 +186,17 @@ public class PersistorMethodGenerator {
         content.append("> lst");
         content.append(entity.getClassInfo().getName());
         content.append(") {\n");
-        if (entity.isAutoGenerateId()){
+        if (entity.isAutoGenerateId()) {
             content.append(String.format("String sql=\"insert into %s%s%s(",
-                    sqlGenerator.getQuote(),entity.getTableName(),sqlGenerator.getQuote()));
-            content.append(sqlGenerator.getQuote()+entity.getIdProperty().getColumnName()+sqlGenerator.getQuote());
+                    sqlGenerator.getQuote(), entity.getTableName(), sqlGenerator.getQuote()));
+            content.append(sqlGenerator.getQuote() + entity.getIdProperty().getColumnName() + sqlGenerator.getQuote());
             for (Property property : entity.getProperties()) {
                 if (idProperty == property)
                     continue;
                 if (property.getPropertyType() == PropertyType.Column) {
                     SingleProperty singleProperty = (SingleProperty) property;
                     content.append(String.format(",%s%s%s",
-                            sqlGenerator.getQuote(),singleProperty.getColumnName(),sqlGenerator.getQuote()));
+                            sqlGenerator.getQuote(), singleProperty.getColumnName(), sqlGenerator.getQuote()));
                 }
             }
             content.append(") values (?");
@@ -215,14 +215,14 @@ public class PersistorMethodGenerator {
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
         content.append(String.format("for (%s %s:lst%s) {\n",
-                entity.getClassInfo().getName(), entity.getName(),entity.getClassInfo().getName()));
-        int i=1;
+                entity.getClassInfo().getName(), entity.getName(), entity.getClassInfo().getName()));
+        int i = 1;
         if (entity.isAutoGenerateId()) {
             content.append(String.format("if (%s){\n",
-                    JdbcUtils.generateIdEmptyTest(entity.getIdProperty(),entity)));
+                    JdbcUtils.generateIdEmptyTest(entity.getIdProperty(), entity)));
             content.append("stmt.setNull(1, Types.INTEGER);\n");
             content.append("} else {\n");
-                content.append(
+            content.append(
                     JdbcUtils.generateStatementParameterSetter("1", entity.getIdProperty(), entity));
             content.append("}\n");
         } else {
@@ -235,7 +235,7 @@ public class PersistorMethodGenerator {
             if (property.getPropertyType() == PropertyType.Column) {
                 i++;
                 content.append(
-                        JdbcUtils.generateStatementParameterSetter(i+"", entity.getIdProperty(), entity));
+                        JdbcUtils.generateStatementParameterSetter(i + "", entity.getIdProperty(), entity));
 
             }
         }
@@ -442,7 +442,7 @@ public class PersistorMethodGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property,  property.getName() + "+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
@@ -548,7 +548,7 @@ public class PersistorMethodGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property,  property.getName() + "+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName() + "+\"%\""));
                     i++;
                 }
             } else {
@@ -649,7 +649,7 @@ public class PersistorMethodGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     content.append(
-                            JdbcUtils.generateStatementParameterSetter(i + "", property,  property.getName() + "+\"%\""));
+                            JdbcUtils.generateStatementParameterSetter(i + "", property, property.getName() + "+\"%\""));
                     i++;
                 }
                 continue;
@@ -1021,7 +1021,7 @@ public class PersistorMethodGenerator {
         Map<String, Object> dataModel = new HashMap<>();
         Entity mapEntity = entity.getMappingRepository().findEntityByClass(relationInfo.getMappingEntityFullClassName());
 
-        dataModel.put("entityId",entity.getName()+"Id");
+        dataModel.put("entityId", entity.getName() + "Id");
         dataModel.put("mapEntity", mapEntity);
         dataModel.put("mapRelationInfo", relationInfo);
 
@@ -1040,7 +1040,7 @@ public class PersistorMethodGenerator {
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id");
         content.append(") {\n");
-        content.append(CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor rowProcessor=new "+CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor();\n");
+        content.append(CodeUtils.getPersistorName(mappingEntity) + ".DefaultRowProcessor rowProcessor=new " + CodeUtils.getPersistorName(mappingEntity) + ".DefaultRowProcessor();\n");
         content.append("find" + mappingEntity.getClassInfo().getName() + "(");
         content.append("id, rowProcessor);\n");
         content.append("return rowProcessor.getResults();\n");
@@ -1049,7 +1049,7 @@ public class PersistorMethodGenerator {
         content.append("public  void find" +
                 StringUtils.capitalize(mappingEntity.getName()) + "(");
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" id,"+CodeUtils.getPersistorName(mappingEntity)+".RowProcessor rowProcessor");
+        content.append(" id," + CodeUtils.getPersistorName(mappingEntity) + ".RowProcessor rowProcessor");
         content.append(") {\n");
         content.append("String sql=\"");
         content.append(sqlGenerator.generateFindXXXMappingSQL(entity, relationInfo));
@@ -1100,7 +1100,7 @@ public class PersistorMethodGenerator {
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize");
         content.append(") {\n");
-        content.append(CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor rowProcessor=new "+CodeUtils.getPersistorName(mappingEntity)+".DefaultRowProcessor();\n");
+        content.append(CodeUtils.getPersistorName(mappingEntity) + ".DefaultRowProcessor rowProcessor=new " + CodeUtils.getPersistorName(mappingEntity) + ".DefaultRowProcessor();\n");
         content.append("find" + mappingEntity.getClassInfo().getName() + "WithSort(");
         content.append("id, orderBy,isAscending,startPos,resultSize,rowProcessor);\n");
         content.append("return rowProcessor.getResults();\n");
@@ -1109,7 +1109,7 @@ public class PersistorMethodGenerator {
         content.append("public void find" +
                 StringUtils.capitalize(mappingEntity.getName()) + "WithSort(");
         content.append(TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
-        content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize,"+CodeUtils.getPersistorName(mappingEntity)+".RowProcessor rowProcessor");
+        content.append(" id,String orderBy,boolean isAscending,int startPos,int resultSize," + CodeUtils.getPersistorName(mappingEntity) + ".RowProcessor rowProcessor");
         content.append(") {\n");
         content.append("String sql;\n");
         content.append("String orderByColumn=getColumnNameByPropertyNameFor" + mappingEntity.getClassInfo().getName() + "(orderBy);\n");
@@ -1372,10 +1372,31 @@ public class PersistorMethodGenerator {
             }
         }
     }
-    
+
     public void createRowProcessor(Entity entity, StringBuilder content) {
-        Map<String,Object> dataModel=new HashMap<>();
-        dataModel.put("entity",entity);
-          generateMethodView(content,RowProcessorTemplate,dataModel);
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        generateMethodView(content, RowProcessorTemplate, dataModel);
     }
+
+    /*
+    public void createDeleteByEntityKeyMethods(Entity entity, StringBuilder content) {
+        ReferenceSingleProperty entityKeyProperty = entity.getFactTableInfo().getEntityKeyProperty();
+        content.append(String.format("public void deleteBy%s(%s %s) {\n",
+                StringUtils.capitalize(entityKeyProperty.getName()),
+                TypeUtils.getShortTypeName(entityKeyProperty.getType()),
+                entityKeyProperty.getName()));
+        content.append(String.format("String sql=\"delete from %s%s%s where %s%s%s=?\";\n",
+                sqlGenerator.getQuote(), entity.getTableName(), sqlGenerator.getQuote(),
+                sqlGenerator.getQuote(), entityKeyProperty.getColumnName(), sqlGenerator.getQuote()));
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append(
+                JdbcUtils.generateStatementParameterSetter("1", entityKeyProperty,entityKeyProperty.getName()));
+        content.append("stmt.executeUpdate();\n");
+        generateExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+    */
+
 }

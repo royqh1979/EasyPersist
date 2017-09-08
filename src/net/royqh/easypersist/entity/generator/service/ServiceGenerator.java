@@ -14,7 +14,6 @@ import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,7 +78,7 @@ public class ServiceGenerator {
             typeList.add(persistorType);
         }
         typeList.addAll(CodeUtils.getMappedTypePersistorList(subEntity,module));
-        typeList.addAll(CodeUtils.getRefencedTypeList(subEntity));
+        typeList.addAll(CodeUtils.getRefencedTypes(subEntity));
         dataModel.put("typeList",typeList);
         dataModel.put("refPropertyType",TypeUtils.getShortTypeName(subEntityInfo.getSubEntityReferenceProperty().getType()));
         try {
@@ -110,7 +109,7 @@ public class ServiceGenerator {
         dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
 
-        Set<String> typeList=CodeUtils.getRefencedTypeList(entity);
+        Set<String> typeList=CodeUtils.getRefencedTypes(entity);
         dataModel.put("typeList",typeList);
         try {
             if (editorStyle==EditorStyle.NormalStyle) {

@@ -194,7 +194,7 @@
                 </#if>
             </#list>
             ],
-            data:[],sortName: '${entity.idProperty.name}',rownumbers:true,checkbox:true,usePager: false,
+            data:[],sortName: '${entity.idProperty.name}',rownumbers:true,checkbox:true,
             height: "100%", width:"100%",enabledEdit: true,onBeforeEdit: onBeforeEdit, onBeforeSubmitEdit: onBeforeSubmitEdit,
             onAfterEdit: onAfterEdit, whenRClickToSelect:false,excelMode:true,usePager:false,onDelete:onDelete,
             onContextmenu : function (parm,e)

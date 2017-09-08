@@ -9,11 +9,9 @@ import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;
-import net.royqh.easypersist.entity.model.SingleProperty;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.TemplateUtils;
-import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.*;
 import java.util.*;
@@ -50,7 +48,7 @@ public class ControllerGenerator {
 
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
-        Set<String> typeList = CodeUtils.getTypeList(entity, true);
+        Set<String> typeList = CodeUtils.getPropertyTypes(entity, true);
         String serviceType=CodeUtils.getServiceType(entity,module);
         if (serviceType!=null) {
             typeList.add(serviceType);
@@ -75,14 +73,14 @@ public class ControllerGenerator {
                         typeList.add(subServiceType);
                     }
                     typeList.addAll(CodeUtils.getRefencedServiceTypes(subEntityInfo.getSubEntity(),module));
-                    typeList.addAll(CodeUtils.getTypeList(subEntityInfo.getSubEntity(), true));
+                    typeList.addAll(CodeUtils.getPropertyTypes(subEntityInfo.getSubEntity(), true));
                     serviceEntities.add(subEntityInfo.getSubEntity());
                 }
                 for (MapRelationInfo mapRelationInfo:entity.getMapRelationInfos()){
                     Entity mapEntity=entity.getMappingRepository().findEntityByClass(mapRelationInfo.getMappingEntityFullClassName());
                     Set<Entity> mapRefEntities=CodeUtils.getRefencingEntities(mapEntity);
                     refEntities.addAll(mapRefEntities);
-                    typeList.addAll(CodeUtils.getTypeList(mapEntity,true));
+                    typeList.addAll(CodeUtils.getPropertyTypes(mapEntity,true));
                     typeList.addAll(CodeUtils.getRefencedServiceTypes(mapEntity,module));
                     serviceEntities.add(mapEntity);
                 }

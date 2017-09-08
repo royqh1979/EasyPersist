@@ -291,4 +291,14 @@ public abstract class TypeUtils {
     public static boolean isDateProperty(SingleProperty property) {
         return "Date".equals(TypeUtils.getShortTypeName(property.getType()));
     }
+
+    public static boolean isObjectType(String type) {
+        if (PrimitiveTypeMapper.containsKey(type)) {
+            return false;
+        }
+        if (InversePrimitiveTypeMapper.containsKey(type)){
+            return false;
+        }
+        return true;
+    }
 }

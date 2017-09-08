@@ -1,92 +1,76 @@
-import ${entity.classInfo.qualifiedName};
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.qui.base.Pager;
 import com.qui.base.SortType;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.util.CellRangeAddressList;
-<#list typeList as type>
+<#list importTypes as type>
 import ${type};
 </#list>
 
 @Service
-public class ${entity.classInfo.name}Service {
+public class ${factTableEntity.classInfo.name}Service {
+    public static final String PROP_PREFIX = "prop_";
 
     @Autowired
-    private ${entity.classInfo.name}Persistor persistor;
-    private List<${entity.classInfo.name}> cachedList=null;
-    private boolean dirty=false;
+    private ${factTableEntity.classInfo.name}Persistor persistor;
 
-    public List<${entity.classInfo.name}> listAll(boolean refresh) {
-        if (refresh) {
-            dirty=true;
+    public Map<String,Object> retrieveFactTable(${baseEntity.classInfo.name} ${baseEntity.name}) {
+        Map<String,Object> factTable=new HashMap<>();
+        factTable.put("${baseEntity.idProperty.name}",${baseEntity.name}.${baseEntity.idProperty.getter}());
+        factTable.put("${baseEntity.listHeaderProperty.name}",${baseEntity.name}.${baseEntity.listHeaderProperty.getter}());
+        List<${factTableEntity.classInfo.name}> lst${factTableEntity.classInfo.name}=persistor.findBy${factTableEntity.factTableInfo.entityKeyProperty.name?cap_first}(${baseEntity.name}.${baseEntity.idProperty.getter}(),${baseEntity.name}.${baseEntity.idProperty.getter}());
+        for (${factTableEntity.classInfo.name} ${factTableEntity.name}:lst${factTableEntity.classInfo.name}){
+            factTable.put(PROP_PREFIX+${factTableEntity.name}.${factTableEntity.factTableInfo.propertyKeyProperty.getter}(),${factTableEntity.name}.${factTableEntity.factTableInfo.valueProperty.getter}());
         }
-        checkCache();
-        return cachedList;
+        return factTable;
     }
 
-
-<#list entity.properties as property>
-        <#if property.isReferenceProperty()>
-            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-        public int countBy${property.name?cap_first}(
-        ${templateUtils.getObjectType(property.type)} ${property.name}) {
-            return persistor.countBy${property.name?cap_first}(<#if templateUtils.isRangeTypeProperty(property) >
-        ${property.name},${property.name}
-        <#else>
-        ${property.name}
-        </#if>);
+    public List<Map<String,Object>> findFactTables(List<${baseEntity.classInfo.name}> lst${baseEntity.classInfo.name}) {
+        List<Map<String,Object>> lstFactTable=new ArrayList<>();
+        for (${baseEntity.classInfo.name} ${baseEntity.name}:lst${baseEntity.classInfo.name}){
+            lstFactTable.add(retrieveFactTable(${baseEntity.name}));
         }
+        return lstFactTable;
+    }
 
-        public List<${entity.classInfo.name}> findBy${property.name?cap_first}(${templateUtils.getObjectType(property.type)} ${property.name},
-            String orderBy, SortType sortType, Pager pager){
-             return persistor.findBy${property.name?cap_first}(<#if templateUtils.isRangeTypeProperty(property) >
-        ${property.name},${property.name}
-        <#else>
-        ${property.name}
-        </#if>,orderBy,sortType==SortType.asc, pager.getStartRow(), pager.getPageSize());
+    public void update(${factTableEntity.classInfo.name} ${factTableEntity.name}){
+        persistor.deleteBy${factTableEntity.factTableInfo.entityKeyProperty.name?cap_first}${factTableEntity.factTableInfo.propertyKeyProperty.name?cap_first}(
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.entityKeyProperty.getter}(),
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.entityKeyProperty.getter}(),
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.propertyKeyProperty.getter}(),
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.propertyKeyProperty.getter}());
+        persistor.create(${factTableEntity.name});
+    }
+
+    public void update(Map<String,Object> factTable) {
+        ${templateUtils.getShortType(baseEntity.idProperty)} ${baseEntity.name}Id=(${templateUtils.getObjectType(baseEntity.idProperty)})factTable.get("${baseEntity.idProperty.name}");
+        persistor.deleteBy${factTableEntity.factTableInfo.entityKeyProperty.name?cap_first}(${baseEntity.name}Id,${baseEntity.name}Id);
+        List<${factTableEntity.classInfo.name}> lst${factTableEntity.classInfo.name}=new ArrayList<>();
+        for (String key:factTable.keySet()) {
+            if ( "${baseEntity.idProperty.name}".equals(key)) {
+                continue;
+            }
+            if ("${baseEntity.listHeaderProperty.name}".equals(key)){
+                continue;
+            }
+            if (!key.startsWith(PROP_PREFIX)) {
+                continue;
+            }
+            ${templateUtils.getShortType(propertyEntity.idProperty)} ${propertyEntity.name}Id=${templateUtils.getConvertParameterStatement(propertyEntity.idProperty,"key.replaceFirst(PROP_PREFIX,\"\")")};
+            ${factTableEntity.classInfo.name} ${factTableEntity.name}=new ${factTableEntity.classInfo.name}();
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.entityKeyProperty.setter}(${baseEntity.name}Id);
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.propertyKeyProperty.setter}(${propertyEntity.name}Id);
+            ${factTableEntity.name}.${factTableEntity.factTableInfo.valueProperty.setter}((${templateUtils.getObjectType(factTableEntity.factTableInfo.valueProperty)})factTable.get(key));
+            lst${factTableEntity.classInfo.name}.add(${factTableEntity.name});
         }
-        </#if>
-</#list>
-
-    public ${idType} create(${entity.classInfo.name} ${entity.name}) {
-        dirty=true;
-        return persistor.create(${entity.name});
+        persistor.batchCreate(lst${factTableEntity.classInfo.name});
     }
 
-    public ${entity.classInfo.name} retrieve(${idType} id) {
-        return persistor.retrieve(id);
-    }
-
-    public void delete(${idType} id) {
-        dirty=true;
-        persistor.delete(id);
-    }
-
-    public void update(${entity.classInfo.name} ${entity.name}<#if !entity.isAutoGenerateId() >,${entity.idProperty.type} ${entity.idProperty.name}</#if>) {
-        dirty=true;
-<#if entity.isAutoGenerateId() >
-        persistor.update(${entity.name});
-<#else>
-        persistor.update(${entity.name},${entity.idProperty.name});
-</#if>
-    }
-
-    private void checkCache() {
-        if (cachedList==null || dirty) {
-            cachedList= persistor.retrieveAll();
-            dirty=false;
-        }
-    }
 }

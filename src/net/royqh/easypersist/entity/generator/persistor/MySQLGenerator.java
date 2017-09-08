@@ -156,7 +156,7 @@ public class MySQLGenerator extends SQLGenerator {
         content.append(entity.getTableName());
         content.append("` where `");
         content.append(idProperty.getColumnName());
-        content.append("`=?\";");
+        content.append("`=?\";\n");
         return content;
     }
 

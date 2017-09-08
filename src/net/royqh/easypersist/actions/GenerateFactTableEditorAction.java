@@ -20,15 +20,14 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.persistor.MySQLGenerator;
 import net.royqh.easypersist.entity.generator.persistor.PersistorMethodGenerator;
 import net.royqh.easypersist.entity.generator.persistor.PersistorsGenerator;
-import net.royqh.easypersist.entity.generator.service.ServiceGenerator;
-import net.royqh.easypersist.entity.generator.view.ControllerGenerator;
-import net.royqh.easypersist.entity.generator.view.ViewGenerator;
+import net.royqh.easypersist.entity.generator.service.FactTableServiceGenerator;
+import net.royqh.easypersist.entity.generator.view.FactTableControllerGenerator;
+import net.royqh.easypersist.entity.generator.view.FactTableViewGenerator;
 import net.royqh.easypersist.entity.model.Entity;
-import net.royqh.easypersist.entity.model.FactTable;
+import net.royqh.easypersist.entity.model.FactTableInfo;
 import net.royqh.easypersist.entity.parser.FactTableParser;
 import net.royqh.easypersist.entity.parser.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
@@ -60,14 +59,6 @@ public class GenerateFactTableEditorAction extends AnAction {
                             return ClassParser.parseEntityClassWithReferences(psiClass, module,true);
                         }
                     });
-                    FactTable factTable=ApplicationManager.getApplication().runReadAction(new Computable<FactTable>() {
-                        @Override
-                        public FactTable compute() {
-                            indicator.setFraction(0.3);
-                            indicator.setText("Parsing FactTable " + psiClass.getQualifiedName());
-                            return FactTableParser.parse(entity,psiClass, module);
-                        }
-                    });
 
 
                     VirtualFile root = ProjectRootManager.getInstance(project)
@@ -97,18 +88,18 @@ public class GenerateFactTableEditorAction extends AnAction {
                                 persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
                                 persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
 
-                                //ServiceGenerator.generateService(EditorStyle.FactTableStyle,psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
-                                /*
-                                ControllerGenerator.generateController(EditorStyle.ExcelStyle, psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
-                                ViewGenerator.generateJspViews(EditorStyle.ExcelStyle,entity,psiOutputDir);
+                                FactTableServiceGenerator.generateService(psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
+
+                                FactTableControllerGenerator.generateController(psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
+
+                                FactTableViewGenerator.generateView(entity,psiOutputDir);
                                 Notification notification = new Notification(
                                         "Easy Persist",
                                         "Success",
-                                        "Entity "+psiClass.getName()+" 's editor code generation finished.",
+                                        "Fact Table Entity "+psiClass.getName()+" 's editor code generation finished.",
                                         NotificationType.INFORMATION
                                 );
                                 Notifications.Bus.notify(notification, e.getProject());
-                                */
                             }  catch (IOException e1) {
                                 throw new RuntimeException(e1);
                             }

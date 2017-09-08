@@ -9,12 +9,14 @@ import net.royqh.easypersist.entity.model.jpa.Constants;
 import net.royqh.easypersist.entity.model.jpa.Index;
 import net.royqh.easypersist.entity.model.jpa.Table;
 import net.royqh.easypersist.entity.model.jpa.UniqueConstraint;
+import net.royqh.easypersist.entity.parser.FactTableParser;
 import net.royqh.easypersist.entity.parser.ParseError;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.AccessType;
 import java.beans.Introspector;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -38,8 +40,10 @@ public class ClassParser {
         if (checkChineseAlias) {
             doCheckChineseAlias(entity);
         }
-
-
+        if (isFactTableClass(psiClass)) {
+            FactTableInfo factTable = FactTableParser.parse(entity, psiClass);
+            entity.setFactTableInfo(factTable);
+        }
 
         //for debug:
         /*
@@ -116,7 +120,7 @@ public class ClassParser {
                 IndexInfo indexInfo=new IndexInfo();
                 indexInfo.setName(index.getName());
                 indexInfo.setUnique(index.isUnique());
-                Set<String> properties=new HashSet<>();
+                Set<String> properties=new LinkedHashSet<>();
                 //System.out.println(index.getColumnList());
                 for (String s:index.getColumnList().split(",")) {
                     s=s.replaceAll("(?i)asc", "");
@@ -140,7 +144,7 @@ public class ClassParser {
                 UniqueConstraint uniqueConstraint=uniqueConstraints[i];
                 IndexInfo indexInfo=new IndexInfo();
                 indexInfo.setUnique(true);
-                Set<String> properties=new HashSet<>();
+                Set<String> properties=new LinkedHashSet<>();
                 for (String columnName:uniqueConstraint.getColumnNames()) {
                     SingleProperty singleProperty=entity.getPropertyByColumnName(columnName);
                     if (singleProperty==null) {
@@ -162,7 +166,7 @@ public class ClassParser {
                 if (singleProperty.getColumn().isUnique()) {
                     IndexInfo indexInfo=new IndexInfo();
                     indexInfo.setUnique(true);
-                    Set<String> properties=new HashSet<>();
+                    Set<String> properties=new LinkedHashSet<>();
                     properties.add(singleProperty.getName());
                     properties.add(singleProperty.getName());
                     indexInfo.setProperties(properties);
@@ -226,8 +230,8 @@ public class ClassParser {
         if (repository.isClassExist(psiClass)) {
             return repository.findEntityByClass(psiClass.getQualifiedName());
         }
-        if (!ClassParser.isNormalEntityClass(psiClass)) {
-            throw new RuntimeException("Class "+psiClass.getQualifiedName()+"is NOT a entity class!");
+        if (!ClassParser.isEntityClass(psiClass)) {
+            throw new RuntimeException("Class "+psiClass.getQualifiedName()+" is NOT a entity class!");
         }
         Entity entity=parseEntityClass(psiClass,checkChineseAlias);
         repository.addEntity(entity);
@@ -273,6 +277,12 @@ public class ClassParser {
             }
         }
         throw new RuntimeException("Can't find property referencing \""+entityFullClassName+"\" in entity "+subEntity.getClassInfo().getQualifiedName());
+    }
+
+    public static boolean isEntityClass(PsiClass psiClass) {
+        PsiAnnotation entityAnnotation = AnnotationUtils.findAnnotation(psiClass,
+                Constants.ENTITY);
+        return entityAnnotation!=null ;
     }
 
     public static boolean isNormalEntityClass(PsiClass psiClass) {

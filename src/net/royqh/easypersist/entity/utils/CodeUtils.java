@@ -6,7 +6,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.Constants;
-import net.royqh.easypersist.entity.utils.TypeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -114,12 +113,12 @@ public class CodeUtils {
 
 
     @NotNull
-    public static Set<String> getTypeList(Entity entity) {
-        return getTypeList(entity,false);
+    public static Set<String> getPropertyTypes(Entity entity) {
+        return getPropertyTypes(entity,false);
     }
 
     @NotNull
-    public static Set<String> getTypeList(Entity entity, boolean withRef) {
+    public static Set<String> getPropertyTypes(Entity entity, boolean withRef) {
         Set<String> types = new HashSet<>();
         for (Property property : entity.getProperties()) {
             PropertyType propertyType = property.getPropertyType();
@@ -200,7 +199,7 @@ public class CodeUtils {
         }
     }
 
-    public static Set<String> getRefencedTypeList(Entity entity) {
+    public static Set<String> getRefencedTypes(Entity entity) {
         Set<String> results=new HashSet<>();
         for (Property property:entity.getProperties()){
             if (property.isReferenceProperty()) {
@@ -252,7 +251,15 @@ public class CodeUtils {
     }
 
     public static String getServiceType(Entity entity, Module module, GlobalSearchScope searchScope) {
-        PsiClass[] serviceClasses=PsiShortNamesCache.getInstance(module.getProject()).getClassesByName(getServiceName(entity),searchScope);
+        String serviceName;
+        if (TypeUtils.isDepartmentInfoType(entity.getClassInfo().getQualifiedName())){
+            serviceName="DepartmentService";
+        } else if (TypeUtils.isFileInfoType(entity.getClassInfo().getQualifiedName())){
+            serviceName="FileService";
+        } else {
+            serviceName=getServiceName(entity);
+        }
+        PsiClass[] serviceClasses=PsiShortNamesCache.getInstance(module.getProject()).getClassesByName(serviceName,searchScope);
         if (serviceClasses.length>0) {
             return serviceClasses[0].getQualifiedName();
         }

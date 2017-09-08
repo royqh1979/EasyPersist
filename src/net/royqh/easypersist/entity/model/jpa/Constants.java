@@ -63,8 +63,9 @@ public final class Constants {
 	public static final String FACT_TABLE = FactTable.class.getCanonicalName();
 	public static final String ENTITY_KEY = EntityKey.class.getCanonicalName();
 	public static final String PROPERTY_KEY = PropertyKey.class.getCanonicalName();
+	public static final String VALUE_COLUMN = ValueColumn.class.getCanonicalName();
 
-	static {
+    static {
 		COLLECTIONS.add(SET);
 		COLLECTIONS.add(LIST);
 		COLLECTIONS.add(COLLECTION);
