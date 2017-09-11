@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>0.14.3</version>
+  <version>1.0</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -86,6 +86,7 @@
                 add: @FactTable @EntityKey @PropertyKey to support fact table editor <br />
       * 0.14.3 add: Fact Table Edtior <br />
                change: if an index of entity has more than one column, the order of name and parameters  of generated deleteByXXX/findByXXX/countByXXX methods is according to declaring order in @Index annotation (persistor) <br />
+      * 1.0 for Software register
 
     ]]>
   </change-notes>

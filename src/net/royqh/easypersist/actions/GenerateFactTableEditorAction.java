@@ -20,10 +20,12 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.persistor.MySQLGenerator;
 import net.royqh.easypersist.entity.generator.persistor.PersistorMethodGenerator;
 import net.royqh.easypersist.entity.generator.persistor.PersistorsGenerator;
 import net.royqh.easypersist.entity.generator.service.FactTableServiceGenerator;
+import net.royqh.easypersist.entity.generator.service.ServiceGenerator;
 import net.royqh.easypersist.entity.generator.view.FactTableControllerGenerator;
 import net.royqh.easypersist.entity.generator.view.FactTableViewGenerator;
 import net.royqh.easypersist.entity.model.Entity;
@@ -51,7 +53,7 @@ public class GenerateFactTableEditorAction extends AnAction {
                     PsiClass psiClass = (PsiClass) e.getData(CommonDataKeys.PSI_ELEMENT);
                     Project project = e.getProject();
                     Module module = ModuleUtil.findModuleForFile(psiClass.getContainingFile().getVirtualFile(), project);
-                    Entity entity= ApplicationManager.getApplication().runReadAction(new Computable<Entity>() {
+                    Entity factTableEntity= ApplicationManager.getApplication().runReadAction(new Computable<Entity>() {
                         @Override
                         public Entity compute() {
                             indicator.setFraction(0.2);
@@ -85,14 +87,23 @@ public class GenerateFactTableEditorAction extends AnAction {
                                 PersistorMethodGenerator methodGenerator = new PersistorMethodGenerator(new MySQLGenerator());
                                 PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);
 
-                                persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
-                                persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
+                                Entity baseEntity=factTableEntity.getMappingRepository().findEntityByClass(factTableEntity.getFactTableInfo().getEntityKeyProperty().getRefEntityFullClassName());
+                                Entity propertyEntity=factTableEntity.getMappingRepository().findEntityByClass(factTableEntity.getFactTableInfo().getPropertyKeyProperty().getRefEntityFullClassName());
 
-                                FactTableServiceGenerator.generateService(psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
+                                persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, factTableEntity, psiOutputDir);
+                                persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, factTableEntity, psiOutputDir);
+                                persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, baseEntity, psiOutputDir);
+                                persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, baseEntity, psiOutputDir);
+                                persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, propertyEntity, psiOutputDir);
+                                persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, propertyEntity, psiOutputDir);
 
-                                FactTableControllerGenerator.generateController(psiFileFactory, codeStyleManager,entity,psiOutputDir,module);
+                                FactTableServiceGenerator.generateService(psiFileFactory, codeStyleManager,factTableEntity,psiOutputDir,module);
+                                ServiceGenerator.generateService(EditorStyle.ExcelStyle,psiFileFactory,codeStyleManager,propertyEntity,psiOutputDir,module);
+                                ServiceGenerator.generateService(EditorStyle.NormalStyle,psiFileFactory,codeStyleManager,baseEntity,psiOutputDir,module);
 
-                                FactTableViewGenerator.generateView(entity,psiOutputDir);
+                                FactTableControllerGenerator.generateController(psiFileFactory, codeStyleManager,factTableEntity,psiOutputDir,module);
+
+                                FactTableViewGenerator.generateView(factTableEntity,psiOutputDir);
                                 Notification notification = new Notification(
                                         "Easy Persist",
                                         "Success",

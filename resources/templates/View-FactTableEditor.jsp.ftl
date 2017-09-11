@@ -295,7 +295,8 @@
             ${factTableEntity.factTableInfo.entityKeyProperty.name}:e.record.${baseEntity.idProperty.name},
             ${factTableEntity.factTableInfo.propertyKeyProperty.name}:e.column.columnname.substr(5),
             ${factTableEntity.factTableInfo.valueProperty.name}: e.value
-        };        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update",obj,function(result){
+        };
+        $.post("${"$"}{baseDir}/${"$"}{ctrlUrl}/update",obj,function(result){
             if(result && result.result && result.result=="Success"){
                 var cell = grid.getCellObj(obj, e.column);
                 $(cell).removeClass("l-grid-row-cell-edited");
