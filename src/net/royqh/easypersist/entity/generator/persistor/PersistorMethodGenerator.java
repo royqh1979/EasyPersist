@@ -120,7 +120,7 @@ public class PersistorMethodGenerator {
             content.append(entity.getName());
             content.append(") {\n");
             content.append(String.format(" update(%s,%s.%s());",
-                    entity.getName(), entity.getName(), entity.getIdProperty().getSetter()));
+                    entity.getName(), entity.getName(), entity.getIdProperty().getGetter()));
             content.append("}\n");
 
         }

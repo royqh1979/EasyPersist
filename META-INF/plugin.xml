@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -88,7 +88,7 @@
                change: if an index of entity has more than one column, the order of name and parameters  of generated deleteByXXX/findByXXX/countByXXX methods is according to declaring order in @Index annotation (persistor) <br />
       * 1.0 for Software register  <br />
       * 1.0.1 fix: batchCreate method error <br />
-
+      * 1.0.2 fix: update method error <br />
     ]]>
   </change-notes>
 
