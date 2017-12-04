@@ -105,16 +105,16 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
         }
         if (index.getColumns().size()<1) {
             Token startToken=ctx.getStart();
-            throw new RuntimeException(String.format("Empty Primary Key Column List in table %s at %d:%d",
-                    table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+            throw new RuntimeException(String.format("%d:%d Empty Primary Key Column List in table %s ",
+                    startToken.getLine(),startToken.getCharPositionInLine(),table.getName()));
         }
         table.setPrimaryKey(index);
         if (index.getColumns().size()==1) {
             Column column=table.getColumn(index.getColumns().get(0));
             if (column==null) {
                 Token startToken=ctx.getStart();
-                throw new RuntimeException(String.format("No this Column %s in table %s at %d:%d",
-                        index.getColumns().get(0),table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+                throw new RuntimeException(String.format("%d:%d No this Column %s in table %s",
+                        startToken.getLine(),startToken.getCharPositionInLine(), index.getColumns().get(0),table.getName()));
             }
             column.setPrimaryKey(true);
         }
@@ -182,15 +182,15 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
         }
         if (index.getColumns().size()<1) {
             Token startToken=ctx.getStart();
-            throw new RuntimeException(String.format("Empty Unique Column List in table %s at %d:%d",
-                    table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+            throw new RuntimeException(String.format("%d:%d Empty Unique Column List in table %s",
+                    startToken.getLine(),startToken.getCharPositionInLine(),table.getName()));
         }
         if (index.getColumns().size()==1) {
             Column column=table.getColumn(index.getColumns().get(0));
             if (column==null) {
                 Token startToken=ctx.getStart();
-                throw new RuntimeException(String.format("No this Column %s in table %s at %d:%d",
-                        index.getColumns().get(0),table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+                throw new RuntimeException(String.format("%d:%d No this Column %s in table %s",
+                        startToken.getLine(),startToken.getCharPositionInLine(),index.getColumns().get(0),table.getName()));
             }
             column.setUnique(true);
         } else {
@@ -218,13 +218,13 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
         }
         if (foreignKey.getColumns().size()<1) {
             Token startToken=ctx.getStart();
-            throw new RuntimeException(String.format("Empty ForeignKey Column List in table %s at %d:%d",
-                    table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+            throw new RuntimeException(String.format("%d:%d Empty ForeignKey Column List in table %s",
+                    startToken.getLine(),startToken.getCharPositionInLine(), table.getName()));
         }
         if (foreignKey.getColumns().size()!=foreignKey.getRefColumns().size()) {
             Token startToken=ctx.getStart();
-            throw new RuntimeException(String.format("ForeignKey  Column List and RefColumn List is not comparable in table %s at %d:%d",
-                    table.getName(),startToken.getLine(),startToken.getCharPositionInLine()));
+            throw new RuntimeException(String.format("%d:%d ForeignKey  Column List and RefColumn List is not comparable in table %s",
+                    startToken.getLine(),startToken.getCharPositionInLine(),table.getName()));
         }
         table.addForeignKey(foreignKey);
         return null;

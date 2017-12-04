@@ -81,8 +81,9 @@ class TableDefinitionVisitor extends MySQLBaseVisitor<Void> {
     @Override
     public Void visitPrimaryKeyDef(MySQLParser.PrimaryKeyDefContext ctx) {
         if (foundPrimaryKey) {
-            throw new RuntimeException("Already found primary key in model "
-            +table.getName()+" : "+ MySQLParseTool.getConvertedText(tokenStream,ctx));
+            throw new RuntimeException(String.format("%d:%d Already found primary key in model %s:%s",
+                ctx.start.getLine(),ctx.start.getCharPositionInLine(),
+                table.getName(),MySQLParseTool.getConvertedText(tokenStream,ctx)));
         }
         foundPrimaryKey=true;
         Index primaryKey=new Index(Index.Type.PrimaryKey);

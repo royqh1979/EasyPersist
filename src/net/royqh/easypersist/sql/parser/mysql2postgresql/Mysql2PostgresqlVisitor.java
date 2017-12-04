@@ -37,7 +37,9 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
 
     @Override
     public Void visitUse_stmt(MySQLParser.Use_stmtContext ctx) {
-        throw new RuntimeException("'use xxx;' clause is not supported!");
+        throw new RuntimeException(String.format("%d:%d 'use xxx;' clause is not supported!",
+                ctx.start.getLine(),
+                ctx.start.getCharPositionInLine()));
         //use is not supported in postgresql
     }
 
@@ -118,12 +120,14 @@ public class Mysql2PostgresqlVisitor extends MySQLBaseVisitor<Void> {
 
     @Override
     public Void visitCreateTableSelectStmt(MySQLParser.CreateTableSelectStmtContext ctx) {
-        throw new RuntimeException("Create model select statement is not supported!");
+        throw new RuntimeException(String.format("%d:%d Create model select statement is not supported!"
+                ,ctx.start.getLine(),ctx.start.getCharPositionInLine()));
     }
 
     @Override
     public Void visitCreateTableLikeStmt(MySQLParser.CreateTableLikeStmtContext ctx) {
-        throw new RuntimeException("Create model like statement is not supported!");
+        throw new RuntimeException(String.format("%d:%d Create model like statement is not supported!"
+                ,ctx.start.getLine(),ctx.start.getCharPositionInLine()));
     }
 
     @Override
