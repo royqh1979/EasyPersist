@@ -235,7 +235,7 @@ public class PersistorMethodGenerator {
             if (property.getPropertyType() == PropertyType.Column) {
                 i++;
                 content.append(
-                        JdbcUtils.generateStatementParameterSetter(i + "", entity.getIdProperty(), entity));
+                        JdbcUtils.generateStatementParameterSetter(i + "", (SingleProperty)property, entity));
 
             }
         }
