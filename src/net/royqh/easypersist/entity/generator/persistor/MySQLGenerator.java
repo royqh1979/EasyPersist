@@ -184,8 +184,12 @@ public class MySQLGenerator extends SQLGenerator {
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
-            } else if (TypeUtils.isStringType(property)) {
-                clauses.add("`" + property.getColumnName() + "` like ? ");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(property)) {
+                    clauses.add("`" + property.getColumnName() + "` like ? ");
+                }else{
+                    clauses.add("`" + property.getColumnName() + "` = ?");
+                }
             } else {
                 clauses.add("`" + property.getColumnName() + "` = ?");
             }
@@ -204,8 +208,12 @@ public class MySQLGenerator extends SQLGenerator {
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeTypeProperty(property)) {
                 clauses.add("(`" + property.getColumnName() + "` between ? and ? )");
-            } else if (TypeUtils.isStringType(property)) {
-                clauses.add("`" + property.getColumnName() + "` like ? ");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(property)) {
+                    clauses.add("`" + property.getColumnName() + "` like ? ");
+                } else{
+                    clauses.add("`" + property.getColumnName() + "` = ?");
+                }
             } else {
                 clauses.add("`" + property.getColumnName() + "` = ?");
             }
@@ -297,8 +305,9 @@ public class MySQLGenerator extends SQLGenerator {
             } else if (property.getColumn().isUnique()) {
                 if (TypeUtils.isStringType(property.getType())) {
                     clauses.add("`" + property.getColumnName() + "` like ?");
+                }else{
+                    clauses.add("`" + property.getColumnName() + "` = ?");
                 }
-                continue;
             } else {
                 clauses.add("`" + property.getColumnName() + "` = ?");
             }
