@@ -90,6 +90,8 @@
       * 1.0.1 fix: batchCreate method error <br />
       * 1.0.2 fix: update method error <br />
       * 1.0.3 fix: findByXXX/countByXXX method error <br />
+      * 1.0.4 add: 导出excel(未测试) <br />
+              change: return null instead of throw exception in retrieveByXXX methods, when no entity found <br />
     ]]>
   </change-notes>
 
