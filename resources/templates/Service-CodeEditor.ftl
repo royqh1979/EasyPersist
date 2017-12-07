@@ -110,4 +110,11 @@ public class ${entity.classInfo.name}Service {
             dirty=false;
         }
     }
+
+    /* 导入数据 */
+    public void importFromExcel(InputStream inputStream, int startRow, int startCol) {
+        <#assign entityToImport=entity>
+        <#include "service/ImportFromExcel.ftl" >
+
+    }
 }

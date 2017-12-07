@@ -51,6 +51,8 @@ public class ${entity.classInfo.name}Controller {
     public static final String jspPrefix= "";
     public static final String CONTROLLER_URL = "codes/${entity.name}";
     private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
+    private static final int EXCEL_START_ROW=0;
+    private static final int EXCEL_START_COL=0;
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {
@@ -100,7 +102,7 @@ public class ${entity.classInfo.name}Controller {
                 ${refEntity.name}Service.listAll(false),
             </#if>
         </#list>
-            sheet,0,0);
+            sheet,EXCEL_START_ROW,EXCEL_START_COL);
             workbook.write(response.getOutputStream());
         } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);
@@ -221,5 +223,30 @@ public class ${entity.classInfo.name}Controller {
             logger.error("批量删除${entity.classInfo.name}对象失败:", e);
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
+    }
+
+    /* 批量导入 */
+    @RequestMapping(value="/importExcel",method=RequestMethod.GET)
+    public String batchImport(Model model) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model, "无权访问");
+        }
+        model.addAttribute("ctrlUrl", CONTROLLER_URL);
+        return jspPrefix + "${entity.name}-import";
+    }
+
+    @RequestMapping(value="importExcel",method = RequestMethod.POST)
+    public String doBatchImport(Model model,MultipartFile file) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            return TaskRedirector.errorExit(model, "无权访问");
+        }
+        try {
+            productTypeService.importFromExcel(file.getInputStream(),EXCEL_START_ROW,EXCEL_START_COL);
+            model.addAttribute("importOk",true);
+        } catch (Exception e) {
+            model.addAttribute("importOk",false);
+            model.addAttribute("reason",e.getMessage());
+        }
+        return jspPrefix + "${entity.name}-import-result";
     }
 }

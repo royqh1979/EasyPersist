@@ -380,7 +380,7 @@ public class PersistorMethodGenerator {
         }
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append("if (!resultSet.next()) {\n");
-        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("return null;\n");
         content.append("}\n");
         content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
         generateExceptionHandleStatements(content);

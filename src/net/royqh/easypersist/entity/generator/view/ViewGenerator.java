@@ -26,6 +26,8 @@ import java.util.Set;
  */
 public class ViewGenerator {
     private static Template JspViewForCodeEditorTemplate = TemplateLoader.loadTemplate("View-CodeEditor.jsp.ftl");
+    private static Template JspViewForCodeEditorImportTemplate = TemplateLoader.loadTemplate("View-CodeEditor-import.jsp.ftl");
+    private static Template JspViewForCodeEditorImportResultTemplate = TemplateLoader.loadTemplate("View-CodeEditor-import-result.jsp.ftl");
     private static Template JspMainViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Main.jsp.ftl");
     private static Template JspEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-Main.jsp.ftl");
     private static Template JspEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-Entity.jsp.ftl");
@@ -182,6 +184,10 @@ public class ViewGenerator {
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorTemplate, dataModel);
+        fileName = entity.getName() + "-import.jsp";
+        generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportTemplate, dataModel);
+        fileName = entity.getName() + "-import-result.jsp";
+        generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportResultTemplate, dataModel);
     }
 
 }

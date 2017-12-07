@@ -210,6 +210,8 @@
                     { line : true },
                     {text: '批量删除', click: onBatchDelete ,iconClass: 'icon_delete'},
                     { line : true },
+                    {text: '导入excel', click: importFromExcel, iconClass: 'icon_import'},
+                    { line : true },
                     {text: '导出excel', click: exportToExcel, iconClass: 'icon_export'},
                     {line: true},
                     {text: '刷新', click: onReload ,iconClass: 'icon_reload'}
@@ -417,6 +419,17 @@
             top.Dialog.alert("更新失败")
         });
 
+    }
+
+    /* 导入Excel */
+    function importFromExcel() {
+        top.Dialog.open({
+            URL:"${"$"}{baseDir}/${"$"}{ctrlUrl}/importExcel",
+            Title:"导入excel",Width:500,Height:350});
+    }
+
+    function refresh(force) {
+        onReload();
     }
 
 
