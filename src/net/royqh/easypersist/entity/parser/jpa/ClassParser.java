@@ -5,17 +5,13 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import net.royqh.easypersist.entity.MappingRepository;
 import net.royqh.easypersist.entity.model.*;
-import net.royqh.easypersist.entity.model.jpa.Constants;
-import net.royqh.easypersist.entity.model.jpa.Index;
-import net.royqh.easypersist.entity.model.jpa.Table;
-import net.royqh.easypersist.entity.model.jpa.UniqueConstraint;
+import net.royqh.easypersist.entity.model.jpa.*;
 import net.royqh.easypersist.entity.parser.FactTableParser;
 import net.royqh.easypersist.entity.parser.ParseError;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.AccessType;
 import java.beans.Introspector;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -31,18 +27,25 @@ public class ClassParser {
         checkClassFields(psiClass, entity);
         parseClassProperties(psiClass, entity);
         processIndexInfo(entity);
-        checkIdExist(psiClass,entity);
 
+
+        checkIdExist(psiClass,entity);
         if (!entity.isAutoGenerateId() && entity.hasSubEntity()) {
              throw new RuntimeException("Entity "+entityName+" has sub entities, but id is not auto-generate(don't have @Generated annotation)!");
         }
-
         if (checkChineseAlias) {
             doCheckChineseAlias(entity);
         }
         if (isFactTableClass(psiClass)) {
             FactTableInfo factTable = FactTableParser.parse(entity, psiClass);
             entity.setFactTableInfo(factTable);
+        }
+        if (entity.getListHeaderProperty()!=null) {
+            SingleProperty listHeaderProperty=entity.getListHeaderProperty();
+            if (!entity.propertyIndexed(listHeaderProperty)){
+                throw new RuntimeException("Entity "+entity.getClassInfo().getQualifiedName()+"'s @ListHeader property "
+                        +listHeaderProperty.getName()+" should be unique or indexed!");
+            }
         }
 
         //for debug:

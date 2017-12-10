@@ -5,9 +5,11 @@ import com.qui.base.Pager;
 import com.qui.base.SortType;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.*;
@@ -27,6 +29,14 @@ public class ${entity.classInfo.name}Service {
 
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
+    <#list entity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+    @Autowired
+    private ${refEntity.classInfo.name}Persistor ${refEntity.name}Persistor;
+        </#if>
+    </#list>
+
     private List<${entity.classInfo.name}> cachedList=null;
     private boolean dirty=false;
 

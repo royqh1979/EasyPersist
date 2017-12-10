@@ -44,70 +44,61 @@ public class MethodParser {
         return TypeUtils.isValidPropertyName(propertyName);
     }
 
+    /**
+     * extract entity property info from getter method
+     *
+     * @param psiMethod
+     * @param entity
+     */
     public static void parseGetterInfo(PsiMethod psiMethod, Entity entity) {
-        if (TypeUtils.containsAnnotation(psiMethod, Constants.TRANSIENT)) {
-            return;
-        }
-        if (TypeUtils.isCollectionProperty(psiMethod)) {
-            if (TypeUtils.containsAnnotation(psiMethod, Constants.ELEMENT_COLLECTION)) {
-                ElementCollectionProperty property =
-                        parseElementCollectionProperty(psiMethod);
-                entity.addProperty(property);
+        try {
+            if (TypeUtils.containsAnnotation(psiMethod, Constants.TRANSIENT)) {
                 return;
             }
-            if (TypeUtils.containsAnnotation(psiMethod, Constants.ONE_TO_MANY)) {
-                OneToManyCollectionProperty property = parseOneToManyCollectionProperty(psiMethod);
-                entity.addProperty(property);
-                return;
-            }
-            if (TypeUtils.containsAnnotation(psiMethod, Constants.MANY_TO_MANY)) {
-                ManyToManyCollectionProperty property = parseManyToManyCollectionProperty(psiMethod);
-                entity.addProperty(property);
-                return;
-            }
-        } else {
-            if (TypeUtils.containsAnnotation(psiMethod, Constants.MANY_TO_ONE)) {
-                ManyToOneProperty property = parseManyToOneProperty(psiMethod);
-                entity.addProperty(property);
-                return;
+            if (TypeUtils.isCollectionProperty(psiMethod)) {
+                if (TypeUtils.containsAnnotation(psiMethod, Constants.ELEMENT_COLLECTION)) {
+                    ElementCollectionProperty property =
+                            parseElementCollectionProperty(psiMethod);
+                    entity.addProperty(property);
+                    return;
+                }
+                if (TypeUtils.containsAnnotation(psiMethod, Constants.ONE_TO_MANY)) {
+                    OneToManyCollectionProperty property = parseOneToManyCollectionProperty(psiMethod);
+                    entity.addProperty(property);
+                    return;
+                }
+                if (TypeUtils.containsAnnotation(psiMethod, Constants.MANY_TO_MANY)) {
+                    ManyToManyCollectionProperty property = parseManyToManyCollectionProperty(psiMethod);
+                    entity.addProperty(property);
+                    return;
+                }
+            } else {
+                if (TypeUtils.containsAnnotation(psiMethod, Constants.MANY_TO_ONE)) {
+                    ManyToOneProperty property = parseManyToOneProperty(psiMethod);
+                    entity.addProperty(property);
+                    return;
+                }
+
+                if (TypeUtils.containsAnnotation(psiMethod, Constants.ONE_TO_ONE)) {
+                    OneToOneProperty property = parseOneToOneProperty(psiMethod);
+                    entity.addProperty(property);
+                    return;
+                }
             }
 
-            if (TypeUtils.containsAnnotation(psiMethod, Constants.ONE_TO_ONE)) {
-                OneToOneProperty property = parseOneToOneProperty(psiMethod);
-                entity.addProperty(property);
-                return;
+            /* we are normal column property */
+            SingleProperty singleProperty = parseSingleProperty(psiMethod);
+            entity.addProperty(singleProperty);
+            if (TypeUtils.containsAnnotation(psiMethod, Constants.ID)) {
+                entity.setIdProperty(singleProperty.getName());
+                entity.setAutoGenerateId(TypeUtils.containsAnnotation(psiMethod, Constants.GENERATED_VALUE));
             }
-            try {
-                SingleProperty singleProperty = parseSingleProperty(psiMethod);
-                entity.addProperty(singleProperty);
-                if (TypeUtils.containsAnnotation(psiMethod, Constants.ID)) {
-                    entity.setIdProperty(singleProperty.getName());
-                    entity.setAutoGenerateId(TypeUtils.containsAnnotation(psiMethod, Constants.GENERATED_VALUE));
-                }
-                if (TypeUtils.containsAnnotation(psiMethod, Constants.LIST_HEADER)){
-                    entity.setListHeaderProperty(singleProperty.getName());
-                }
-            } catch (RuntimeException e) {
-                throw new RuntimeException(entity.getClassInfo().getQualifiedName() +
-                        "." + psiMethod.getName()+":" + e.getMessage(),e);
+            if (TypeUtils.containsAnnotation(psiMethod, Constants.LIST_HEADER)) {
+                entity.setListHeaderProperty(singleProperty.getName());
             }
-        }
-
-        /* infer joinTable and joinColumn default names */
-        SingleProperty idProperty = entity.getIdProperty();
-        for (Property property : entity.getProperties()) {
-            if (property.getPropertyType() == PropertyType.ElementCollection) {
-                ElementCollectionProperty collectionProperty = (ElementCollectionProperty) property;
-                CollectionTable collectionTable = collectionProperty.getCollectionTable();
-                if (StringUtils.isEmpty(collectionTable.getName())) {
-                    collectionTable.setName(entity.getName() + "_" + property.getName());
-                }
-                if (collectionTable.getJoinColumns().length < 1) {
-                    JoinColumn[] joinColumns = new JoinColumn[1];
-                    joinColumns[0] = new JoinColumn();
-                    joinColumns[0].setName(entity.getName() + "_" + idProperty.getName());
-                }
-            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException(entity.getClassInfo().getQualifiedName() +
+                    "-" + psiMethod.getName() + "():" + e.getMessage(), e);
         }
     }
 
@@ -177,40 +168,40 @@ public class MethodParser {
         String type = psiMethod.getReturnType().getCanonicalText();
         Column column = AnnotationParser.parseColumn(psiMethod);
         SingleProperty property;
-        PsiAnnotation referenceAnno=AnnotationUtils.findAnnotation(psiMethod,Constants.REFERENCE);
-        if (referenceAnno!=null) {
-            ReferenceSingleProperty referenceSingleProperty= new ReferenceSingleProperty(name, type, column);
-            referenceSingleProperty.setRefEntityFullClassName(AnnotationUtils.getClassName(referenceAnno,"refEntityClass"));
-            property=referenceSingleProperty;
+        PsiAnnotation referenceAnno = AnnotationUtils.findAnnotation(psiMethod, Constants.REFERENCE);
+        if (referenceAnno != null) {
+            ReferenceSingleProperty referenceSingleProperty = new ReferenceSingleProperty(name, type, column);
+            referenceSingleProperty.setRefEntityFullClassName(AnnotationUtils.getClassName(referenceAnno, "refEntityClass"));
+            property = referenceSingleProperty;
         } else {
-            property= new SingleProperty(name, type, column);
+            property = new SingleProperty(name, type, column);
         }
-        String chineseAlias=AnnotationParser.parseChineseAlias(psiMethod);
-        if (chineseAlias!=null) {
+        String chineseAlias = AnnotationParser.parseChineseAlias(psiMethod);
+        if (chineseAlias != null) {
             property.setChineseAlias(chineseAlias);
-        } else if (TypeUtils.isChinese(name)){
+        } else if (TypeUtils.isChinese(name)) {
             property.setChineseAlias(name);
         }
-        if (type.equals("java.util.Date"))  {
+        if (type.equals("java.util.Date")) {
             TemporalType temporalType = AnnotationParser.parseTemporal(psiMethod);
-            if ( temporalType == null) {
+            if (temporalType == null) {
                 throw new RuntimeException("java.util.Date property should be annotated with @Temporal!");
             }
             property.setTemporalType(temporalType);
         }
 
-        if (type.equals("java.sql.Blob") || type.equals("byte[]"))   {
-            if (!AnnotationParser.parseLob(psiMethod)){
+        if (type.equals("java.sql.Blob") || type.equals("byte[]")) {
+            if (!AnnotationParser.parseLob(psiMethod)) {
                 throw new RuntimeException("Blob or byte[] property should be annotated with @Lob!");
             }
             property.setLob(true);
         }
 
-        PsiClass retunTypeClass= PsiTypesUtil.getPsiClass( psiMethod.getReturnType());
-        if (retunTypeClass!=null && retunTypeClass.isEnum()) {
-            EnumType enumType=AnnotationParser.parseEnumerated(psiMethod) ;
-            if (enumType==null) {
-                enumType=enumType.STRING;
+        PsiClass retunTypeClass = PsiTypesUtil.getPsiClass(psiMethod.getReturnType());
+        if (retunTypeClass != null && retunTypeClass.isEnum()) {
+            EnumType enumType = AnnotationParser.parseEnumerated(psiMethod);
+            if (enumType == null) {
+                enumType = enumType.STRING;
             }
             property.setEnumType(enumType);
         }
@@ -221,6 +212,4 @@ public class MethodParser {
         }
         return property;
     }
-
-
 }

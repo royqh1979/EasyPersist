@@ -24,7 +24,7 @@ public class TemplateUtils {
     }
 
     public List<SingleProperty> getIndexedProperties(Entity entity) {
-        return CodeUtils.getAllIndexProperties(entity);
+        return CodeUtils.getAllIndexedProperties(entity);
     }
 
     public boolean isIntProperty(SingleProperty property) {

@@ -23,7 +23,7 @@ public class Entity {
     private String listHeaderProperty=null;
     private Map<String,Property> propertyMap =new HashMap<>();
     private Map<String,String> columnPropertyMap = new HashMap<>();
-    private Set<IndexInfo> indexes =new HashSet<>();
+    private Map<String,IndexInfo> indexes =new HashMap<>();
     private AccessType accessType=AccessType.PROPERTY;
     private MappingRepository mappingRepository;
     private boolean autoGenerateId=false;
@@ -140,11 +140,34 @@ public class Entity {
     }
 
     public void addIndex(IndexInfo indexInfo) {
-        indexes.add(indexInfo);
+        indexes.put(indexInfo.getId(),indexInfo);
     }
 
-    public Set<IndexInfo> getIndexes() {
+    public Map<String,IndexInfo> getIndexes() {
         return indexes;
+    }
+
+    public boolean propertyIndexed(SingleProperty property) {
+        return propertyIndexed(property.getName());
+    }
+
+    public boolean propertyIndexed(String propertyName) {
+        return indexes.containsKey(propertyName);
+    }
+
+    public boolean propertyUniqueIndexed(SingleProperty property) {
+        return propertyUniqueIndexed(property.getName());
+    }
+
+    public boolean propertyUniqueIndexed(String propertyName) {
+//        System.out.println("unique ? propertyName:"+propertyName);
+        IndexInfo indexInfo=indexes.get(propertyName);
+        if (indexInfo==null) {
+//            System.out.println("unique ? propertyName:"+propertyName+" not found");
+            return false;
+        }
+//        System.out.println("unique ? propertyName:"+propertyName+" :"+indexInfo.unique);
+        return indexInfo.unique;
     }
 
     public String getTableName() {

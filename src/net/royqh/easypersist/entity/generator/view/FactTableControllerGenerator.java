@@ -8,17 +8,13 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
-import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
-import net.royqh.easypersist.entity.model.MapRelationInfo;
-import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.TemplateUtils;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,7 +76,7 @@ public class FactTableControllerGenerator {
         dataModel.put("refEntities", refEntities);
 
         try {
-            dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(baseEntity));
+            dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(baseEntity));
             ControllerForFactTableEditorTemplate.process(dataModel, writer);
             dataModel.clear();
 

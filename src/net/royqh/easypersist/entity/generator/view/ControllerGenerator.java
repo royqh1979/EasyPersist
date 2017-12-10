@@ -61,7 +61,7 @@ public class ControllerGenerator {
         
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
-                dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+                dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
                 Set<Entity> serviceEntities=new HashSet<>();
                 for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
                     //add entities referenced by subEntity

@@ -9,6 +9,7 @@ public class IndexInfo {
     Set<String> properties;
     boolean unique;
     String name="";
+    String id="";
 
     public boolean isUnique() {
         return unique;
@@ -20,10 +21,23 @@ public class IndexInfo {
 
     public void setProperties(Set<String> properties) {
         this.properties = properties;
+        if (properties==null) {
+            id="";
+        } else {
+            StringBuilder sb=new StringBuilder();
+            for (String p:properties) {
+                sb.append(p);
+            }
+            id=sb.toString();
+        }
     }
 
     public Set<String> getProperties() {
         return properties;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
@@ -41,12 +55,12 @@ public class IndexInfo {
 
         IndexInfo indexInfo = (IndexInfo) o;
 
-        return !(properties != null ? !properties.equals(indexInfo.properties) : indexInfo.properties != null);
+        return id.equals(indexInfo.id);
 
     }
 
     @Override
     public int hashCode() {
-        return properties != null ? properties.hashCode() : 0;
+        return id.hashCode();
     }
 }

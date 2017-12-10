@@ -71,7 +71,7 @@ public class ServiceGenerator {
         dataModel.put("subEntityInfo",subEntityInfo);
         dataModel.put("idType", TypeUtils.getShortTypeName(subEntityInfo.getSubEntity().getIdProperty().getType()));
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
-        dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(subEntity));
+        dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(subEntity));
         Set<String> typeList=CodeUtils.getMappedTypeList(subEntity);
         String persistorType=CodeUtils.getPersistorType(subEntity,module);
         if (persistorType!=null) {
@@ -95,7 +95,6 @@ public class ServiceGenerator {
 
     private static PsiFile generateServiceFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
         String className = CodeUtils.getServiceName(entity);
-        String persistorName=CodeUtils.getPersistorCompositorName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
             writer.append("package " + targetPackage.getQualifiedName() + ";\n");
@@ -113,7 +112,7 @@ public class ServiceGenerator {
         dataModel.put("typeList",typeList);
         try {
             if (editorStyle==EditorStyle.NormalStyle) {
-                dataModel.put("indexedProperties",CodeUtils.getAllIndexProperties(entity));
+                dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(entity));
                 typeList.addAll(CodeUtils.getMappedTypeList(entity));
                 String persistorType=CodeUtils.getPersistorType(entity,module);
                 if (persistorType!=null) {
@@ -126,6 +125,7 @@ public class ServiceGenerator {
                 if (persistorType!=null) {
                     typeList.add(persistorType);
                 }
+                typeList.addAll(CodeUtils.getReferencedPersistorTypes(entity,module));
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
             }
             dataModel.clear();

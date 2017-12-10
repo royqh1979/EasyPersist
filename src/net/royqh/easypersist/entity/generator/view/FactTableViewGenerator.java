@@ -5,11 +5,8 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
-import net.royqh.easypersist.entity.model.MapRelationInfo;
-import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.TemplateUtils;
 
@@ -70,7 +67,7 @@ public class FactTableViewGenerator {
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(baseEntity);
         dataModel.put("refEntities", refEntities);
-        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(baseEntity));
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(baseEntity));
         generateJspView(factTableEntity, psiOutputDir, factTableEntity.getName() + ".jsp", JspViewForFactTableEditorTemplate, dataModel);
     }
 }

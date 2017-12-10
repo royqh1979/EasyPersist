@@ -104,9 +104,9 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
                 cell.setCellType(Cell.CELL_TYPE_STRING);
                 cell.setCellValue("");
                 for (${refEntity.classInfo.name} ${refEntity.name}:list${refEntity.classInfo.name}){
-                if (${refEntity.name}.${refEntity.idProperty.getter}()==${entityToExport.name}.${property.getter}()){
-                cell.setCellValue(${refEntity.name}.${listHeader.getter}());
-                }
+                    if (${refEntity.name}.${refEntity.idProperty.getter}()==${entityToExport.name}.${property.getter}()){
+                        cell.setCellValue(${refEntity.name}.${listHeader.getter}());
+                    }
                 }
                 <#elseif templateUtils.isBooleanProperty(property) >
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);

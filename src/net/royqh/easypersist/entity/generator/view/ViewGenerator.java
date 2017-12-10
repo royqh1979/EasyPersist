@@ -9,11 +9,9 @@ import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;
-import net.royqh.easypersist.entity.model.SingleProperty;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.utils.CodeUtils;
 import net.royqh.easypersist.entity.utils.TemplateUtils;
-import net.royqh.easypersist.entity.utils.TypeUtils;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -94,7 +92,7 @@ public class ViewGenerator {
         dataModel.put("mapRelationEntity",relationEntity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
-        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(relationEntity));
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(relationEntity));
 
         generateJspView(entity, psiOutputDir, entity.getName() + "-mapping-add-"+relationEntity.getName()+".jsp", JspNtoNMappingAddEditViewForFullEditorTemplate, dataModel);
     }
@@ -144,7 +142,7 @@ public class ViewGenerator {
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
-        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
         generateJspView(entity, psiOutputDir, entity.getName() + "-edit-entity.jsp", JspEntityEditViewForFullEditorTemplate, dataModel);
     }
 
@@ -171,7 +169,7 @@ public class ViewGenerator {
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
-        dataModel.put("indexedProperties", CodeUtils.getAllIndexProperties(entity));
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
         generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
 
     }

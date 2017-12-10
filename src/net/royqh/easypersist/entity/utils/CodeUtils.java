@@ -91,9 +91,9 @@ public class CodeUtils {
     }
 
     @NotNull
-    public static List<SingleProperty> getAllIndexProperties(Entity entity) {
+    public static List<SingleProperty> getAllIndexedProperties(Entity entity) {
         Set<String> allIndexPropertieNames = new HashSet<>();
-        for (IndexInfo indexInfo : entity.getIndexes()) {
+        for (IndexInfo indexInfo : entity.getIndexes().values()) {
             for (String propertyName : indexInfo.getProperties()) {
                 SingleProperty singleProperty = (SingleProperty) entity.getProperty(propertyName);
                 allIndexPropertieNames.add(singleProperty.getName());
@@ -280,5 +280,21 @@ public class CodeUtils {
             }
         }
         return services;
+    }
+
+    public static Set<String> getReferencedPersistorTypes(Entity entity, Module module) {
+        Set<String> persistors=new HashSet<>();
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
+        for (Property property:entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
+                String persistorTypeName=getPersistorType(referenceEntity,module,moduleScope);
+                if (persistorTypeName!=null) {
+                    persistors.add(persistorTypeName);
+                }
+            }
+        }
+        return persistors;
     }
 }

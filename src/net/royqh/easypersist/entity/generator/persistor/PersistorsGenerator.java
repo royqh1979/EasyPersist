@@ -228,7 +228,7 @@ public class PersistorsGenerator {
     }
 
     private void createSearchMethods(Entity entity, StringBuilder content) {
-        for (IndexInfo indexInfo : entity.getIndexes()) {
+        for (IndexInfo indexInfo : entity.getIndexes().values()) {
             if (indexInfo.isUnique()) {
                 methodGenerator.createRetrieveByXXXMethod(entity, indexInfo, content);
                 if (canGenerateRangeQuery(entity, indexInfo)) {
@@ -247,6 +247,9 @@ public class PersistorsGenerator {
                 continue;
             }
             ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
+            if (entity.getIndexes().containsKey(referenceSingleProperty.getName())) {
+                throw new RuntimeException("Entity "+entity.getClassInfo().getQualifiedName()+"'s @Reference property "+referenceSingleProperty.getName()+" also appear in index.");
+            }
             if (referenceSingleProperty.getColumn().isUnique()) {
                 methodGenerator.createRetrieveByXXXMethod(entity, referenceSingleProperty, content);
                 if (canGenerateRangeQuery(entity, referenceSingleProperty)) {

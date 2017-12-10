@@ -669,7 +669,7 @@ public class PersistorMethodGenerator {
     }
 
     public void createCountAllMethod(Entity entity, StringBuilder content) {
-        List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
+        List<SingleProperty> indexProperties = CodeUtils.getAllIndexedProperties(entity);
 
         content.append("public int countAll(");
         List<String> parameterList = new ArrayList<>();
@@ -789,7 +789,7 @@ public class PersistorMethodGenerator {
 
 
     public void createFindAllMethod(Entity entity, StringBuilder content) {
-        List<SingleProperty> indexProperties = CodeUtils.getAllIndexProperties(entity);
+        List<SingleProperty> indexProperties = CodeUtils.getAllIndexedProperties(entity);
         content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
@@ -1025,7 +1025,7 @@ public class PersistorMethodGenerator {
         dataModel.put("mapEntity", mapEntity);
         dataModel.put("mapRelationInfo", relationInfo);
 
-        dataModel.put("indexProperties", CodeUtils.getAllIndexProperties(mapEntity));
+        dataModel.put("indexProperties", CodeUtils.getAllIndexedProperties(mapEntity));
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("quote", sqlGenerator.getQuote());
         generateMethodView(content, CreateFindXXXMappingForAddTemplate, dataModel);
