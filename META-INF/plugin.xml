@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>1.0.3</version>
+  <version>1.1.0</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -92,6 +92,7 @@
       * 1.0.3 fix: findByXXX/countByXXX method error <br />
       * 1.0.4 add: 导出excel(未测试) <br />
               change: return null instead of throw exception in retrieveByXXX methods, when no entity found <br />
+      * 1.1.0 add: Excel-Style editor can import excel now <br />
     ]]>
   </change-notes>
 

@@ -242,11 +242,12 @@ public class ${entity.classInfo.name}Controller {
             return TaskRedirector.errorExit(model, "无权访问");
         }
         try {
-            productTypeService.importFromExcel(file.getInputStream(),EXCEL_START_ROW,EXCEL_START_COL);
+            ${entity.name}Service.importFromExcel(file.getInputStream(),EXCEL_START_ROW,EXCEL_START_COL);
             model.addAttribute("importOk",true);
         } catch (Exception e) {
             model.addAttribute("importOk",false);
             model.addAttribute("reason",e.getMessage());
+            logger.error("批量导入${entity.classInfo.name}对象失败:", e);
         }
         return jspPrefix + "${entity.name}-import-result";
     }
