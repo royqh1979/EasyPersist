@@ -44,9 +44,11 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
         HSSFRow row = sheet.createRow(startRow);
         HSSFCell cell;
         int t = startCol;
+        <#if !entityToExport.isAutoGenerateId()>
         cell=row.createCell(t++);
         cell.setCellType(Cell.CELL_TYPE_STRING);
         cell.setCellValue("${entityToExport.idProperty.chineseAlias}");
+        </#if>
         <#list entityToExport.properties as property>
             <#if property == entityToExport.idProperty >
             <#else>
@@ -87,9 +89,11 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
         int t = startCol;
         HSSFCell cell;
 
+        <#if !entityToExport.isAutoGenerateId()>
         cell=row.createCell(t++);
         cell.setCellType(Cell.CELL_TYPE_NUMERIC);
         cell.setCellValue(${entityToExport.name}.${entityToExport.idProperty.getter}());
+        </#if>
         <#list entityToExport.properties as property>
             <#if property == entityToExport.idProperty >
             <#else>

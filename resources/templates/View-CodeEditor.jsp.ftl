@@ -157,7 +157,7 @@
                     return '${entity.idProperty.chineseAlias}';
                 }},
             <#else>
-                { name: '${entity.idProperty.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${entity.idProperty.chineseAlias}")},
+ /*               { name: '${entity.idProperty.name}', align: 'left', width: 120,editor: { type: 'text'},isSort:false,headerRender:genHeaderRender("${entity.idProperty.chineseAlias}")},      */
             </#if>
             <#assign firstColumn=true >
             <#list entity.properties as property>

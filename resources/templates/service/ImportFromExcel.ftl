@@ -13,6 +13,7 @@ try {
     /* 检查column */
     HSSFRow columnRow=sheet.getRow(startRow);
     HSSFCell cell;
+<#if !entityToExport.isAutoGenerateId()>
     cell = columnRow.getCell(startCol);
     if (cell==null) {
         throw new RuntimeException(String.format("格式错误:在第%d行第%d列找不到栏目%s的标题",
@@ -22,7 +23,10 @@ try {
         throw new RuntimeException(String.format("格式错误:第%d行第%d列应该是%s",
                 startRow+1,startCol+1,"${entityToImport.idProperty.chineseAlias}"));
     }
-<#assign i=0>
+    <#assign i=0>
+<#else>
+    <#assign i=-1>
+</#if>
  <#list entityToImport.properties as property>
     <#if property == entityToImport.idProperty >
     <#else>
@@ -30,11 +34,11 @@ try {
     cell = columnRow.getCell(startCol+${i});
     if (cell==null) {
         throw new RuntimeException(String.format("格式错误:在第%d行第%d列找不到栏目%s的标题",
-                startRow+1,startCol+${i}+1,"${property.chineseAlias}"));
+                startRow+1,startCol+${i+1},"${property.chineseAlias}"));
     }
     if (!"${property.chineseAlias}".equals(cell.getStringCellValue())) {
         throw new RuntimeException(String.format("格式错误:第%d行第%d列应该是%s",
-                startRow+1,startCol+${i}+1,"${property.chineseAlias}"));
+                startRow+1,startCol+${i+1},"${property.chineseAlias}"));
     }
     </#if>
 </#list>
@@ -45,8 +49,12 @@ try {
     for (int i=startRow+1;i<=sheet.getLastRowNum();i++){
         HSSFRow row=sheet.getRow(i);
         ${entityToImport.classInfo.name} ${entityToImport.name}=new ${entityToImport.classInfo.name}();
+<#if !entityToImport.isAutoGenerateId()>
         ${entityToImport.name}.${entityToImport.idProperty.setter}((int)row.getCell(startCol+0).getNumericCellValue());
     <#assign i=0>
+<#else>
+    <#assign i=-1>
+</#if>
 <#list entityToImport.properties as property>
     <#if property == entityToImport.idProperty >
     <#else>
