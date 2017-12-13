@@ -1,4 +1,4 @@
-package net.royqh.easypersist.entity.utils;
+package net.royqh.easypersist.utils;
 
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.SingleProperty;

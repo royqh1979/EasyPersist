@@ -1,10 +1,9 @@
 package net.royqh.easypersist.entity.generator.persistor;
 
-import net.royqh.easypersist.entity.generator.persistor.SQLGenerator;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.Column;
-import net.royqh.easypersist.entity.utils.CodeUtils;
-import net.royqh.easypersist.entity.utils.TypeUtils;
+import net.royqh.easypersist.utils.CodeUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,12 +2,12 @@ package net.royqh.easypersist.entity.generator.persistor;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import net.royqh.easypersist.entity.utils.CodeUtils;
-import net.royqh.easypersist.entity.utils.JdbcUtils;
+import net.royqh.easypersist.utils.CodeUtils;
+import net.royqh.easypersist.utils.JdbcUtils;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.*;
-import net.royqh.easypersist.entity.utils.TemplateUtils;
-import net.royqh.easypersist.entity.utils.TypeUtils;
+import net.royqh.easypersist.utils.TemplateUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -671,6 +671,10 @@ public class PersistorMethodGenerator {
     public void createCountAllMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = CodeUtils.getAllIndexedProperties(entity);
 
+        if (indexProperties.size()<1) {
+            return;
+        }
+
         content.append("public int countAll(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
@@ -1028,7 +1032,7 @@ public class PersistorMethodGenerator {
         dataModel.put("indexProperties", CodeUtils.getAllIndexedProperties(mapEntity));
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("quote", sqlGenerator.getQuote());
-        generateMethodView(content, CreateFindXXXMappingForAddTemplate, dataModel);
+        CodeUtils.generateContent(content, CreateFindXXXMappingForAddTemplate, dataModel);
     }
 
     public void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {
@@ -1350,33 +1354,34 @@ public class PersistorMethodGenerator {
     public void createPropertyNameToColumnNameMethod(Entity entity, StringBuilder content) {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
-        generateMethodView(content, GetColumnNameByPropertyNameTemplate, dataModel);
+        CodeUtils.generateContent(content, GetColumnNameByPropertyNameTemplate, dataModel);
     }
 
-    private static void generateMethodView(StringBuilder content, Template template, Map<String, Object> dataModel) {
-        StringWriter writer = new StringWriter();
-        try {
-            template.process(dataModel, writer);
-            content.append(writer);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (TemplateException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void createRowProcessor(Entity entity, StringBuilder content) {
+     public void createRowProcessor(Entity entity, StringBuilder content) {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
-        generateMethodView(content, RowProcessorTemplate, dataModel);
+        CodeUtils.generateContent(content, RowProcessorTemplate, dataModel);
+    }
+
+    /**
+     * basic count all method (no query condition)
+     * @param content
+     * @param entity
+     */
+    public void createBasicCountAllMethod(StringBuilder content, Entity entity) {
+        content.append("public int countAll() {\n");
+        content.append("String sql;\n");
+        content.append("sql=\"select count(*) from " + sqlGenerator.getQuote()
+                + entity.getTableName() + sqlGenerator.getQuote() + "\";\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("if (!resultSet.next()) {\n");
+        content.append("throw new EmptyResultDataAccessException(1);\n");
+        content.append("}\n");
+        content.append("return resultSet.getInt(1);\n");
+        generateExceptionHandleStatements(content);
+        content.append("}\n");
     }
 
     /*

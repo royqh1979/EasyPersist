@@ -20,7 +20,7 @@ import net.royqh.easypersist.entity.model.jpa.OneToOne;
 import net.royqh.easypersist.entity.model.jpa.Table;
 import net.royqh.easypersist.entity.model.jpa.UniqueConstraint;
 import net.royqh.easypersist.entity.parser.ParseError;
-import net.royqh.easypersist.entity.utils.TypeUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,4 +1,4 @@
-package net.royqh.easypersist.entity.utils;
+package net.royqh.easypersist.utils;
 
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.SingleProperty;
@@ -14,6 +14,7 @@ import java.util.Map;
  * Created by Roy on 2016/2/18.
  */
 public class JdbcUtils {
+    public final static JdbcUtils jdbcUtils=new JdbcUtils();
     private final static Map<String, String> resultSetColumnTypeMap = new HashMap<>();
     private final static Map<String,String> WrapperTypeMap=new HashMap<>();
 

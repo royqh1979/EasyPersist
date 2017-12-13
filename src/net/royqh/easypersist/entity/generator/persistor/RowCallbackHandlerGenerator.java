@@ -1,10 +1,10 @@
 package net.royqh.easypersist.entity.generator.persistor;
 
-import net.royqh.easypersist.entity.utils.CodeUtils;
-import net.royqh.easypersist.entity.utils.JdbcUtils;
+import net.royqh.easypersist.utils.CodeUtils;
+import net.royqh.easypersist.utils.JdbcUtils;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.SingleProperty;
-import net.royqh.easypersist.entity.utils.TypeUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 
 /**
  * Created by Roy on 2016/2/18.

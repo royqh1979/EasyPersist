@@ -5,7 +5,7 @@ import com.intellij.psi.PsiMethod;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.Constants;
 import net.royqh.easypersist.entity.parser.jpa.MethodParser;
-import net.royqh.easypersist.entity.utils.TypeUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 
 /**
  * Created by roy on 2017/9/6.

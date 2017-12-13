@@ -4,8 +4,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTypesUtil;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.*;
-import net.royqh.easypersist.entity.utils.TypeUtils;
-import org.apache.commons.lang.StringUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 
 import javax.persistence.EnumType;
 import javax.persistence.TemporalType;

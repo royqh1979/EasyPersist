@@ -1,13 +1,17 @@
-package net.royqh.easypersist.entity.utils;
+package net.royqh.easypersist.utils;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.Constants;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -297,4 +301,31 @@ public class CodeUtils {
         }
         return persistors;
     }
+
+    /**
+     * create content by template
+     * @param content
+     * @param template
+     * @param dataModel
+     */
+    public static void generateContent(StringBuilder content, Template template, Map<String, Object> dataModel) {
+        StringWriter writer = new StringWriter();
+        try {
+            template.process(dataModel, writer);
+            content.append(writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (TemplateException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 }

@@ -93,6 +93,7 @@
       * 1.0.4 add: 导出excel(未测试) <br />
               change: return null instead of throw exception in retrieveByXXX methods, when no entity found <br />
       * 1.1.0 add: Excel-Style editor can import excel now <br />
+      * 1.1.1 add: map-style row mapper for persistors <br />
     ]]>
   </change-notes>
 

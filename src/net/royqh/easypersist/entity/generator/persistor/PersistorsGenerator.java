@@ -11,9 +11,9 @@ import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import net.royqh.easypersist.entity.MappingRepository;
-import net.royqh.easypersist.entity.utils.CodeUtils;
+import net.royqh.easypersist.utils.CodeUtils;
 import net.royqh.easypersist.entity.model.*;
-import net.royqh.easypersist.entity.utils.TypeUtils;
+import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.*;
 
@@ -299,6 +299,7 @@ public class PersistorsGenerator {
     private void createBasicMethods(Entity entity, StringBuilder content) {
         methodGenerator.createLoadByIdMethod(content, entity);
         methodGenerator.createLoadAllMethod(content, entity);
+        methodGenerator.createBasicCountAllMethod(content,entity);
         methodGenerator.createCreateMethods(content, entity);
         methodGenerator.createUpdateMethod(content, entity);
         methodGenerator.createDeleteMethods(content, entity);

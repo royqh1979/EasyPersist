@@ -10,8 +10,8 @@ import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
-import net.royqh.easypersist.entity.utils.CodeUtils;
-import net.royqh.easypersist.entity.utils.TemplateUtils;
+import net.royqh.easypersist.utils.CodeUtils;
+import net.royqh.easypersist.utils.TemplateUtils;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
