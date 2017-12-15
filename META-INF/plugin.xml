@@ -94,6 +94,7 @@
               change: return null instead of throw exception in retrieveByXXX methods, when no entity found <br />
       * 1.1.0 add: Excel-Style editor can import excel now <br />
       * 1.1.1 add: map-style row mapper for persistors <br />
+              add: create persistor's retrieve methods with custom row mapper <br />
     ]]>
   </change-notes>
 

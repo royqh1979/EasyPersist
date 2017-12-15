@@ -299,11 +299,16 @@ public class PersistorMethodGenerator {
         content.append("}\n");
     }
 
-    public void createLoadByIdMethod(StringBuilder content, Entity entity) {
+    public void createRetrieveByIdMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public " + entity.getClassInfo().getName() + " retrieve(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
         content.append(" id) {\n");
+        content.append("return retrieve(id,SIMPLE_ROW_MAPPER);\n");
+        content.append("}\n");
+        content.append("public <T> T retrieve(");
+        content.append(TypeUtils.getShortTypeName(idProperty.getType()));
+        content.append(" id, RowMapper<T> rowMapper) {\n");
         content.append("String sql=SIMPLE_SELECT_SQL+");
         content.append("\" where ");
         content.append(sqlGenerator.getQuote());
@@ -318,7 +323,7 @@ public class PersistorMethodGenerator {
         content.append("if (!resultSet.next()) {\n");
         content.append("throw new EmptyResultDataAccessException(1);\n");
         content.append("}\n");
-        content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
+        content.append("return rowMapper.mapRow(resultSet, 1);\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
     }
@@ -358,16 +363,30 @@ public class PersistorMethodGenerator {
 
     private void createRetrieveByXXXMethod(Entity entity, StringBuilder content, List<SingleProperty> indexProperties) {
         String indexName = JdbcUtils.generateIndexName(indexProperties);
-
-        content.append("public " + entity.getClassInfo().getName() + " retrieveBy" +
-                indexName + "(");
         List<String> parameterList = new ArrayList<>();
         for (SingleProperty singleProperty : indexProperties) {
             parameterList.add(TypeUtils.getShortTypeName(singleProperty.getType())
                     + " " + singleProperty.getName());
         }
-        content.append(String.join(",", parameterList));
+        String parameterListStr = String.join(",", parameterList);
+
+        content.append("public " + entity.getClassInfo().getName() + " retrieveBy" +
+                indexName + "(");
+        content.append(parameterListStr);
         content.append(") {\n");
+        content.append("return retrieveBy" +
+                indexName + "(");
+        for (SingleProperty singleProperty : indexProperties) {
+            content.append(singleProperty.getName());
+            content.append(",");
+        }
+        content.append("SIMPLE_ROW_MAPPER);\n");
+        content.append("}\n");
+
+        content.append("public <T> T retrieveBy" +
+                indexName + "(");
+        content.append(parameterListStr);
+        content.append(", RowMapper<T> rowMapper) {\n");
         content.append("String sql=\"");
         content.append(sqlGenerator.generateRetrieveByXXXSQL(entity, indexProperties));
         content.append("\";\n");
@@ -382,7 +401,7 @@ public class PersistorMethodGenerator {
         content.append("if (!resultSet.next()) {\n");
         content.append("return null;\n");
         content.append("}\n");
-        content.append("return SIMPLE_ROW_MAPPER.mapRow(resultSet,1);\n");
+        content.append("return rowMapper.mapRow(resultSet,1);\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
     }

@@ -297,7 +297,7 @@ public class PersistorsGenerator {
     }
 
     private void createBasicMethods(Entity entity, StringBuilder content) {
-        methodGenerator.createLoadByIdMethod(content, entity);
+        methodGenerator.createRetrieveByIdMethod(content, entity);
         methodGenerator.createLoadAllMethod(content, entity);
         methodGenerator.createBasicCountAllMethod(content,entity);
         methodGenerator.createCreateMethods(content, entity);
@@ -339,7 +339,7 @@ public class PersistorsGenerator {
     }
 
     /*
-    private  void createLoadByIdMethod(StringBuilder content, Entity entity) {
+    private  void createRetrieveByIdMethod(StringBuilder content, Entity entity) {
         SingleProperty idProperty = entity.getIdProperty();
         content.append("public " + entity.getClassInfo().getName()+" retrieve(");
         content.append(TypeUtils.getShortTypeName(idProperty.getType()));
