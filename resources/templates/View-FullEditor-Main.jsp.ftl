@@ -45,13 +45,8 @@
     <!--自动提示框start-->
     <script type='text/javascript' src='${"$"}{baseDir}/qui/libs/js/form/suggestion.js'></script>
     <!--自动提示框end-->
-
-    <!-- 日期选择框start -->
-    <script type="text/javascript" src="${"$"}{baseDir}/qui/libs/js/form/datePicker/WdatePicker.js"></script>
-    <!-- 日期选择框end -->
-
-</head>
-<div class="box2" panelTitle="查询开通申请" id="searchPanel">
+ </head>
+<div class="box2" panelTitle="查询${entity.chineseAlias}" id="searchPanel" statusType="none" >
     <form id="queryForm">
         <table class="tableStyle" formMode="transparent">
             <#list indexedProperties as indexProperty>
