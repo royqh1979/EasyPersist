@@ -52,7 +52,7 @@
       <grid id="e3588" binding="pnlImageDemo" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="1" use-parent-layout="false">
-            <preferred-size width="700" height="400"/>
+            <preferred-size width="710" height="350"/>
           </grid>
         </constraints>
         <properties/>
@@ -60,6 +60,7 @@
         <children>
           <component id="5eb97" class="net.royqh.easypersist.ui.ImageView" binding="imgEditorDemo" custom-create="true">
             <constraints border-constraint="Center"/>
+            <properties/>
           </component>
         </children>
       </grid>

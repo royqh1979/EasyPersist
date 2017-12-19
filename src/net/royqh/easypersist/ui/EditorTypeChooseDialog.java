@@ -113,6 +113,15 @@ public class EditorTypeChooseDialog extends JDialog {
                 case FullFunctionEditorOnly:
                     prepareImageAndDraw("/images/FullFunctionalEdtiorUI.png");
                     break;
+                case SearchViewOnly:
+                    prepareImageAndDraw("/images/SearchViewUI.png");
+                    break;
+                case FullFunctionEdtiorAndSearchView:
+                    prepareImageAndDraw("/images/FullEditorAndSearchView.png");
+                    break;
+                case ExcelStyleEditorAndSearchView:
+                    prepareImageAndDraw("/images/ExcelEditorAndSearchViewUI.png");
+                    break;
                 default:
                     imgEditorDemo.setImage(null);
             }

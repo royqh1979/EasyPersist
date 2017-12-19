@@ -25,6 +25,13 @@ import ${type};
 public class ${entity.classInfo.name}Service {
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
+<#list entity.properties as property>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+    @Autowired
+    private ${refEntity.classInfo.name}Persistor ${refEntity.name}Persistor;
+    </#if>
+</#list>
 
     public int countAll(<#list indexedProperties as indexProperty>
         <#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
@@ -69,6 +76,9 @@ public class ${entity.classInfo.name}Service {
     public void update(${entity.classInfo.name} ${entity.name}) {
         persistor.update(${entity.name});
     }
+<#if includeSearchView>
+    <#include "service/FindAndRetrieveForViewMethods.ftl" >
+</#if>
 
 <#if exportEnabled>
     public void exportToExcel(

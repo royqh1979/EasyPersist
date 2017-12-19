@@ -125,15 +125,17 @@ public class ServiceGenerator {
         if (persistorType!=null) {
             typeList.add(persistorType);
         }
+        typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
         dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(entity));
         try {
             if (viewType.containsFullFunctionEditor()) {
                 typeList.addAll(CodeUtils.getMappedTypeList(entity));
                 typeList.addAll(CodeUtils.getMappedTypePersistorList(entity,module));
+                dataModel.put("includeSearchView",viewType.containsSearchView());
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             }
             if (viewType.containsExcelStyleEditor()) {
-                typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
+                dataModel.put("includeSearchView",viewType.containsSearchView());
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
             }
             if (viewType==ViewType.SearchViewOnly) {

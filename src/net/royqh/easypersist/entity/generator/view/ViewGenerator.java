@@ -33,7 +33,7 @@ public class ViewGenerator {
     private static Template JspNtoNMappingEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping.jsp.ftl");
     private static Template JspNtoNMappingAddEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping-Add.jsp.ftl");
     private static Template JspSearchViewTemplate = TemplateLoader.loadTemplate("View-SearchView.jsp.ftl");
-    private static Template JspEnityViewForSearchViewTemplate = TemplateLoader.loadTemplate("View-SearchView-EntityView.jsp.ftl");
+    private static Template JspEnityViewForSearchViewTemplate = TemplateLoader.loadTemplate("View-SearchView-DetailView.jsp.ftl");
 
     private static void generateJspView(Entity entity, PsiDirectory psiOutputDir, String jspFileName, Template template, Map<String, Object> dataModel) {
         PsiFile oldFile = psiOutputDir.findFile(jspFileName);
@@ -86,7 +86,7 @@ public class ViewGenerator {
         }
         if (viewType.containsSearchView()) {
             generateJspViewFileForSearchView(entity, psiOutputDir,exportEnabled);
-            generateEntityViewJspViewFileForSearchView(entity,psiOutputDir,exportEnabled);
+            generateDetailViewJspViewFileForSearchView(entity,psiOutputDir,exportEnabled);
         }
 
     }
@@ -215,7 +215,7 @@ public class ViewGenerator {
         generateJspView(entity, psiOutputDir, fileName, JspSearchViewTemplate, dataModel);
     }
 
-    private static void generateEntityViewJspViewFileForSearchView(Entity entity, PsiDirectory psiOutputDir, boolean exportEnabled) {
+    private static void generateDetailViewJspViewFileForSearchView(Entity entity, PsiDirectory psiOutputDir, boolean exportEnabled) {
         String fileName = entity.getName() + "-view-detail.jsp";
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);

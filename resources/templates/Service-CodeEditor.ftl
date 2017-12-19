@@ -130,4 +130,9 @@ public class ${entity.classInfo.name}Service {
         <#include "service/ImportFromExcel.ftl" >
     }
 </#if>
+
+<#if includeSearchView>
+    <#include "service/CountAllMethod.ftl" >
+    <#include "service/FindAndRetrieveForViewMethods.ftl" >
+</#if>
 }
