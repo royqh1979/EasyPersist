@@ -23,8 +23,6 @@ import ${type};
 
 @Service
 public class ${entity.classInfo.name}Service {
-    <#assign entityToExport=entity>
-    <#include "service/ExportRowToExcelProcessor.ftl" >
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
 
@@ -56,33 +54,6 @@ public class ${entity.classInfo.name}Service {
         </#if></#list>orderBy,sortType==SortType.asc, pager.getStartRow(), pager.getPageSize());
     }
 
-    public void exportToExcel(
-    <#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
-    Date end${indexProperty.name?cap_first},
-    <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
-    </#list><#list entity.properties as property>
-            <#if property.isReferenceProperty()>
-                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
-            </#if>
-    </#list>String orderBy, SortType sortType, Pager pager, HSSFSheet sheet, int startRow, int startCol) throws IOException {
-        ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list entity.properties as property>
-            <#if property.isReferenceProperty()>
-                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-            list${refEntity.classInfo.name},
-            </#if>
-        </#list>sheet, startRow, startCol);
-        persistor.findAll(<#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
-            end${indexProperty.name?cap_first},
-            <#elseif templateUtils.isRangeTypeProperty(indexProperty) >
-            ${indexProperty.name},${indexProperty.name},
-            <#else>
-            ${indexProperty.name},
-            </#if></#list>orderBy,sortType==SortType.asc, pager.getStartRow(), pager.getPageSize(),
-            processor
-        );
-    }
-
     public ${idType} create(${entity.classInfo.name} ${entity.name}) {
         return persistor.create(${entity.name});
     }
@@ -98,6 +69,38 @@ public class ${entity.classInfo.name}Service {
     public void update(${entity.classInfo.name} ${entity.name}) {
         persistor.update(${entity.name});
     }
+
+<#if exportEnabled>
+    public void exportToExcel(
+        <#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
+        Date end${indexProperty.name?cap_first},
+        <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
+        </#list><#list entity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
+        </#if>
+    </#list>String orderBy, SortType sortType, Pager pager, HSSFSheet sheet, int startRow, int startCol) throws IOException {
+            ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list entity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                list${refEntity.classInfo.name},
+        </#if>
+    </#list>sheet, startRow, startCol);
+            persistor.findAll(<#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
+                end${indexProperty.name?cap_first},
+    <#elseif templateUtils.isRangeTypeProperty(indexProperty) >
+        ${indexProperty.name},${indexProperty.name},
+    <#else>
+        ${indexProperty.name},
+    </#if></#list>orderBy,sortType==SortType.asc, pager.getStartRow(), pager.getPageSize(),
+                processor
+            );
+        }
+
+    <#assign entityToExport=entity>
+    <#include "service/ExportRowToExcelProcessor.ftl" >
+</#if>
 
 <#list entity.mapRelationInfos as relationInfo>
     <#include "service/fulleditor-mapEntity.ftl" >

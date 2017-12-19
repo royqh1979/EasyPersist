@@ -24,8 +24,6 @@ import ${type};
 
 @Service
 public class ${entity.classInfo.name}Service {
-    <#assign entityToExport=entity>
-    <#include "service/ExportRowToExcelProcessor.ftl" >
 
     @Autowired
     private ${entity.classInfo.name}Persistor persistor;
@@ -48,6 +46,7 @@ public class ${entity.classInfo.name}Service {
         return cachedList;
     }
 
+<#if exportEnabled>
     public void exportToExcel(
     <#list entity.properties as property>
         <#if property.isReferenceProperty()>
@@ -67,6 +66,10 @@ public class ${entity.classInfo.name}Service {
             processor.createRow(${entity.name},i++);
         }
     }
+
+    <#assign entityToExport=entity>
+    <#include "service/ExportRowToExcelProcessor.ftl" >
+</#if>
 
 <#list entity.properties as property>
         <#if property.isReferenceProperty()>
@@ -121,10 +124,10 @@ public class ${entity.classInfo.name}Service {
         }
     }
 
-    /* 导入数据 */
+<#if importEnabled >
     public void importFromExcel(InputStream inputStream, int startRow, int startCol) {
         <#assign entityToImport=entity>
         <#include "service/ImportFromExcel.ftl" >
-
     }
+</#if>
 }

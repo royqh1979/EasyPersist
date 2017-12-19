@@ -61,10 +61,10 @@ public class ViewGenerator {
         }
     }
 
-    public static void generateJspViews(ViewType viewType, Entity entity, PsiDirectory psiOutputDir) {
+    public static void generateJspViews(ViewType viewType, Entity entity, PsiDirectory psiOutputDir, boolean importEnabled, boolean exportEnabled) {
         if (viewType.containsFullFunctionEditor()) {
             /* entity 列表视图 */
-            generateMainJspViewFileForFullEditor(entity,psiOutputDir);
+            generateMainJspViewFileForFullEditor(entity,psiOutputDir,importEnabled,exportEnabled);
             /* entity编辑视图-标签导航页 */
             generateEditMainJspViewFileForFullEditor(entity,psiOutputDir);
             /* entity编辑视图 */
@@ -80,7 +80,7 @@ public class ViewGenerator {
             }
         }
         if (viewType.containsExcelStyleEditor()){
-            generateJspViewFileForCodeEditor(entity, psiOutputDir);
+            generateJspViewFileForCodeEditor(entity, psiOutputDir,importEnabled,exportEnabled);
         }
 
     }
@@ -163,30 +163,37 @@ public class ViewGenerator {
      *  entity列表视图
      * @param entity
      * @param psiOutputDir
+     * @param importEnabled
+     * @param exportEnabled
      */
-    private static void generateMainJspViewFileForFullEditor(Entity entity, PsiDirectory psiOutputDir) {
+    private static void generateMainJspViewFileForFullEditor(Entity entity, PsiDirectory psiOutputDir, boolean importEnabled, boolean exportEnabled) {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
+        dataModel.put("importEnabled",importEnabled);
+        dataModel.put("exportEnabled",exportEnabled);
         generateJspView(entity, psiOutputDir, entity.getName() + ".jsp", JspMainViewForFullEditorTemplate, dataModel);
-
     }
 
-    private static void generateJspViewFileForCodeEditor(Entity entity, PsiDirectory psiOutputDir) {
+    private static void generateJspViewFileForCodeEditor(Entity entity, PsiDirectory psiOutputDir, boolean importEnabled, boolean exportEnabled) {
         String fileName = entity.getName() + ".jsp";
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("entity", entity);
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
+        dataModel.put("importEnabled",importEnabled);
+        dataModel.put("exportEnabled",exportEnabled);
         generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorTemplate, dataModel);
-        fileName = entity.getName() + "-import.jsp";
-        generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportTemplate, dataModel);
-        fileName = entity.getName() + "-import-result.jsp";
-        generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportResultTemplate, dataModel);
+        if (importEnabled) {
+            fileName = entity.getName() + "-import.jsp";
+            generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportTemplate, dataModel);
+            fileName = entity.getName() + "-import-result.jsp";
+            generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportResultTemplate, dataModel);
+        }
     }
 
 }

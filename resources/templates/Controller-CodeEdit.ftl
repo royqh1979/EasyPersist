@@ -84,32 +84,6 @@ public class ${entity.classInfo.name}Controller {
         }
     }
 
-    @RequestMapping(value = "/exportList", method = RequestMethod.POST)
-    public void exportList(HttpServletResponse response) {
-        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
-            response.setStatus(401);
-            return;
-        }
-        try {
-            String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}", "UTF-8");
-            response.setContentType("application/vnd.ms-excel");
-            response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
-            HSSFWorkbook workbook = new HSSFWorkbook();
-            HSSFSheet sheet = workbook.createSheet();
-            ${entity.name}Service.exportToExcel(
-        <#list entity.properties as property>
-            <#if property.isReferenceProperty()>
-                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
-                ${refEntity.name}Service.listAll(false),
-            </#if>
-        </#list>
-            sheet,EXCEL_START_ROW,EXCEL_START_COL);
-            workbook.write(response.getOutputStream());
-        } catch (Exception e) {
-            logger.error("获取${entity.classInfo.name}对象列表失败:", e);
-            e.printStackTrace();
-        }
-    }
 
 <#list refEntities as refEntity>
     <#include "controller/refEntity.ftl" >
@@ -226,6 +200,35 @@ public class ${entity.classInfo.name}Controller {
         }
     }
 
+<#if exportEnabled >
+    @RequestMapping(value = "/exportList", method = RequestMethod.POST)
+    public void exportList(HttpServletResponse response) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            response.setStatus(401);
+            return;
+        }
+        try {
+            String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}", "UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            HSSFSheet sheet = workbook.createSheet();
+${entity.name}Service.exportToExcel(
+<#list entity.properties as property>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+        ${refEntity.name}Service.listAll(false),
+    </#if>
+</#list>
+            sheet,EXCEL_START_ROW,EXCEL_START_COL);
+            workbook.write(response.getOutputStream());
+        } catch (Exception e) {
+            logger.error("获取${entity.classInfo.name}对象列表失败:", e);
+            e.printStackTrace();
+        }
+    }
+</#if>
+<#if importEnabled >
     /* 批量导入 */
     @RequestMapping(value="/importExcel",method=RequestMethod.GET)
     public String batchImport(Model model) {
@@ -235,6 +238,7 @@ public class ${entity.classInfo.name}Controller {
         model.addAttribute("ctrlUrl", CONTROLLER_URL);
         return jspPrefix + "${entity.name}-import";
     }
+
 
     @RequestMapping(value="importExcel",method = RequestMethod.POST)
     public String doBatchImport(Model model,MultipartFile file) {
@@ -251,4 +255,5 @@ public class ${entity.classInfo.name}Controller {
         }
         return jspPrefix + "${entity.name}-import-result";
     }
+</#if>
 }

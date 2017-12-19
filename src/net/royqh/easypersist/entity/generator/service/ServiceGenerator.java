@@ -30,7 +30,7 @@ public class ServiceGenerator {
     private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
     private static Template ServiceForSubEntityFullEditorTemplate =TemplateLoader.loadTemplate("Service-SubEntityFullEditor.ftl");
 
-    public static void generateService(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
+    public static void generateService(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module, boolean importEnabled, boolean exportEnabled) {
         String serviceClassName = CodeUtils.getServiceName(entity);
         String fileName = serviceClassName + ".java";
 
@@ -39,7 +39,7 @@ public class ServiceGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateServiceFile(viewType, entity, null, psiFileFactory,module);
+        PsiFile psiFile = generateServiceFile(viewType, entity, null, psiFileFactory,module,importEnabled,exportEnabled);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
         if (viewType.containsFullFunctionEditor()) {
@@ -97,7 +97,7 @@ public class ServiceGenerator {
     }
 
 
-    private static PsiFile generateServiceFile(ViewType viewType, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
+    private static PsiFile generateServiceFile(ViewType viewType, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module, boolean importEnabled, boolean exportEnabled) {
         String className = CodeUtils.getServiceName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
@@ -111,6 +111,9 @@ public class ServiceGenerator {
         dataModel.put("entity",entity);
         dataModel.put("idType", TypeUtils.getShortTypeName(entity.getIdProperty().getType()));
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
+        dataModel.put("importEnabled",importEnabled);
+        dataModel.put("exportEnabled",exportEnabled);
+
 
         Set<String> typeList=CodeUtils.getRefencedTypes(entity);
         dataModel.put("typeList",typeList);

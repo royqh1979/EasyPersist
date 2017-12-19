@@ -236,8 +236,10 @@
                 items: [
                     {text: '新增', click: addUnit, iconClass: 'icon_add'},
                     {line: true},
+<#if exportEnabled>
                     {text: '导出excel', click: exportToExcel, iconClass: 'icon_export'},
                     {line: true},
+</#if>
                     {text: '批量删除', click: onBatchDelete, iconClass: 'icon_delete'}
                 ]
             }
@@ -278,6 +280,7 @@
         grid.loadData();
     }
 
+<#if exportEnabled>
     function exportToExcel() {
         var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportList";
         var iframe = $('<iframe id="down-file-iframe" ></iframe>');
@@ -325,7 +328,7 @@
         iframe.remove();
         form.remove();
     }
-
+</#if>
     //新增
     function addUnit() {
         window.open("${"$"}{baseDir}/${"$"}{ctrlUrl}/create");

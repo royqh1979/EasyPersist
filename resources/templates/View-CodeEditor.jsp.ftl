@@ -210,10 +210,14 @@
                     { line : true },
                     {text: '批量删除', click: onBatchDelete ,iconClass: 'icon_delete'},
                     { line : true },
+<#if importEnabled>
                     {text: '导入excel', click: importFromExcel, iconClass: 'icon_import'},
                     { line : true },
+</#if>
+<#if exportEnabled>
                     {text: '导出excel', click: exportToExcel, iconClass: 'icon_export'},
                     {line: true},
+</#if>
                     {text: '刷新', click: onReload ,iconClass: 'icon_reload'}
                 ]
             }
@@ -248,7 +252,7 @@
             top.Dialog.alert("读取数据失败")
         });
     }
-
+<#if exportEnabled>
     function exportToExcel() {
         var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportList";
         var iframe = $('<iframe id="down-file-iframe" ></iframe>');
@@ -261,7 +265,7 @@
         iframe.remove();
         form.remove();
     }
-
+</#if>
 
     //点击了右键菜单某项
     function menuclick(item, i)
@@ -421,12 +425,14 @@
 
     }
 
+    <#if importEnabled >
     /* 导入Excel */
     function importFromExcel() {
         top.Dialog.open({
             URL:"${"$"}{baseDir}/${"$"}{ctrlUrl}/importExcel",
             Title:"导入excel",Width:500,Height:350});
     }
+    </#if>
 
     function refresh(force) {
         onReload();

@@ -48,7 +48,6 @@ public class GenerateViewAction extends AnAction {
                             return ClassParser.parseEntityClassWithReferences(psiClass, module, true);
                         }
                     });
-
                     indicator.setFraction(1);
                     EditorTypeChooseDialog dialog = new EditorTypeChooseDialog(entity,psiClass,module);
                     dialog.updateUI();

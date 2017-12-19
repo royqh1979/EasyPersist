@@ -109,6 +109,7 @@ public class ${entity.classInfo.name}Controller {
         }
     }
 
+<#if exportEnabled >
     @RequestMapping(value = "/exportList", method = RequestMethod.POST)
     public void exportList(<#list indexedProperties as indexProperty>
         <#if templateUtils.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
@@ -161,6 +162,7 @@ public class ${entity.classInfo.name}Controller {
             e.printStackTrace();
         }
     }
+</#if>
 
 <#list refEntities as refEntity>
     <#include "controller/refEntity.ftl" >

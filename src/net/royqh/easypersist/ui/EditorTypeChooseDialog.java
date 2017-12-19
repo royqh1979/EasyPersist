@@ -36,8 +36,8 @@ public class EditorTypeChooseDialog extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox<ViewType> cbViewType;
-    private JCheckBox 包含Excel导入功能CheckBox;
-    private JCheckBox 包含Excel导出功能CheckBox;
+    private JCheckBox cbImport;
+    private JCheckBox cbExport;
     private JLabel lbEntityClassName;
     private JLabel lbEntityChineseAlias;
     private JLabel lbEntityTableName;
@@ -80,6 +80,15 @@ public class EditorTypeChooseDialog extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        cbViewType.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent itemEvent) {
+                ViewType viewType = (ViewType) itemEvent.getItem();
+                cbImport.setEnabled(viewType.containsExcelStyleEditor() || viewType.containsFullFunctionEditor());
+                cbExport.setEnabled(viewType.containsExcelStyleEditor() || viewType.containsFullFunctionEditor());
+            }
+        });
     }
 
     public void updateUI() {
@@ -116,6 +125,7 @@ public class EditorTypeChooseDialog extends JDialog {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
+                    indicator.setFraction(0.1);
                     ViewType viewType = (ViewType) cbViewType.getSelectedItem();
                     VirtualFile root = ProjectRootManager.getInstance(module.getProject())
                             .getFileIndex().getContentRootForFile(psiClass.getContainingFile().getVirtualFile());
@@ -142,7 +152,7 @@ public class EditorTypeChooseDialog extends JDialog {
                                 if (viewType == ViewType.FactTableEditorOnly) {
                                     generateFactTableView(psiOutputDir, psiFileFactory, facade, codeStyleManager, persistorsGenerator, indicator);
                                 } else {
-                                    generateViewFiles(psiOutputDir, psiFileFactory, facade, codeStyleManager, persistorsGenerator, indicator, viewType);
+                                    generateViewFiles(psiOutputDir, psiFileFactory, facade, codeStyleManager, persistorsGenerator, indicator, viewType, cbImport.isSelected(),cbExport.isSelected());
                                 }
 
                                 Notification notification = new Notification(
@@ -167,6 +177,8 @@ public class EditorTypeChooseDialog extends JDialog {
                     );
                     Notifications.Bus.notify(notification, module.getProject());
                     logger.error(exception);
+                } finally {
+                    indicator.setFraction(1);
                 }
             }
         });
@@ -174,20 +186,20 @@ public class EditorTypeChooseDialog extends JDialog {
         dispose();
     }
 
-    private void generateViewFiles(PsiDirectory psiOutputDir, PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, PersistorsGenerator persistorsGenerator, ProgressIndicator indicator, ViewType viewType) {
+    private void generateViewFiles(PsiDirectory psiOutputDir, PsiFileFactory psiFileFactory, JavaPsiFacade facade, CodeStyleManager codeStyleManager, PersistorsGenerator persistorsGenerator, ProgressIndicator indicator, ViewType viewType, boolean importEnabled, boolean exportEnabled) {
         indicator.setText(String.format("Generating persistors for %s ", entity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.2);
         persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
         persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
         indicator.setText(String.format("Generating service for %s ", entity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.4);
-        ServiceGenerator.generateService(viewType, psiFileFactory, codeStyleManager, entity, psiOutputDir, module);
+        ServiceGenerator.generateService(viewType, psiFileFactory, codeStyleManager, entity, psiOutputDir, module, importEnabled,exportEnabled);
         indicator.setText(String.format("Generating controller for %s ", entity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.2);
-        ControllerGenerator.generateController(viewType, psiFileFactory, codeStyleManager, entity, psiOutputDir, module);
+        ControllerGenerator.generateController(viewType, psiFileFactory, codeStyleManager, entity, psiOutputDir, module,importEnabled,exportEnabled);
         indicator.setText(String.format("Generating view jsp files for %s ", entity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.8);
-        ViewGenerator.generateJspViews(viewType, entity, psiOutputDir);
+        ViewGenerator.generateJspViews(viewType, entity, psiOutputDir,importEnabled,exportEnabled);
         indicator.setFraction(1);
     }
 
@@ -213,10 +225,10 @@ public class EditorTypeChooseDialog extends JDialog {
         FactTableServiceGenerator.generateService(psiFileFactory, codeStyleManager, factTableEntity, psiOutputDir, module);
         indicator.setText(String.format("Generating service for %s ", propertyEntity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.6);
-        ServiceGenerator.generateService(ViewType.ExcelStyleEditorOnly, psiFileFactory, codeStyleManager, propertyEntity, psiOutputDir, module);
+        ServiceGenerator.generateService(ViewType.ExcelStyleEditorOnly, psiFileFactory, codeStyleManager, propertyEntity, psiOutputDir, module, false,false);
         indicator.setText(String.format("Generating service for %s ", baseEntity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.7);
-        ServiceGenerator.generateService(ViewType.FactTableEditorOnly, psiFileFactory, codeStyleManager, baseEntity, psiOutputDir, module);
+        ServiceGenerator.generateService(ViewType.FactTableEditorOnly, psiFileFactory, codeStyleManager, baseEntity, psiOutputDir, module,  false,false);
         indicator.setText(String.format("Generating controller for %s ", factTableEntity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.8);
         FactTableControllerGenerator.generateController(psiFileFactory, codeStyleManager, factTableEntity, psiOutputDir, module);

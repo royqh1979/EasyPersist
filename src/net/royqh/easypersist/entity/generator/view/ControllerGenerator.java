@@ -29,7 +29,7 @@ public class ControllerGenerator {
     private static Template ControllerForCodeEditorTemplate = TemplateLoader.loadTemplate("Controller-CodeEdit.ftl");
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
 
-    public static void generateController(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
+    public static void generateController(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module, boolean importEnabled, boolean exportEnabled) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         String fileName = controllerClassName + ".java";
 
@@ -38,12 +38,12 @@ public class ControllerGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateControllerFile(viewType,entity, null, psiFileFactory, module);
+        PsiFile psiFile = generateControllerFile(viewType,entity, null, psiFileFactory, module,importEnabled,exportEnabled);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
     }
 
-    private static PsiFile generateControllerFile(ViewType viewType, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
+    private static PsiFile generateControllerFile(ViewType viewType, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module, boolean importEnabled, boolean exportEnabled) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
@@ -64,6 +64,8 @@ public class ControllerGenerator {
         Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
         dataModel.put("refEntities", refEntities);
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
+        dataModel.put("importEnabled",importEnabled);
+        dataModel.put("exportEnabled",exportEnabled);
         
         try {
             if (viewType.containsFullFunctionEditor()) {
