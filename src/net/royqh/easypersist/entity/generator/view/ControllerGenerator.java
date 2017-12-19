@@ -28,9 +28,21 @@ import java.util.Set;
 public class ControllerGenerator {
     private static Template ControllerForCodeEditorTemplate = TemplateLoader.loadTemplate("Controller-CodeEdit.ftl");
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
+    private static Template ControllerForSearchViewTemplate = TemplateLoader.loadTemplate("Controller-SearchView.ftl");
 
     public static void generateController(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module, boolean importEnabled, boolean exportEnabled) {
-        String controllerClassName = CodeUtils.getControllerName(entity);
+        if (viewType.containsExcelStyleEditor()) {
+            generateEditorController(ViewType.ExcelStyleEditorOnly, psiFileFactory,codeStyleManager,entity,psiOutputDir,module,importEnabled,exportEnabled);
+        }
+        if (viewType.containsFullFunctionEditor()) {
+            generateEditorController(ViewType.FullFunctionEditorOnly, psiFileFactory,codeStyleManager,entity,psiOutputDir,module,importEnabled,exportEnabled);
+        }
+        if (viewType.containsSearchView()) {
+            generateSearchViewController(psiFileFactory,codeStyleManager,entity,psiOutputDir,module,exportEnabled);
+        }
+    }
+    private static void generateEditorController(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module, boolean importEnabled, boolean exportEnabled) {
+        String controllerClassName = CodeUtils.getEditorControllerName(entity);
         String fileName = controllerClassName + ".java";
 
         PsiFile oldFile = psiOutputDir.findFile(fileName);
@@ -43,8 +55,27 @@ public class ControllerGenerator {
         psiOutputDir.add(psiFile);
     }
 
+    private static void generateSearchViewController(PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module, boolean exportEnabled) {
+        String controllerClassName = CodeUtils.getViewControllerName(entity);
+        String fileName = controllerClassName + ".java";
+
+        PsiFile oldFile = psiOutputDir.findFile(fileName);
+        //We Only Create compositor when it is not existed;
+        if (oldFile != null) {
+            oldFile.delete();
+        }
+        PsiFile psiFile = generateControllerFile(ViewType.SearchViewOnly,entity, null, psiFileFactory, module,false,exportEnabled);
+        psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
+        psiOutputDir.add(psiFile);
+    }
+
     private static PsiFile generateControllerFile(ViewType viewType, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module, boolean importEnabled, boolean exportEnabled) {
-        String controllerClassName = CodeUtils.getControllerName(entity);
+        String controllerClassName;
+        if (viewType==ViewType.SearchViewOnly) {
+            controllerClassName = CodeUtils.getViewControllerName(entity);
+        } else {
+            controllerClassName = CodeUtils.getEditorControllerName(entity);
+        }
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
             writer.append("package " + targetPackage.getQualifiedName() + ";\n");
@@ -66,10 +97,10 @@ public class ControllerGenerator {
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("importEnabled",importEnabled);
         dataModel.put("exportEnabled",exportEnabled);
-        
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
+
         try {
-            if (viewType.containsFullFunctionEditor()) {
-                dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
+            if (viewType==ViewType.FullFunctionEditorOnly) {
                 Set<Entity> serviceEntities=new HashSet<>();
                 for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
                     //add entities referenced by subEntity
@@ -97,8 +128,11 @@ public class ControllerGenerator {
                 dataModel.put("serviceEntities",serviceEntities);
                 ControllerForFullEditorTemplate.process(dataModel, writer);
             }
-            if (viewType.containsExcelStyleEditor()){
+            if (viewType==ViewType.ExcelStyleEditorOnly){
                 ControllerForCodeEditorTemplate.process(dataModel, writer);
+            }
+            if (viewType==ViewType.SearchViewOnly){
+                ControllerForSearchViewTemplate.process(dataModel, writer);
             }
             dataModel.clear();
 

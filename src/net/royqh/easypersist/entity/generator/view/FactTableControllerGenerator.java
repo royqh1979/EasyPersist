@@ -25,7 +25,7 @@ public class FactTableControllerGenerator {
     private static Template ControllerForFactTableEditorTemplate = TemplateLoader.loadTemplate("Controller-FactTableEdit.ftl");
 
     public static void generateController(PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
-        String controllerClassName = CodeUtils.getControllerName(entity);
+        String controllerClassName = CodeUtils.getEditorControllerName(entity);
         String fileName = controllerClassName + ".java";
 
         PsiFile oldFile = psiOutputDir.findFile(fileName);
@@ -39,7 +39,7 @@ public class FactTableControllerGenerator {
     }
 
     private static PsiFile generateControllerFile(Entity factTableEntity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
-        String controllerClassName = CodeUtils.getControllerName(factTableEntity);
+        String controllerClassName = CodeUtils.getEditorControllerName(factTableEntity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
             writer.append("package " + targetPackage.getQualifiedName() + ";\n");

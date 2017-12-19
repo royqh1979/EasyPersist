@@ -90,7 +90,7 @@ public class FactTableServiceGenerator {
     }
 
     private static void addEntityPersistorToImportTypes(Entity entity, Module module, Set<String> importTypes) {
-        String persistorType= CodeUtils.getPersistorType(entity,module);
+        String persistorType= CodeUtils.getPersistCompositorType(entity,module);
         if (persistorType!=null) {
             importTypes.add(persistorType);
         }

@@ -25,9 +25,9 @@ import java.util.Set;
  * Created by Roy on 2017/6/24.
  */
 public class ServiceGenerator {
-
     private static Template ServiceForCodeEditorTemplate = TemplateLoader.loadTemplate("Service-CodeEditor.ftl");
     private static Template ServiceForFullEditorTemplate =TemplateLoader.loadTemplate("Service-FullEditor.ftl");
+    private static Template ServiceForSearchViewTemplate =TemplateLoader.loadTemplate("Service-SearchView.ftl");
     private static Template ServiceForSubEntityFullEditorTemplate =TemplateLoader.loadTemplate("Service-SubEntityFullEditor.ftl");
 
     public static void generateService(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module, boolean importEnabled, boolean exportEnabled) {
@@ -77,7 +77,7 @@ public class ServiceGenerator {
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(subEntity));
         Set<String> typeList=CodeUtils.getMappedTypeList(subEntity);
-        String persistorType=CodeUtils.getPersistorType(subEntity,module);
+        String persistorType=CodeUtils.getPersistCompositorType(subEntity,module);
         if (persistorType!=null) {
             typeList.add(persistorType);
         }
@@ -117,24 +117,28 @@ public class ServiceGenerator {
 
         Set<String> typeList=CodeUtils.getRefencedTypes(entity);
         dataModel.put("typeList",typeList);
+        String persistCompositorType=CodeUtils.getPersistCompositorType(entity,module);
+        if (persistCompositorType!=null) {
+            typeList.add(persistCompositorType);
+        }
+        String persistorType=CodeUtils.getPersistorType(entity,module);
+        if (persistorType!=null) {
+            typeList.add(persistorType);
+        }
+        dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(entity));
         try {
             if (viewType.containsFullFunctionEditor()) {
-                dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(entity));
                 typeList.addAll(CodeUtils.getMappedTypeList(entity));
-                String persistorType=CodeUtils.getPersistorType(entity,module);
-                if (persistorType!=null) {
-                    typeList.add(persistorType);
-                }
                 typeList.addAll(CodeUtils.getMappedTypePersistorList(entity,module));
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             }
             if (viewType.containsExcelStyleEditor()) {
-                String persistorType=CodeUtils.getPersistorType(entity,module);
-                if (persistorType!=null) {
-                    typeList.add(persistorType);
-                }
-                typeList.addAll(CodeUtils.getReferencedPersistorTypes(entity,module));
+                typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
+            }
+            if (viewType==ViewType.SearchViewOnly) {
+                typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
+                ServiceForSearchViewTemplate.process(dataModel, writer);
             }
             dataModel.clear();
         } catch (Exception e) {

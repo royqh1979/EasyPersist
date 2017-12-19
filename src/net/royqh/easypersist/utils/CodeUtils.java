@@ -78,8 +78,12 @@ public class CodeUtils {
         return entity.getClassInfo().getName()+"Service";
     }
 
-    public static String getControllerName(Entity entity) {
+    public static String getEditorControllerName(Entity entity) {
         return entity.getClassInfo().getName()+"Controller";
+    }
+
+    public static String getViewControllerName(Entity entity) {
+        return entity.getClassInfo().getName()+"ViewController";
     }
     @NotNull
     public static Set<Entity> getRefencingEntities(Entity entity) {
@@ -227,7 +231,7 @@ public class CodeUtils {
             if (mappingEntity==null) {
                 throw new RuntimeException("Not found entity definition for class "+relationInfo.getMappingEntityFullClassName());
             }
-            String persistorClassName=getPersistorType(mappingEntity,module,moduleScope);
+            String persistorClassName= getPersistCompositorType(mappingEntity,module,moduleScope);
             if (persistorClassName!=null) {
                 types.add(persistorClassName);
             }
@@ -241,6 +245,19 @@ public class CodeUtils {
     }
 
     public static String getPersistorType(Entity entity, Module module, GlobalSearchScope searchScope) {
+        PsiClass[] persistorClasses=PsiShortNamesCache.getInstance(module.getProject()).getClassesByName(getPersistorName(entity),searchScope);
+        if (persistorClasses.length>0) {
+            return persistorClasses[0].getQualifiedName();
+        }
+        return null;
+    }
+
+    public static String getPersistCompositorType(Entity entity, Module module) {
+        GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
+        return getPersistCompositorType(entity,module,moduleScope);
+    }
+
+    public static String getPersistCompositorType(Entity entity, Module module, GlobalSearchScope searchScope) {
         PsiClass[] persistorClasses=PsiShortNamesCache.getInstance(module.getProject()).getClassesByName(getPersistorCompositorName(entity),searchScope);
         if (persistorClasses.length>0) {
             return persistorClasses[0].getQualifiedName();
@@ -286,14 +303,14 @@ public class CodeUtils {
         return services;
     }
 
-    public static Set<String> getReferencedPersistorTypes(Entity entity, Module module) {
+    public static Set<String> getReferencedPersistCompositorTypes(Entity entity, Module module) {
         Set<String> persistors=new HashSet<>();
         GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
         for (Property property:entity.getProperties()) {
             if (property instanceof ReferenceSingleProperty) {
                 ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
                 Entity referenceEntity = entity.getMappingRepository().findEntityByClass(referenceSingleProperty.getRefEntityFullClassName());
-                String persistorTypeName=getPersistorType(referenceEntity,module,moduleScope);
+                String persistorTypeName= getPersistCompositorType(referenceEntity,module,moduleScope);
                 if (persistorTypeName!=null) {
                     persistors.add(persistorTypeName);
                 }
