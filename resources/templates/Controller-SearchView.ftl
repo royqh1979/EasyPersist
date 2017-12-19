@@ -39,7 +39,7 @@ public class ${entity.classInfo.name}ViewController {
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}ViewController.class);
     public static final String jspPrefix= "";
-    public static final String CONTROLLER_URL = "codes/${entity.name}";
+    public static final String CONTROLLER_URL = "codes/${entity.name}-view";
     private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
 
     @RequestMapping(value = "/view-list", method = RequestMethod.GET)
@@ -64,7 +64,7 @@ public class ${entity.classInfo.name}ViewController {
     <#if templateUtils.isDateProperty(indexProperty) >
             model.addAttribute("start${indexProperty.name?cap_first}", "");
             model.addAttribute("end${indexProperty.name?cap_first}", "");
-    <#else >model.addAttribute("${indexProperty.name?cap_first}", "");</#if></#list>
+    <#else >model.addAttribute("${indexProperty.name}", "");</#if></#list>
             model.addAttribute("${entity.name}List", productList);
             model.addAttribute("ctrlUrl", CONTROLLER_URL);
             return jspPrefix + "${entity.name}-view";
@@ -117,9 +117,9 @@ public class ${entity.classInfo.name}ViewController {
             model.addAttribute("direction",sortType);
 <#list indexedProperties as indexProperty>
     <#if templateUtils.isDateProperty(indexProperty) >
-            model.addAttribute("start${indexProperty.name?cap_first}", "");
-            model.addAttribute("end${indexProperty.name?cap_first}", "");
-    <#else >model.addAttribute("${indexProperty.name?cap_first}", "");</#if></#list>
+            model.addAttribute("start${indexProperty.name?cap_first}", start${indexProperty.name?cap_first}Var);
+            model.addAttribute("end${indexProperty.name?cap_first}", end${indexProperty.name?cap_first}Var);
+    <#else >model.addAttribute("${indexProperty.name}", ${indexProperty.name}Var);</#if></#list>
             model.addAttribute("${entity.name}List", productList);
             model.addAttribute("ctrlUrl", CONTROLLER_URL);
             return jspPrefix + "${entity.name}-view";

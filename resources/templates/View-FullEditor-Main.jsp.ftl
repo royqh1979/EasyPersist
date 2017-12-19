@@ -72,9 +72,9 @@
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"/>
                             </td>
                         <#elseif templateUtils.isDateProperty(indexProperty) >
-                            <td>查询开始日期</td>
+                            <td>开始日期</td>
                             <td><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
-                            <td>查询结束日期</td>
+                            <td>结束日期</td>
                             <td><input type="text" id="end${indexProperty.name?cap_first}" name="end${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
                         <#else>
                             <td colspan="4">

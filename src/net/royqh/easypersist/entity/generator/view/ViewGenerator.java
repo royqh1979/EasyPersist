@@ -32,6 +32,8 @@ public class ViewGenerator {
     private static Template JspSubEntityEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-SubEntity.jsp.ftl");
     private static Template JspNtoNMappingEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping.jsp.ftl");
     private static Template JspNtoNMappingAddEditViewForFullEditorTemplate = TemplateLoader.loadTemplate("View-FullEditor-Edit-NtoN-Mapping-Add.jsp.ftl");
+    private static Template JspSearchViewTemplate = TemplateLoader.loadTemplate("View-SearchView.jsp.ftl");
+    private static Template JspEnityViewForSearchViewTemplate = TemplateLoader.loadTemplate("View-SearchView-EntityView.jsp.ftl");
 
     private static void generateJspView(Entity entity, PsiDirectory psiOutputDir, String jspFileName, Template template, Map<String, Object> dataModel) {
         PsiFile oldFile = psiOutputDir.findFile(jspFileName);
@@ -81,6 +83,9 @@ public class ViewGenerator {
         }
         if (viewType.containsExcelStyleEditor()){
             generateJspViewFileForCodeEditor(entity, psiOutputDir,importEnabled,exportEnabled);
+        }
+        if (viewType.containsSearchView()) {
+            generateJspViewFileForSearchView(entity, psiOutputDir,exportEnabled);
         }
 
     }
@@ -194,6 +199,19 @@ public class ViewGenerator {
             fileName = entity.getName() + "-import-result.jsp";
             generateJspView(entity, psiOutputDir, fileName, JspViewForCodeEditorImportResultTemplate, dataModel);
         }
+    }
+
+    private static void generateJspViewFileForSearchView(Entity entity, PsiDirectory psiOutputDir, boolean exportEnabled) {
+        String fileName = entity.getName() + "-view.jsp";
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
+        dataModel.put("exportEnabled",exportEnabled);
+        dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
+
+        generateJspView(entity, psiOutputDir, fileName, JspSearchViewTemplate, dataModel);
     }
 
 }
