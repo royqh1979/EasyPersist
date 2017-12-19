@@ -5,11 +5,11 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
+import net.royqh.easypersist.ui.ViewType;
 import net.royqh.easypersist.utils.CodeUtils;
 import net.royqh.easypersist.utils.TemplateUtils;
 
@@ -61,8 +61,8 @@ public class ViewGenerator {
         }
     }
 
-    public static void generateJspViews(EditorStyle editorStyle, Entity entity, PsiDirectory psiOutputDir) {
-        if (editorStyle==EditorStyle.NormalStyle) {
+    public static void generateJspViews(ViewType viewType, Entity entity, PsiDirectory psiOutputDir) {
+        if (viewType.containsFullFunctionEditor()) {
             /* entity 列表视图 */
             generateMainJspViewFileForFullEditor(entity,psiOutputDir);
             /* entity编辑视图-标签导航页 */
@@ -78,7 +78,8 @@ public class ViewGenerator {
                 generateNtoNRelationEditJspViewFileForFullEditor(entity,relationInfo,psiOutputDir);
                 generateNtoNRelationAddEditJspViewFileForFullEditor(entity,relationInfo,psiOutputDir);
             }
-        } else {
+        }
+        if (viewType.containsExcelStyleEditor()){
             generateJspViewFileForCodeEditor(entity, psiOutputDir);
         }
 

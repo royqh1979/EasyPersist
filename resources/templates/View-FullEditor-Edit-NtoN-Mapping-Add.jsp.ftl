@@ -61,7 +61,7 @@
 
 </head>
 <body>
-<div class="box2" panelTitle="查询${mapRelationEntity.chineseAlias}" id="searchPanel">
+<div class="box2" panelTitle="查询${mapRelationEntity.chineseAlias}" id="searchPanel" statusType="none">
     <form id="queryForm">
         <table class="tableStyle" formMode="transparent">
         <#list indexedProperties as indexProperty>

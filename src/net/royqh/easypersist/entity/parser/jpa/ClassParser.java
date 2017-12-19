@@ -20,18 +20,18 @@ import java.util.Set;
  */
 public class ClassParser {
     public static Entity parseEntityClass(PsiClass psiClass, boolean checkChineseAlias) {
-        String entityName=parseEntityName(psiClass);
-        ClassInfo classInfo=new ClassInfo(psiClass.getName(),psiClass.getQualifiedName());
-        Entity entity=new Entity(entityName,classInfo,psiClass);
+        String entityName = parseEntityName(psiClass);
+        ClassInfo classInfo = new ClassInfo(psiClass.getName(), psiClass.getQualifiedName());
+        Entity entity = new Entity(entityName, classInfo, psiClass);
         parseClassAnnotations(psiClass, entity);
         checkClassFields(psiClass, entity);
         parseClassProperties(psiClass, entity);
         processIndexInfo(entity);
 
 
-        checkIdExist(psiClass,entity);
+        checkIdExist(psiClass, entity);
         if (!entity.isAutoGenerateId() && entity.hasSubEntity()) {
-             throw new RuntimeException("Entity "+entityName+" has sub entities, but id is not auto-generate(don't have @Generated annotation)!");
+            throw new RuntimeException("Entity " + entityName + " has sub entities, but id is not auto-generate(don't have @Generated annotation)!");
         }
         if (checkChineseAlias) {
             doCheckChineseAlias(entity);
@@ -40,11 +40,11 @@ public class ClassParser {
             FactTableInfo factTable = FactTableParser.parse(entity, psiClass);
             entity.setFactTableInfo(factTable);
         }
-        if (entity.getListHeaderProperty()!=null) {
-            SingleProperty listHeaderProperty=entity.getListHeaderProperty();
-            if (!entity.propertyIndexed(listHeaderProperty)){
-                throw new RuntimeException("Entity "+entity.getClassInfo().getQualifiedName()+"'s @ListHeader property "
-                        +listHeaderProperty.getName()+" should be unique or indexed!");
+        if (entity.getListHeaderProperty() != null) {
+            SingleProperty listHeaderProperty = entity.getListHeaderProperty();
+            if (!entity.propertyIndexed(listHeaderProperty)) {
+                throw new RuntimeException("Entity " + entity.getClassInfo().getQualifiedName() + "'s @ListHeader property "
+                        + listHeaderProperty.getName() + " should be unique or indexed!");
             }
         }
 
@@ -80,15 +80,15 @@ public class ClassParser {
     }
 
     private static void checkIdExist(PsiClass psiClass, Entity entity) {
-        if (entity.getIdProperty()==null) {
+        if (entity.getIdProperty() == null) {
             throw new ParseError(entity,
                     "no id property!");
         }
     }
 
     private static String parseEntityName(PsiClass psiClass) {
-        PsiAnnotation entityAnno=AnnotationUtils.findAnnotation(psiClass,Constants.ENTITY);
-        String name=AnnotationUtils.getValue(entityAnno,"name");
+        PsiAnnotation entityAnno = AnnotationUtils.findAnnotation(psiClass, Constants.ENTITY);
+        String name = AnnotationUtils.getValue(entityAnno, "name");
         if (!StringUtils.isBlank(name)) {
             return name;
         }
@@ -97,15 +97,15 @@ public class ClassParser {
 
     private static void parseClassAnnotations(PsiClass psiClass, Entity entity) {
         /* parse @Table annotation */
-        Table table=AnnotationParser.parseTable(psiClass);
+        Table table = AnnotationParser.parseTable(psiClass);
         entity.setTable(table);
 
         /* parse @Access annotation */
-        AccessType type=AnnotationParser.parseAccessType(psiClass);
+        AccessType type = AnnotationParser.parseAccessType(psiClass);
         entity.setAccessType(type);
 
         /* parse @ChineseAlias annotation */
-        String chineseAlias=AnnotationParser.parseChineseAlias(psiClass);
+        String chineseAlias = AnnotationParser.parseChineseAlias(psiClass);
         entity.setChineseAlias(chineseAlias);
 
         /* parse custom @MapRelations annotation */
@@ -116,23 +116,23 @@ public class ClassParser {
 
     private static void processIndexInfo(Entity entity) {
         //indexes
-        Index[] indexes=entity.getTable().getIndexes();
-        if (indexes.length>0) {
-            for (int i=0;i<indexes.length;i++) {
-                Index index=indexes[i];
-                IndexInfo indexInfo=new IndexInfo();
+        Index[] indexes = entity.getTable().getIndexes();
+        if (indexes.length > 0) {
+            for (int i = 0; i < indexes.length; i++) {
+                Index index = indexes[i];
+                IndexInfo indexInfo = new IndexInfo();
                 indexInfo.setName(index.getName());
                 indexInfo.setUnique(index.isUnique());
-                Set<String> properties=new LinkedHashSet<>();
+                Set<String> properties = new LinkedHashSet<>();
                 //System.out.println(index.getColumnList());
-                for (String s:index.getColumnList().split(",")) {
-                    s=s.replaceAll("(?i)asc", "");
-                    s=s.replaceAll("(?i)desc","");
-                    String columnName=s.trim();
+                for (String s : index.getColumnList().split(",")) {
+                    s = s.replaceAll("(?i)asc", "");
+                    s = s.replaceAll("(?i)desc", "");
+                    String columnName = s.trim();
                     //System.out.println("++"+columnName);
-                    SingleProperty singleProperty=entity.getPropertyByColumnName(columnName);
-                    if (singleProperty==null) {
-                        throw new RuntimeException("There's no property corresponding to column \""+columnName+"\" in entity "+entity.getName());
+                    SingleProperty singleProperty = entity.getPropertyByColumnName(columnName);
+                    if (singleProperty == null) {
+                        throw new RuntimeException("There's no property corresponding to column \"" + columnName + "\" in entity " + entity.getName());
                     }
                     properties.add(singleProperty.getName());
                 }
@@ -141,17 +141,17 @@ public class ClassParser {
             }
         }
         //unique constraints
-        UniqueConstraint[] uniqueConstraints=entity.getTable().getUniqueConstraints();
-        if (uniqueConstraints.length>0) {
-            for (int i=0;i<uniqueConstraints.length;i++) {
-                UniqueConstraint uniqueConstraint=uniqueConstraints[i];
-                IndexInfo indexInfo=new IndexInfo();
+        UniqueConstraint[] uniqueConstraints = entity.getTable().getUniqueConstraints();
+        if (uniqueConstraints.length > 0) {
+            for (int i = 0; i < uniqueConstraints.length; i++) {
+                UniqueConstraint uniqueConstraint = uniqueConstraints[i];
+                IndexInfo indexInfo = new IndexInfo();
                 indexInfo.setUnique(true);
-                Set<String> properties=new LinkedHashSet<>();
-                for (String columnName:uniqueConstraint.getColumnNames()) {
-                    SingleProperty singleProperty=entity.getPropertyByColumnName(columnName);
-                    if (singleProperty==null) {
-                        throw new RuntimeException("There's no property corresponding to column \""+columnName+"\" in entity "+entity.getName());
+                Set<String> properties = new LinkedHashSet<>();
+                for (String columnName : uniqueConstraint.getColumnNames()) {
+                    SingleProperty singleProperty = entity.getPropertyByColumnName(columnName);
+                    if (singleProperty == null) {
+                        throw new RuntimeException("There's no property corresponding to column \"" + columnName + "\" in entity " + entity.getName());
                     }
                     properties.add(singleProperty.getName());
                 }
@@ -160,16 +160,16 @@ public class ClassParser {
             }
         }
         //unique columns
-        for (Property property:entity.getProperties()) {
-            if (property==entity.getIdProperty()) {
+        for (Property property : entity.getProperties()) {
+            if (property == entity.getIdProperty()) {
                 continue;
             }
-            if (property.getPropertyType()== PropertyType.Column) {
-                SingleProperty singleProperty=(SingleProperty)property;
+            if (property.getPropertyType() == PropertyType.Column) {
+                SingleProperty singleProperty = (SingleProperty) property;
                 if (singleProperty.getColumn().isUnique()) {
-                    IndexInfo indexInfo=new IndexInfo();
+                    IndexInfo indexInfo = new IndexInfo();
                     indexInfo.setUnique(true);
-                    Set<String> properties=new LinkedHashSet<>();
+                    Set<String> properties = new LinkedHashSet<>();
                     properties.add(singleProperty.getName());
                     properties.add(singleProperty.getName());
                     indexInfo.setProperties(properties);
@@ -182,19 +182,19 @@ public class ClassParser {
     }
 
     private static void checkClassFields(PsiClass psiClass, Entity entity) {
-        for (PsiField psiField:psiClass.getAllFields()) {
-            for (PsiAnnotation annotation:psiField.getModifierList().getAnnotations()) {
-                if (annotation.getQualifiedName().startsWith("javax.persistence.")){
+        for (PsiField psiField : psiClass.getAllFields()) {
+            for (PsiAnnotation annotation : psiField.getModifierList().getAnnotations()) {
+                if (annotation.getQualifiedName().startsWith("javax.persistence.")) {
                     throw new ParseError(entity,
-                            "field \""+psiField.getName()
-                                    +"\" -- field access is not supported");
+                            "field \"" + psiField.getName()
+                                    + "\" -- field access is not supported");
                 }
             }
         }
     }
 
     private static void parseClassProperties(PsiClass psiClass, Entity entity) {
-        for (PsiMethod psiMethod:psiClass.getMethods()) {
+        for (PsiMethod psiMethod : psiClass.getMethods()) {
             String methodName = psiMethod.getName();
             if (MethodParser.isGetter(psiMethod)) {
                 MethodParser.parseGetterInfo(psiMethod, entity);
@@ -206,86 +206,95 @@ public class ClassParser {
 
     /**
      * non getter method shouldn't have jpa annotation. Check it
+     *
      * @param psiMethod
      * @param entity
      */
     private static void checkNonGetterMethodAnnotations(PsiMethod psiMethod, Entity entity) {
-        for (PsiAnnotation annotation:psiMethod.getModifierList().getAnnotations()) {
-            if (annotation.getQualifiedName().startsWith("javax.persistence.")){
+        for (PsiAnnotation annotation : psiMethod.getModifierList().getAnnotations()) {
+            if (annotation.getQualifiedName().startsWith("javax.persistence.")) {
                 throw new ParseError(entity,
-                        "method \""+psiMethod.getName()
-                                +"\" is not a public getter, jpa annotation is not allowed!");
+                        "method \"" + psiMethod.getName()
+                                + "\" is not a public getter, jpa annotation is not allowed!");
             }
         }
     }
 
 
-    public static Entity parseEntityClassWithReferences(PsiClass psiClass, Module module, boolean checkChineseAlias){
-        MappingRepository mappingRepository=new MappingRepository();
-        JavaPsiFacade facade=JavaPsiFacade.getInstance(module.getProject());
+    public static Entity parseEntityClassWithReferences(PsiClass psiClass, Module module, boolean checkChineseAlias) {
+        MappingRepository mappingRepository = new MappingRepository();
+        JavaPsiFacade facade = JavaPsiFacade.getInstance(module.getProject());
         GlobalSearchScope moduleScope = GlobalSearchScope.moduleWithDependenciesScope(module);
         return doParseEntityClassWithReferences(psiClass,
-                module,mappingRepository,facade,moduleScope,checkChineseAlias);
+                module, mappingRepository, facade, moduleScope, checkChineseAlias);
     }
-    
+
     private static Entity doParseEntityClassWithReferences(PsiClass psiClass, Module module, MappingRepository repository,
-                                                           JavaPsiFacade facade, GlobalSearchScope searchScope,boolean checkChineseAlias){
+                                                           JavaPsiFacade facade, GlobalSearchScope searchScope, boolean checkChineseAlias) {
         if (repository.isClassExist(psiClass)) {
             return repository.findEntityByClass(psiClass.getQualifiedName());
         }
         if (!ClassParser.isEntityClass(psiClass)) {
-            throw new RuntimeException("Class "+psiClass.getQualifiedName()+" is NOT a entity class!");
+            throw new RuntimeException("Class " + psiClass.getQualifiedName() + " is NOT a entity class!");
         }
-        Entity entity=parseEntityClass(psiClass,checkChineseAlias);
+        Entity entity = parseEntityClass(psiClass, checkChineseAlias);
         repository.addEntity(entity);
-        for (MapRelationInfo mapRelationInfo: entity.getMapRelationInfos()) {
-            PsiClass mappingClass=facade.findClass(mapRelationInfo.getMappingEntityFullClassName(),searchScope);
-            if (mappingClass==null) {
-                throw new RuntimeException("Mapping Class "+mapRelationInfo.getMappingEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
+        for (MapRelationInfo mapRelationInfo : entity.getMapRelationInfos()) {
+            PsiClass mappingClass = facade.findClass(mapRelationInfo.getMappingEntityFullClassName(), searchScope);
+            if (mappingClass == null) {
+                throw new RuntimeException("Mapping Class " + mapRelationInfo.getMappingEntityFullClassName() + " for " + psiClass.getQualifiedName() + " not found!");
             }
             doParseEntityClassWithReferences(mappingClass,
-                    module,repository,facade,searchScope,checkChineseAlias);
+                    module, repository, facade, searchScope, checkChineseAlias);
         }
-        for (Property property: entity.getProperties()) {
-            if (property instanceof ReferenceSingleProperty)  {
-                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
-                PsiClass mappingClass=facade.findClass(referenceSingleProperty.getRefEntityFullClassName(),searchScope);
-                if (mappingClass==null) {
-                    throw new RuntimeException("Referencing Class "+referenceSingleProperty.getRefEntityFullClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
+        for (Property property : entity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                PsiClass mappingClass = facade.findClass(referenceSingleProperty.getRefEntityFullClassName(), searchScope);
+                if (mappingClass == null) {
+                    throw new RuntimeException("Referencing Class " + referenceSingleProperty.getRefEntityFullClassName() + " for " + psiClass.getQualifiedName() + " not found!");
                 }
                 doParseEntityClassWithReferences(mappingClass,
-                        module,repository,facade,searchScope,checkChineseAlias);
-            } 
-        }
-        for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
-            PsiClass mappingClass=facade.findClass(subEntityInfo.getEntityClassName(),searchScope);
-            if (mappingClass==null) {
-                throw new RuntimeException("Sub Entity Class "+subEntityInfo.getEntityClassName()+ " for "+psiClass.getQualifiedName()+" not found!");
+                        module, repository, facade, searchScope, checkChineseAlias);
             }
-            Entity subEntity=doParseEntityClassWithReferences(mappingClass,
-                    module,repository,facade,searchScope,checkChineseAlias);
+        }
+        for (SubEntityInfo subEntityInfo : entity.getSubEntities()) {
+            PsiClass mappingClass = facade.findClass(subEntityInfo.getEntityClassName(), searchScope);
+            if (mappingClass == null) {
+                throw new RuntimeException("Sub Entity Class " + subEntityInfo.getEntityClassName() + " for " + psiClass.getQualifiedName() + " not found!");
+            }
+            Entity subEntity = doParseEntityClassWithReferences(mappingClass,
+                    module, repository, facade, searchScope, checkChineseAlias);
             subEntityInfo.setSubEntity(subEntity);
-            subEntityInfo.setSubEntityReferenceProperty(findReferenceProperty(subEntity,entity.getClassInfo().getQualifiedName()));
+            subEntityInfo.setSubEntityReferenceProperty(findReferenceProperty(subEntity, entity.getClassInfo().getQualifiedName()));
         }
         return entity;
     }
 
     private static ReferenceSingleProperty findReferenceProperty(Entity subEntity, String entityFullClassName) {
-        for (Property property: subEntity.getProperties()) {
-            if (property instanceof ReferenceSingleProperty)  {
-                ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
-                if (referenceSingleProperty.getRefEntityFullClassName().equals(entityFullClassName)){
+        for (Property property : subEntity.getProperties()) {
+            if (property instanceof ReferenceSingleProperty) {
+                ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
+                if (referenceSingleProperty.getRefEntityFullClassName().equals(entityFullClassName)) {
                     return referenceSingleProperty;
                 }
             }
         }
-        throw new RuntimeException("Can't find property referencing \""+entityFullClassName+"\" in entity "+subEntity.getClassInfo().getQualifiedName());
+        throw new RuntimeException("Can't find property referencing \"" + entityFullClassName + "\" in entity " + subEntity.getClassInfo().getQualifiedName());
+    }
+
+    public static boolean isEntityClass(PsiElement element) {
+        if (!(element instanceof PsiClass)) {
+            return false;
+        }
+        PsiClass psiClass = (PsiClass) element;
+        return ClassParser.isEntityClass(psiClass);
     }
 
     public static boolean isEntityClass(PsiClass psiClass) {
         PsiAnnotation entityAnnotation = AnnotationUtils.findAnnotation(psiClass,
                 Constants.ENTITY);
-        return entityAnnotation!=null ;
+        return entityAnnotation != null;
     }
 
     public static boolean isNormalEntityClass(PsiClass psiClass) {
@@ -293,7 +302,7 @@ public class ClassParser {
                 Constants.ENTITY);
         PsiAnnotation factTableAnnotation = AnnotationUtils.findAnnotation(psiClass,
                 Constants.FACT_TABLE);
-        return entityAnnotation!=null && factTableAnnotation==null;
+        return entityAnnotation != null && factTableAnnotation == null;
     }
 
     public static boolean isFactTableClass(PsiClass psiClass) {
@@ -301,6 +310,6 @@ public class ClassParser {
                 Constants.ENTITY);
         PsiAnnotation factTableAnnotation = AnnotationUtils.findAnnotation(psiClass,
                 Constants.FACT_TABLE);
-        return entityAnnotation!=null && factTableAnnotation!=null;
+        return entityAnnotation != null && factTableAnnotation != null;
     }
 }

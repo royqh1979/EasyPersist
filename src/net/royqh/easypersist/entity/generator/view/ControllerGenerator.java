@@ -2,19 +2,25 @@ package net.royqh.easypersist.entity.generator.view;
 
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.module.Module;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.PsiPackage;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import freemarker.template.Template;
-import net.royqh.easypersist.entity.generator.EditorStyle;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.MapRelationInfo;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
+import net.royqh.easypersist.ui.ViewType;
 import net.royqh.easypersist.utils.CodeUtils;
 import net.royqh.easypersist.utils.TemplateUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Roy on 2017/6/24.
@@ -23,7 +29,7 @@ public class ControllerGenerator {
     private static Template ControllerForCodeEditorTemplate = TemplateLoader.loadTemplate("Controller-CodeEdit.ftl");
     private static Template ControllerForFullEditorTemplate = TemplateLoader.loadTemplate("Controller-FullEdit.ftl");
 
-    public static void generateController(EditorStyle editorStyle, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
+    public static void generateController(ViewType viewType, PsiFileFactory psiFileFactory, CodeStyleManager codeStyleManager, Entity entity, PsiDirectory psiOutputDir, Module module) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         String fileName = controllerClassName + ".java";
 
@@ -32,12 +38,12 @@ public class ControllerGenerator {
         if (oldFile != null) {
             oldFile.delete();
         }
-        PsiFile psiFile = generateControllerFile(editorStyle,entity, null, psiFileFactory, module);
+        PsiFile psiFile = generateControllerFile(viewType,entity, null, psiFileFactory, module);
         psiFile = (PsiFile) codeStyleManager.reformat(psiFile);
         psiOutputDir.add(psiFile);
     }
 
-    private static PsiFile generateControllerFile(EditorStyle editorStyle, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
+    private static PsiFile generateControllerFile(ViewType viewType, Entity entity, PsiPackage targetPackage, PsiFileFactory psiFileFactory, Module module) {
         String controllerClassName = CodeUtils.getControllerName(entity);
         StringWriter writer = new StringWriter();
         if (targetPackage != null) {
@@ -60,7 +66,7 @@ public class ControllerGenerator {
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         
         try {
-            if (editorStyle==EditorStyle.NormalStyle) {
+            if (viewType.containsFullFunctionEditor()) {
                 dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
                 Set<Entity> serviceEntities=new HashSet<>();
                 for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
@@ -88,7 +94,8 @@ public class ControllerGenerator {
                 serviceEntities.addAll(refEntities);
                 dataModel.put("serviceEntities",serviceEntities);
                 ControllerForFullEditorTemplate.process(dataModel, writer);
-            } else {
+            }
+            if (viewType.containsExcelStyleEditor()){
                 ControllerForCodeEditorTemplate.process(dataModel, writer);
             }
             dataModel.clear();
@@ -105,6 +112,7 @@ public class ControllerGenerator {
             throw new RuntimeException(e);
         }
 
+        /*
         try {
             Writer fileWriter=new OutputStreamWriter(new FileOutputStream("f:\\test.java"),"UTF-8");
             fileWriter.write(writer.toString());
@@ -112,6 +120,7 @@ public class ControllerGenerator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
 
         return psiFileFactory.createFileFromText(controllerClassName + ".java", JavaLanguage.INSTANCE,
                 writer.toString());
