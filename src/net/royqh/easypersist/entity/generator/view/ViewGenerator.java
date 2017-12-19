@@ -86,6 +86,7 @@ public class ViewGenerator {
         }
         if (viewType.containsSearchView()) {
             generateJspViewFileForSearchView(entity, psiOutputDir,exportEnabled);
+            generateEntityViewJspViewFileForSearchView(entity,psiOutputDir,exportEnabled);
         }
 
     }
@@ -212,6 +213,18 @@ public class ViewGenerator {
         dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
 
         generateJspView(entity, psiOutputDir, fileName, JspSearchViewTemplate, dataModel);
+    }
+
+    private static void generateEntityViewJspViewFileForSearchView(Entity entity, PsiDirectory psiOutputDir, boolean exportEnabled) {
+        String fileName = entity.getName() + "-view-detail.jsp";
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("entity", entity);
+        Set<Entity> refEntities = CodeUtils.getRefencingEntities(entity);
+        dataModel.put("refEntities", refEntities);
+        dataModel.put("templateUtils", TemplateUtils.templateUtils);
+        dataModel.put("exportEnabled",exportEnabled);
+
+        generateJspView(entity, psiOutputDir, fileName, JspEnityViewForSearchViewTemplate, dataModel);
     }
 
 }
