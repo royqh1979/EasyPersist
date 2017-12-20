@@ -22,7 +22,7 @@ public class PackageScanner {
         JavaPsiFacade facade=JavaPsiFacade.getInstance(project);
         PsiPackage entityPackage=facade.findPackage(entitiesConfig.getEntityPackage());
         if (entityPackage==null) {
-            throw new RuntimeException("Can't find Package:"+entitiesConfig.getEntityPackage());
+            throw new RuntimeException("无法找到java包:"+entitiesConfig.getEntityPackage());
         }
         scanPackage(entityPackage, mappingRepository,
                 entitiesConfig.getEntityPackage(),
@@ -78,7 +78,7 @@ public class PackageScanner {
         //System.out.println(entitiesConfig);
         PsiPackage entityPackage=findPackage(module,entitiesConfig.getEntityPackage());
         if (entityPackage==null) {
-            throw new RuntimeException("Can't find Package:"+entitiesConfig.getEntityPackage());
+            throw new RuntimeException("无法找到java包:"+entitiesConfig.getEntityPackage());
         }
         scanPackageInModule(module,entityPackage, mappingRepository,
                 entitiesConfig.getEntityPackage(),
@@ -105,7 +105,7 @@ public class PackageScanner {
     private PsiDirectory findPackageDir(Module module,String packageName) {
         SourceFolder[] sourceFolders= ModuleRootManager.getInstance(module).getContentEntries()[0].getSourceFolders();
         if (sourceFolders.length<=0) {
-            throw new RuntimeException("Can't find Source Folder for project!");
+            throw new RuntimeException("无法找到项目的源代码文件夹(source folder)!");
         }
         PsiManager manager=PsiManager.getInstance(module.getProject());
         PsiDirectory sourceDir=manager.findDirectory(sourceFolders[0].getFile());
@@ -114,7 +114,7 @@ public class PackageScanner {
         for (String subPackName:subPackNames) {
             packDir=packDir.findSubdirectory(subPackName);
             if (packDir==null) {
-                throw new RuntimeException("Can't find package "+packageName+" in module "+module.getName());
+                throw new RuntimeException(String.format("无法在当前模块%s中找到java包%s",module.getName(),packageName));
             }
         }
         return packDir;

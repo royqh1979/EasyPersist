@@ -55,7 +55,7 @@ public class FactTableServiceGenerator {
         Entity baseEntity=factTableEntity.getMappingRepository().findEntityByClass(factTableEntity.getFactTableInfo().getEntityKeyProperty().getRefEntityFullClassName());
         Entity propertyEntity=factTableEntity.getMappingRepository().findEntityByClass(factTableEntity.getFactTableInfo().getPropertyKeyProperty().getRefEntityFullClassName());
         if (baseEntity.getListHeaderProperty()==null) {
-            throw new RuntimeException("Entity "+baseEntity.getClassInfo().getQualifiedName()+" don't have @ListHeader annotation!");
+            throw new RuntimeException("实体类"+baseEntity.getClassInfo().getQualifiedName()+"中缺少@ListHeader注解属性!");
         }
         Map<String,Object> dataModel=new HashMap<>();
         dataModel.put("factTableEntity",factTableEntity);

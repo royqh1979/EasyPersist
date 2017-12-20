@@ -55,7 +55,7 @@ public class Table {
         IndexColumnsSet set = new IndexColumnsSet();
         set.add(columnName);
         if (indexedColumnsSet.contains(set)) {
-            throw new RuntimeException("Column " + columnName + " in table " + getName() + " has indexed/referenced!");
+            throw new RuntimeException("表"+ getName() + "中的字段(" + columnName + ") 被重复索引／外键引用!");
         }
         indexedColumnsSet.add(set);
     }
@@ -65,7 +65,7 @@ public class Table {
         IndexColumnsSet set = new IndexColumnsSet();
         set.addAll(columnNames);
         if (indexedColumnsSet.contains(set)) {
-            throw new RuntimeException("Columns " + String.join(",",columnNames) + " in table " + getName() + " has indexed/referenced!");
+            throw new RuntimeException("表"+ getName() + "中的字段(" + String.join(",",columnNames) + ") 被重复索引／外键引用!");
         }
         indexedColumnsSet.add(set);
     }

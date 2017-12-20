@@ -11,6 +11,6 @@ public class ParseError extends RuntimeException {
     }
 
     public ParseError(Entity entity, String message) {
-        this(String.format("Class %s: %s",entity.getClassInfo().getQualifiedName(),message));
+        this(String.format("实体类 %s: %s",entity.getClassInfo().getQualifiedName(),message));
     }
 }

@@ -165,7 +165,7 @@ public class EntitiesGenerator {
                     }
                     if (foreignKey.getColumns().get(0).endsWith(column.getName())) {
                         if (hasReference) {
-                            throw new RuntimeException("Table " + table.getName() + " has duplicate references for column " + column.getName());
+                            throw new RuntimeException("表" + table.getName() + "中有多个外键引用字段" + column.getName());
                         }
                         entityBuilder.append("@Reference(refEntityClass = ");
                         {
@@ -234,9 +234,9 @@ public class EntitiesGenerator {
         Entity mappingEntity = model.getEntityByTableName(refMappingColumn.getRefTable());
         if (mappingEntity == null) {
             throw new RuntimeException(
-                    String.format("Can't find reference table \"%s\" in %s: \"FOREIGN KEY (%s) REFERENCES %s (%s)\"",
-                            refMappingColumn.getRefTable(),
+                    String.format("无法找到表%s中引用的外键表%s，相关外键定义为 \"FOREIGN KEY (%s) REFERENCES %s (%s)\"",
                             mapping.getMappingTableName(),
+                            refMappingColumn.getRefTable(),
                             refMappingColumn.getColumnName(),
                             refMappingColumn.getRefTable(),
                             refMappingColumn.getRefColumn()
@@ -291,7 +291,7 @@ public class EntitiesGenerator {
         if (s.startsWith("date")) {
             return "DATE";
         }
-        throw new RuntimeException("Unsupported Temporal Type:" + type);
+        throw new RuntimeException("不支持的@Temporal时间类型:" + type);
     }
 
     private static boolean isSerialType(String type) {
@@ -371,7 +371,7 @@ public class EntitiesGenerator {
                 case "serial8":
                 case "shortserial":
                 case "serial2":
-                    throw new RuntimeException("column " + name + " Serial Type  should be not null!");
+                    throw new RuntimeException("字段" + name + "为Serial类型，必须为not null!");
                 case "int":
                 case "integer":
                 case "int4":
@@ -411,7 +411,7 @@ public class EntitiesGenerator {
             case "decimal":
                 return "BigDecimal";
         }
-        throw new RuntimeException("column " + name + ":Unsupported column type :" + type);
+        throw new RuntimeException("字段 " + name + ":　不支持的数据类型:" + type);
     }
 
     private static String convertColumnName(String columnName) {

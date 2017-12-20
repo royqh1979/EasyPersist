@@ -79,8 +79,8 @@ public class OrmConfigParser extends DefaultHandler {
                 if ("MySQL".equals(dial) || "PostgreSQL".equals(dial)){
                     dialect=dial;
                 } else {
-                    throw new RuntimeException("Wrong dialect in "+OrmConfigParser.ORM_CONFIG_FILE_NAME
-                        +"must be MySQL or PostgreSQL");
+                    throw new RuntimeException("配置文件"+OrmConfigParser.ORM_CONFIG_FILE_NAME
+                        +"中的dialect参数错误，必须为\"MySQL\"或\"PostgreSQL\"");
                 }
             }
         }

@@ -132,7 +132,7 @@ public class PersistorsGenerator {
             Module module = ModuleUtil.findModuleForPsiElement(entity.getPsiClass().getContainingFile());
             SourceFolder[] sourceFolders = ModuleRootManager.getInstance(module).getContentEntries()[0].getSourceFolders();
             if (sourceFolders.length <= 0) {
-                throw new RuntimeException("Can't find Source Folder for project!");
+                throw new RuntimeException("无法找到本项目的源代码文件夹(source folder)!");
             }
             PsiManager manager = PsiManager.getInstance(facade.getProject());
             PsiDirectory parentDir = manager.findDirectory(sourceFolders[0].getFile());
@@ -248,7 +248,8 @@ public class PersistorsGenerator {
             }
             ReferenceSingleProperty referenceSingleProperty=(ReferenceSingleProperty)property;
             if (entity.getIndexes().containsKey(referenceSingleProperty.getName())) {
-                throw new RuntimeException("Entity "+entity.getClassInfo().getQualifiedName()+"'s @Reference property "+referenceSingleProperty.getName()+" also appear in index.");
+                throw new RuntimeException(String.format("实体类%s的@Reference属性%s已经被索引过了（在@Table(indexes)中)！",
+                        entity.getClassInfo().getQualifiedName(),referenceSingleProperty.getName()));
             }
             if (referenceSingleProperty.getColumn().isUnique()) {
                 methodGenerator.createRetrieveByXXXMethod(entity, referenceSingleProperty, content);

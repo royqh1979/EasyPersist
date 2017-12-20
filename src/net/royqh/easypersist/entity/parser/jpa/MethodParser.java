@@ -86,7 +86,7 @@ public class MethodParser {
             }
 
             /* we are normal column property */
-            SingleProperty singleProperty = parseSingleProperty(psiMethod);
+            SingleProperty singleProperty = parseSingleProperty(psiMethod,entity);
             entity.addProperty(singleProperty);
             if (TypeUtils.containsAnnotation(psiMethod, Constants.ID)) {
                 entity.setIdProperty(singleProperty.getName());
@@ -162,7 +162,7 @@ public class MethodParser {
         return new ManyToOneProperty(name, manyToOne.getTargetEntity(), manyToOne);
     }
 
-    private static SingleProperty parseSingleProperty(PsiMethod psiMethod) {
+    private static SingleProperty parseSingleProperty(PsiMethod psiMethod, Entity entity) {
         String name = TypeUtils.getPropertyNameByGetter(psiMethod);
         String type = psiMethod.getReturnType().getCanonicalText();
         Column column = AnnotationParser.parseColumn(psiMethod);
@@ -184,14 +184,16 @@ public class MethodParser {
         if (type.equals("java.util.Date")) {
             TemporalType temporalType = AnnotationParser.parseTemporal(psiMethod);
             if (temporalType == null) {
-                throw new RuntimeException("java.util.Date property should be annotated with @Temporal!");
+                throw new RuntimeException(String.format("实体类%s的属性%s类型为java.util.Date，必须被@Temporal注解!",
+                        entity.getClassInfo().getQualifiedName(),name));
             }
             property.setTemporalType(temporalType);
         }
 
         if (type.equals("java.sql.Blob") || type.equals("byte[]")) {
             if (!AnnotationParser.parseLob(psiMethod)) {
-                throw new RuntimeException("Blob or byte[] property should be annotated with @Lob!");
+                throw new RuntimeException(String.format("实体类%s的属性%s类型为Blob或byte[]，必须被@Lob注解!",
+                        entity.getClassInfo().getQualifiedName(),name));
             }
             property.setLob(true);
         }

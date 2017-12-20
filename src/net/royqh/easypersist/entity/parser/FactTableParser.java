@@ -23,20 +23,20 @@ public class FactTableParser {
             if (TypeUtils.containsAnnotation(psiMethod, Constants.REFERENCE)) {
                 if (TypeUtils.containsAnnotation(psiMethod, Constants.ENTITY_KEY)) {
                     if (factTable.getEntityKeyProperty() != null) {
-                        throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + " contains more than one @EntityKey!");
+                        throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "包含多个@EntityKey注解属性（只能有一个）!");
                     }
                     if (!(property instanceof ReferenceSingleProperty)) {
-                        throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + "'s EntityKey property " + property.getName() + " is not a @Reference property!");
+                        throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "的@EntityKey注解属性" + property.getName() + "缺少@Reference注解!");
                     }
                     factTable.setEntityKeyProperty((ReferenceSingleProperty) property);
                     annoCounts++;
                 }
                 if (TypeUtils.containsAnnotation(psiMethod, Constants.PROPERTY_KEY)) {
                     if (factTable.getPropertyKeyProperty() != null) {
-                        throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + " contains more than one @PropertyKey!");
+                        throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "包含多个@PropertyKey注解属性（只能有一个）!");
                     }
                     if (!(property instanceof ReferenceSingleProperty)) {
-                        throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + "'s PropertyKey property " + property.getName() + " is not a @Reference property!");
+                        throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "的@PropertyKey注解属性" + property.getName() + "缺少@Reference注解!");
 
                     }
                     factTable.setPropertyKeyProperty((ReferenceSingleProperty) property);
@@ -45,27 +45,27 @@ public class FactTableParser {
             }
             if (TypeUtils.containsAnnotation(psiMethod, Constants.VALUE_COLUMN)) {
                 if (factTable.getValueProperty() != null) {
-                    throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + " contains more than one @ValueColumn!");
+                    throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "包含多个@ValueColumn注解!");
                 }
                 if (!(property instanceof SingleProperty)) {
-                    throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + "'s PropertyKey property " + property.getName() + " is not a value property!");
+                    throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "的@ValueColumn属性" + property.getName() + "不是个普通值属性!");
 
                 }
                 factTable.setValueProperty((SingleProperty) property);
                 annoCounts++;
             }
             if (annoCounts > 1) {
-                throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + "'s property " + property.getName() + " have more than one @EntityKey / @PropertyKey /@ValueColumn at the same time!");
+                throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "的属性" + property.getName() + "同时包含@EntityKey / @PropertyKey /@ValueColumn注解!");
             }
         }
         if (factTable.getEntityKeyProperty() == null) {
-            throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + " doesn't have @EntityKey annotated property!");
+            throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "缺少@EntityKey注解属性!");
         }
         if (factTable.getPropertyKeyProperty() == null) {
-            throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + " doesn't have @PropertyKey annotated property!");
+            throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "缺少@PropertyKey注解属性!");
         }
         if (factTable.getValueProperty() == null) {
-            throw new RuntimeException("Fact Table " + psiClass.getQualifiedName() + " doesn't have @ValueColumn annotated property!");
+            throw new RuntimeException("事实表实体类" + psiClass.getQualifiedName() + "缺少@ValueColumn注解属性!");
         }
         return factTable;
     }

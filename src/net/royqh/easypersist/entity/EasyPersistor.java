@@ -65,7 +65,7 @@ public class EasyPersistor {
                     sqlGenerator = new PostgreSQLGenerator();
                     break;
                 default:
-                    throw new RuntimeException("Wrong dialect in orm-config.xml. Should be MySQL or PostgreSQL!");
+                    throw new RuntimeException("配置文件orm-config.xml中的dialet参数设置错误。必须为\"MySQL\"或\"PostgreSQL\"!");
             }
             PersistorMethodGenerator methodGenerator = new PersistorMethodGenerator(sqlGenerator);
             PersistorsGenerator persistorsGenerator = new PersistorsGenerator(methodGenerator);

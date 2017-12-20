@@ -27,6 +27,7 @@ import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.parser.jpa.ClassParser;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.IOException;
 
 /**
@@ -70,7 +71,7 @@ public class GeneratePersistorAction extends AnAction {
                                     genDir = root.createChildDirectory(project, "gen");
                                 }
                                 if (genDir == null) {
-                                    throw new RuntimeException("Can't create folder gen!");
+                                    throw new RuntimeException("无法在当前模块(module)下创建文件夹gen!");
                                 }
                                 PsiDirectory psiOutputDir = PsiManager.getInstance(project).findDirectory(genDir);
 
@@ -103,7 +104,7 @@ public class GeneratePersistorAction extends AnAction {
                             NotificationType.ERROR
                     );
                     Notifications.Bus.notify(notification, e.getProject());
-                    throw new RuntimeException(exception);
+                    JOptionPane.showMessageDialog(null,exception.getMessage(),"处理失败",JOptionPane.ERROR_MESSAGE);
                 }
 
             }

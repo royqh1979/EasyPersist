@@ -31,7 +31,7 @@ public class ClassParser {
 
         checkIdExist(psiClass, entity);
         if (!entity.isAutoGenerateId() && entity.hasSubEntity()) {
-            throw new RuntimeException("Entity " + entityName + " has sub entities, but id is not auto-generate(don't have @Generated annotation)!");
+            throw new RuntimeException("实体类" + entity.getClassInfo().getQualifiedName() + "包含子实体,但主键属性缺少@Generated annotation注解(不是数据库自动生成?)!");
         }
         if (checkChineseAlias) {
             doCheckChineseAlias(entity);
@@ -43,8 +43,8 @@ public class ClassParser {
         if (entity.getListHeaderProperty() != null) {
             SingleProperty listHeaderProperty = entity.getListHeaderProperty();
             if (!entity.propertyIndexed(listHeaderProperty)) {
-                throw new RuntimeException("Entity " + entity.getClassInfo().getQualifiedName() + "'s @ListHeader property "
-                        + listHeaderProperty.getName() + " should be unique or indexed!");
+                throw new RuntimeException("实体类" + entity.getClassInfo().getQualifiedName() + "的@ListHeader"
+                        + listHeaderProperty.getName() + "必须被@Column(unique=true)或@Talbe(indexes)索引!");
             }
         }
 
@@ -64,16 +64,16 @@ public class ClassParser {
 
     private static void doCheckChineseAlias(Entity entity) {
         if (StringUtils.isEmpty(entity.getChineseAlias())) {
-            throw new RuntimeException("Entity Class " + entity.getClassInfo().getQualifiedName()
-                    + " don't have @ChineseAlias annotation.");
+            throw new RuntimeException("实体类" + entity.getClassInfo().getQualifiedName()
+                    + "缺少@ChineseAlias注解.");
 
         }
         for (Property property : entity.getProperties()) {
             if (property instanceof SingleProperty) {
                 SingleProperty singleProperty = (SingleProperty) property;
                 if (StringUtils.isEmpty(singleProperty.getChineseAlias())) {
-                    throw new RuntimeException("Entity Class " + entity.getClassInfo().getQualifiedName()
-                            + "'s property " + property.getGetter() + "() don't have @ChineseAlias annotation.");
+                    throw new RuntimeException("实体类" + entity.getClassInfo().getQualifiedName()
+                            + "的getter方法" + property.getGetter() + "()缺少@ChineseAlias注解");
                 }
             }
         }
@@ -132,7 +132,8 @@ public class ClassParser {
                     //System.out.println("++"+columnName);
                     SingleProperty singleProperty = entity.getPropertyByColumnName(columnName);
                     if (singleProperty == null) {
-                        throw new RuntimeException("There's no property corresponding to column \"" + columnName + "\" in entity " + entity.getName());
+                        throw new RuntimeException(String.format("在实体类%s中缺少属性与数据表%s的%s字段对应",
+                                entity.getClassInfo().getQualifiedName(),entity.getTableName(),columnName));
                     }
                     properties.add(singleProperty.getName());
                 }
@@ -151,7 +152,8 @@ public class ClassParser {
                 for (String columnName : uniqueConstraint.getColumnNames()) {
                     SingleProperty singleProperty = entity.getPropertyByColumnName(columnName);
                     if (singleProperty == null) {
-                        throw new RuntimeException("There's no property corresponding to column \"" + columnName + "\" in entity " + entity.getName());
+                        throw new RuntimeException(String.format("在实体类%s中缺少属性与数据表%s的%s字段对应",
+                                entity.getClassInfo().getQualifiedName(),entity.getTableName(),columnName));
                     }
                     properties.add(singleProperty.getName());
                 }
@@ -235,14 +237,15 @@ public class ClassParser {
             return repository.findEntityByClass(psiClass.getQualifiedName());
         }
         if (!ClassParser.isEntityClass(psiClass)) {
-            throw new RuntimeException("Class " + psiClass.getQualifiedName() + " is NOT a entity class!");
+            throw new RuntimeException(psiClass.getQualifiedName() + "不是实体类!");
         }
         Entity entity = parseEntityClass(psiClass, checkChineseAlias);
         repository.addEntity(entity);
         for (MapRelationInfo mapRelationInfo : entity.getMapRelationInfos()) {
             PsiClass mappingClass = facade.findClass(mapRelationInfo.getMappingEntityFullClassName(), searchScope);
             if (mappingClass == null) {
-                throw new RuntimeException("Mapping Class " + mapRelationInfo.getMappingEntityFullClassName() + " for " + psiClass.getQualifiedName() + " not found!");
+                throw new RuntimeException(String.format("找不到实体类%s的多对多关系类(关联表映射类)%s",
+                        psiClass.getQualifiedName(), mapRelationInfo.getMappingEntityFullClassName()));
             }
             doParseEntityClassWithReferences(mappingClass,
                     module, repository, facade, searchScope, checkChineseAlias);
@@ -252,7 +255,8 @@ public class ClassParser {
                 ReferenceSingleProperty referenceSingleProperty = (ReferenceSingleProperty) property;
                 PsiClass mappingClass = facade.findClass(referenceSingleProperty.getRefEntityFullClassName(), searchScope);
                 if (mappingClass == null) {
-                    throw new RuntimeException("Referencing Class " + referenceSingleProperty.getRefEntityFullClassName() + " for " + psiClass.getQualifiedName() + " not found!");
+                    throw new RuntimeException(String.format("找不到实体类%s的外键映射类(普通1对1或1对多关系)%s",
+                            psiClass.getQualifiedName(), referenceSingleProperty.getRefEntityFullClassName()));
                 }
                 doParseEntityClassWithReferences(mappingClass,
                         module, repository, facade, searchScope, checkChineseAlias);
@@ -261,7 +265,8 @@ public class ClassParser {
         for (SubEntityInfo subEntityInfo : entity.getSubEntities()) {
             PsiClass mappingClass = facade.findClass(subEntityInfo.getEntityClassName(), searchScope);
             if (mappingClass == null) {
-                throw new RuntimeException("Sub Entity Class " + subEntityInfo.getEntityClassName() + " for " + psiClass.getQualifiedName() + " not found!");
+                throw new RuntimeException(String.format("找不到实体类%s的子实体类（类似总表和子表的包含关系）%s",
+                        psiClass.getQualifiedName(), subEntityInfo.getEntityClassName() ));
             }
             Entity subEntity = doParseEntityClassWithReferences(mappingClass,
                     module, repository, facade, searchScope, checkChineseAlias);
@@ -280,7 +285,7 @@ public class ClassParser {
                 }
             }
         }
-        throw new RuntimeException("Can't find property referencing \"" + entityFullClassName + "\" in entity " + subEntity.getClassInfo().getQualifiedName());
+        throw new RuntimeException(String.format("在子实体类%s中缺少关联实体类%s的外键属性",subEntity.getClassInfo().getQualifiedName(),entityFullClassName ));
     }
 
     public static boolean isEntityClass(PsiElement element) {

@@ -75,7 +75,7 @@ public class SQL2EntityAction extends AnAction {
                             genDir=root.createChildDirectory(getProject(),"gen");
                         }
                         if (genDir==null) {
-                            throw new RuntimeException("Can't create folder gen!");
+                            throw new RuntimeException("无法在当前模块(module)下创建文件夹gen!");
                         }
                         PsiDirectory psiOutputDir=PsiManager.getInstance(getProject()).findDirectory(genDir);
                         EntitiesGenerator.generate(psiOutputDir,model,getProject());

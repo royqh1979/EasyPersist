@@ -25,10 +25,10 @@ public class IndexColumnsSet {
 
     public void add(String columnName) {
         if (StringUtils.isEmpty(columnName)) {
-            throw new RuntimeException("Column name shouldn't be empty!");
+            throw new RuntimeException("字段名不应为空!");
         }
         if (contains(columnName)) {
-            throw new RuntimeException("Column " +columnName+" duplicated in same index/reference");
+            throw new RuntimeException("字段" +columnName+"在同一个索引／外键定义中重复出现");
         }
         set.add(columnName);
     }

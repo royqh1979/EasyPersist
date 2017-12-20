@@ -16,7 +16,7 @@ public class Model {
 
     public void addTable(Table table) {
         if (tableMap.containsKey(table.getName())){
-            throw new RuntimeException("Table "+table.getName()+" is duplicated!");
+            throw new RuntimeException("表"+table.getName()+"被重复定义!");
         }
         tableMap.put(table.getName(),table);
     }
