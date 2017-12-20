@@ -35,6 +35,7 @@ import net.royqh.easypersist.ui.EditorTypeChooseDialog;
 import net.royqh.easypersist.ui.ViewType;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.IOException;
 
 /**
@@ -62,6 +63,7 @@ public class GenerateViewAction extends AnAction {
                         }
                     });
                     EditorTypeChooseDialog dialog = new EditorTypeChooseDialog(entity);
+                    dialog.setTitle("View Generation Setting");
                     dialog.updateUI();
                     dialog.pack();
                     dialog.setLocationRelativeTo(null);
@@ -86,7 +88,7 @@ public class GenerateViewAction extends AnAction {
                                     genDir = root.createChildDirectory(project, "gen");
                                 }
                                 if (genDir == null) {
-                                    throw new RuntimeException("Can't create folder gen!");
+                                    throw new RuntimeException("无法在当前模块(module)下创建文件夹gen!");
                                 }
                                 PsiDirectory psiOutputDir = PsiManager.getInstance(module.getProject()).findDirectory(genDir);
 
@@ -115,6 +117,7 @@ public class GenerateViewAction extends AnAction {
                             }
                         }
                     });
+                    
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     Notification notification = new Notification(
@@ -125,6 +128,7 @@ public class GenerateViewAction extends AnAction {
                     );
                     Notifications.Bus.notify(notification, e.getProject());
                     logger.error(exception);
+                    JOptionPane.showMessageDialog(null,exception.getMessage(),"处理失败",JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
