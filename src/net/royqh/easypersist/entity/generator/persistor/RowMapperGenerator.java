@@ -83,6 +83,8 @@ public class RowMapperGenerator {
         for (Property property:entity.getProperties()) {
             if (property.getPropertyType()== PropertyType.Column) {
                 SingleProperty singleProperty=(SingleProperty)property;
+                content.append("{\n");
+                generateGetColumnValueStatement(content,singleProperty);
                 if (singleProperty.getColumn().isNullable()) {
                     content.append("if (rs.wasNull(\""+singleProperty.getColumnName()+"\")) {\n");
                     content.append(String.format("%s.%s(null);\n", entity.getName(),
@@ -91,11 +93,11 @@ public class RowMapperGenerator {
                 } else {
                     content.append("{\n");
                 }
-                generateGetColumnValueStatement(content,singleProperty);
                 content.append(String.format("%s.%s(val);\n",
                         entity.getName(),
                         singleProperty.getSetter()
                 ));
+                content.append("}\n");
                 content.append("}\n");
             }
             /*
