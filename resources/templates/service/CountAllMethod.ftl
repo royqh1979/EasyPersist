@@ -1,3 +1,4 @@
+<#compress >
 public int countAll(<#list indexedProperties as indexProperty>
     <#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
                 Date end${indexProperty.name?cap_first}
@@ -11,3 +12,4 @@ public int countAll(<#list indexedProperties as indexProperty>
         ${indexProperty.name}
     </#if><#sep>,</#sep></#list>);
         }
+</#compress>

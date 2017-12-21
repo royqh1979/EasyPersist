@@ -1,3 +1,4 @@
+<#compress >
 public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${entityToExport.classInfo.name}Persistor.RowProcessor{
 <#list entityToExport.properties as property>
     <#if property.isReferenceProperty()>
@@ -136,3 +137,4 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
         </#list>
     }
 }
+</#compress>

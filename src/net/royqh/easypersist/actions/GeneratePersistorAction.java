@@ -89,8 +89,8 @@ public class GeneratePersistorAction extends AnAction {
                     });
                     Notification notification = new Notification(
                             "Easy Persist",
-                            "Success",
-                            "Entity "+psiClass.getName()+" 's persistor code generation finished.",
+                            "成功",
+                            "实体类"+psiClass.getName()+"的Persistor类代码已成功生成.",
                             NotificationType.INFORMATION
                     );
                     Notifications.Bus.notify(notification, e.getProject());
@@ -99,8 +99,8 @@ public class GeneratePersistorAction extends AnAction {
                     logger.error(exception);
                     Notification notification = new Notification(
                             "Easy Persist",
-                            "Error",
-                            "Generation failed :" + exception.getMessage(),
+                            "失败",
+                            "生成失败:" + exception.getMessage(),
                             NotificationType.ERROR
                     );
                     Notifications.Bus.notify(notification, e.getProject());

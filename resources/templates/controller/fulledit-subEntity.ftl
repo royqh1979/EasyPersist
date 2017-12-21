@@ -1,3 +1,4 @@
+<#compress >
 <#assign subEntity=subEntityInfo.subEntity >
 <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
     @RequestMapping(value="/editUI-sub-${subEntity.name}/{id}", method = RequestMethod.GET)
@@ -141,3 +142,4 @@
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
     }
+</#compress>

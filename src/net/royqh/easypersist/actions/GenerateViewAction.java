@@ -107,8 +107,8 @@ public class GenerateViewAction extends AnAction {
 
                                 Notification notification = new Notification(
                                         "Easy Persist",
-                                        "Success",
-                                        "Entity " + psiClass.getName() + " 's editor code generation finished.",
+                                        "成功",
+                                        "实体类" + psiClass.getName() + "的视图相关代码已生成完毕.",
                                         NotificationType.INFORMATION
                                 );
                                 Notifications.Bus.notify(notification, module.getProject());
@@ -122,8 +122,8 @@ public class GenerateViewAction extends AnAction {
                     exception.printStackTrace();
                     Notification notification = new Notification(
                             "Easy Persist",
-                            "Error",
-                            "Generation failed :" + exception.getMessage(),
+                            "失败",
+                            "生成失败:" + exception.getMessage(),
                             NotificationType.ERROR
                     );
                     Notifications.Bus.notify(notification, e.getProject());

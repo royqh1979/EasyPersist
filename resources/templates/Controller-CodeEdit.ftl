@@ -1,3 +1,4 @@
+<#compress>
 import ${entity.classInfo.qualifiedName};
 import cn.edu.bjfu.smartforestry.view.ProcessingResultType;
 import cn.edu.bjfu.smartforestry.view.utils.Result;
@@ -257,3 +258,4 @@ ${entity.name}Service.exportToExcel(
     }
 </#if>
 }
+</#compress>

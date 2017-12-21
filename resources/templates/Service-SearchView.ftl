@@ -1,3 +1,4 @@
+<#compress>
 import ${entity.classInfo.qualifiedName};
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,17 @@ import com.qui.base.SortType;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+<#if exportEnabled>
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+</#if>
 
 <#list typeList as type>
 import ${type};
@@ -27,6 +39,35 @@ public class ${entity.classInfo.name}Service {
 
     <#include "service/CountAllMethod.ftl" >
 
-<#include "service/FindAndRetrieveForViewMethods.ftl" >
+    <#include "service/FindAndRetrieveForViewMethods.ftl" >
 
+<#if exportEnabled>
+    public void exportToExcel(
+    <#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
+        Date end${indexProperty.name?cap_first},
+    <#else>${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name},</#if>
+    </#list><#list entity.properties as property>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    List<${refEntity.classInfo.name}> list${refEntity.classInfo.name},
+    </#if>
+</#list>HSSFSheet sheet, int startRow, int startCol) throws IOException {
+            ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list entity.properties as property>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                list${refEntity.classInfo.name},
+    </#if>
+</#list>sheet, startRow, startCol);
+            persistor.findAll(<#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >start${indexProperty.name?cap_first},
+                end${indexProperty.name?cap_first},
+<#elseif templateUtils.isRangeTypeProperty(indexProperty) >
+    ${indexProperty.name},${indexProperty.name} ,
+<#else>
+    ${indexProperty.name},
+</#if></#list>processor);
+        }
+    <#assign entityToExport=entity>
+    <#include "service/ExportRowToExcelProcessor.ftl" >
+</#if>
 }
+</#compress>

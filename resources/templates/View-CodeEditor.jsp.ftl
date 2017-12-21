@@ -437,9 +437,6 @@
     function refresh(force) {
         onReload();
     }
-
-
-
 </script>
 </body>
 </html>

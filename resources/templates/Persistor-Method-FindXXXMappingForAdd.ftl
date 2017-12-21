@@ -1,3 +1,4 @@
+<#compress>
 public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
     <#list indexProperties as indexProperty>
         <#if templateUtils.isRangeTypeProperty(indexProperty)>
@@ -80,4 +81,4 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
         DataSourceUtils.releaseConnection(con, getDataSource());
     }
 }
-
+</#compress>

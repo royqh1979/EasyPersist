@@ -1,4 +1,5 @@
-<#if templateUtils.isDepartmentInfoType(refEntity)>
+<#compress >
+    <#if templateUtils.isDepartmentInfoType(refEntity)>
     @RequestMapping(value="/listDepartmentInfoTree",method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
@@ -33,3 +34,4 @@
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
     }
+</#compress>

@@ -1,3 +1,4 @@
+<#compress>
 public interface RowProcessor{
     void processRow(ResultSet rs, int i) throws SQLException;
 }
@@ -27,3 +28,4 @@ public static class MappedRowProcessor implements RowProcessor {
         return results;
     }
 }
+</#compress>

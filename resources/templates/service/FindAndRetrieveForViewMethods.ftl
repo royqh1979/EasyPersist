@@ -1,3 +1,4 @@
+<#compress >
 public List<Map<String,Object>> findAllForView(
 <#list indexedProperties as indexProperty><#if templateUtils.isDateProperty(indexProperty) >Date start${indexProperty.name?cap_first},
         Date end${indexProperty.name?cap_first},
@@ -33,3 +34,4 @@ public List<Map<String,Object>> findAllForView(
 </#list>
         return ${entity.name};
     }
+</#compress>

@@ -1,3 +1,4 @@
+<#compress>
 import cn.edu.bjfu.smartforestry.view.ProcessingResultType;
 import cn.edu.bjfu.smartforestry.view.utils.Result;
 import cn.edu.bjfu.smartforestry.view.utils.ResultWithEntity;
@@ -150,3 +151,4 @@ public class ${factTableEntity.classInfo.name}Controller {
 </#list>
 
 }
+</#compress>

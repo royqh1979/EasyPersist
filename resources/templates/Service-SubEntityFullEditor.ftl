@@ -1,3 +1,4 @@
+<#compress>
 import ${subEntity.classInfo.qualifiedName};
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,3 +72,4 @@ public class ${subEntity.classInfo.name}Service {
     }
 
 }
+</#compress>

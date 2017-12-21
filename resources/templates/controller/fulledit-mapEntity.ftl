@@ -1,3 +1,4 @@
+<#compress >
 <#assign mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.mappingEntityFullClassName) >
     @RequestMapping(value="/editUI-mapping-${mapEntity.name}/{id}", method = RequestMethod.GET)
     public String mappingEditUIFor${mapEntity.classInfo.name}(Model model, @PathVariable("id")int id) {
@@ -139,3 +140,4 @@
             return new Result(ProcessingResultType.Fail, e.getMessage());
         }
     }
+</#compress>

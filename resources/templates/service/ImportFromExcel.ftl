@@ -1,3 +1,4 @@
+<#compress >
 try {
     HSSFWorkbook wb=new HSSFWorkbook(inputStream);
     if (wb.getNumberOfSheets()<1) {
@@ -99,3 +100,4 @@ ${entityToImport.name}List.add(${entityToImport.name});
 } catch (IOException e) {
     throw new RuntimeException(e);
 }
+</#compress>

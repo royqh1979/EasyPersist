@@ -1,4 +1,4 @@
-import org.springframework.beans.factory.annotation.Autowired;
+<#compress >import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.qui.base.Pager;
 import com.qui.base.SortType;
@@ -74,3 +74,4 @@ public class ${factTableEntity.classInfo.name}Service {
     }
 
 }
+</#compress>

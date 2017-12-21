@@ -1,7 +1,6 @@
 package net.royqh.easypersist.entity.generator.persistor;
 
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import net.royqh.easypersist.utils.CodeUtils;
 import net.royqh.easypersist.utils.JdbcUtils;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
@@ -11,8 +10,6 @@ import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +20,7 @@ import java.util.Map;
  */
 public class PersistorMethodGenerator {
     private SQLGenerator sqlGenerator;
-    private static Template CreateFindXXXMappingForAddTemplate = TemplateLoader.loadTemplate("Persistor-Method-CreateFindXXXMappingForAdd.ftl");
+    private static Template FindXXXMappingForAddTemplate = TemplateLoader.loadTemplate("Persistor-Method-FindXXXMappingForAdd.ftl");
     private static Template GetColumnNameByPropertyNameTemplate = TemplateLoader.loadTemplate("Persistor-Method-GetColumnNameByPropertyName.ftl");
     private static Template RowProcessorTemplate = TemplateLoader.loadTemplate("Persistor-RowProcessor.ftl");
 
@@ -529,19 +526,7 @@ public class PersistorMethodGenerator {
         content.append(") {\n");
         content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
         content.append("findBy" + indexName + "(");
-        for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
-                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
-                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
-            } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(singleProperty.getType())) {
-                    content.append(singleProperty.getName() + ",");
-                }
-                continue;
-            } else {
-                content.append(singleProperty.getName() + ",");
-            }
-        }
+        generateIndexPropertiesListForMethodCall(content,indexProperties);
         content.append("rowProcessor);\n");
         content.append("return rowProcessor.getResults();\n");
         content.append("}\n");
@@ -626,19 +611,7 @@ public class PersistorMethodGenerator {
         content.append(") {\n");
         content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
         content.append("findBy" + indexName + "(");
-        for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
-                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
-                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
-            } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(singleProperty.getType())) {
-                    content.append(singleProperty.getName() + ",");
-                }
-                continue;
-            } else {
-                content.append(singleProperty.getName() + ",");
-            }
-        }
+        generateIndexPropertiesListForMethodCall(content,indexProperties);
         content.append("orderBy,isAscending,startPos,resultSize, rowProcessor);\n");
         content.append("return rowProcessor.getResults();\n");
         content.append("}\n");
@@ -716,47 +689,7 @@ public class PersistorMethodGenerator {
         content.append(String.join(",", parameterList));
         content.append(") {\n");
         content.append("List<String> params=new ArrayList<>();\n");
-        for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(property)) {
-                content.append(String.format("if (%s!=null && %s!=null) {\n",
-                        "min" + StringUtils.capitalize(property.getName()),
-                        "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s between ? and ? )\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append(String.format("} else if (%s != null) {\n",
-                        "min" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s >= ? )\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append(String.format("} else if (%s != null) {\n",
-                        "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s <= ? )\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append("}\n");
-            } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(property.getType())) {
-                    content.append(String.format("if (%s!=null) {\n", property.getName()));
-                    content.append(String.format("params.add(\"%s%s%s like ?\");\n",
-                            sqlGenerator.getQuote(),
-                            property.getColumnName(),
-                            sqlGenerator.getQuote()));
-                    content.append("}\n");
-                }
-                continue;
-            } else {
-                content.append(String.format("if (%s!=null) {\n", property.getName()));
-                content.append(String.format("params.add(\"%s%s%s=?\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append("}\n");
-            }
-        }
+        generateIndexPropretiesQueryCriteria(content, indexProperties);
 
         content.append("String sql;\n");
         content.append("if (params.size()!=0) {\n");
@@ -768,39 +701,7 @@ public class PersistorMethodGenerator {
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
-        content.append("int i=1;\n");
-        for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(property)) {
-                content.append(String.format("if (%s!=null) {\n",
-                        "min" + StringUtils.capitalize(property.getName())));
-                content.append(
-                        JdbcUtils.generateStatementParameterSetter("i", property, "min" + StringUtils.capitalize(property.getName())));
-                content.append("i++;\n");
-                content.append("}\n");
-                content.append(String.format("if (%s!=null) {\n",
-                        "max" + StringUtils.capitalize(property.getName())));
-                content.append(
-                        JdbcUtils.generateStatementParameterSetter("i", property, "max" + StringUtils.capitalize(property.getName())));
-                content.append("i++;\n");
-                content.append("}\n");
-            } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(property.getType())) {
-                    content.append(String.format("if (%s!=null) {\n", property.getName()));
-                    content.append(
-                            JdbcUtils.generateStatementParameterSetter("i", property,
-                                    "\"%\"+" + property.getName() + "+\"%\""));
-                    content.append("i++;\n");
-                    content.append("}\n");
-                }
-                continue;
-            } else {
-                content.append(String.format("if (%s!=null) {\n", property.getName()));
-                content.append(
-                        JdbcUtils.generateStatementParameterSetter("i", property, property.getName()));
-                content.append("i++;\n");
-                content.append("}\n");
-            }
-        }
+        generateQueryParameterIndexedProperties(content, indexProperties);
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append("if (!resultSet.next()) {\n");
         content.append("throw new EmptyResultDataAccessException(1);\n");
@@ -810,49 +711,22 @@ public class PersistorMethodGenerator {
         content.append("}\n");
     }
 
-
     public void createFindAllMethod(Entity entity, StringBuilder content) {
+        createFindAllWithSortMethod(entity,content);
+        createFindAllWithoutSortMethod(entity,content);
+    }
+
+    private void createFindAllWithoutSortMethod(Entity entity, StringBuilder content) {
         List<SingleProperty> indexProperties = CodeUtils.getAllIndexedProperties(entity);
         content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
         List<String> parameterList = new ArrayList<>();
-        for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
-                        + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
-                        + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
-            } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(singleProperty.getType())) {
-                    parameterList.add("String " + singleProperty.getName());
-                }
-            } else {
-                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
-                        + " " + singleProperty.getName());
-
-            }
-        }
-        parameterList.add("String orderBy");
-        parameterList.add("boolean isAscending");
-        parameterList.add("int startPos");
-        parameterList.add("int resultSize");
+        addIndexPropertiesToParameterList(indexProperties, parameterList);
         content.append(String.join(",", parameterList));
         content.append(") {\n");
         content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
         content.append("findAll(");
-        for (SingleProperty singleProperty : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
-                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
-                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
-            } else if (singleProperty.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(singleProperty.getType())) {
-                    content.append(singleProperty.getName() + ",");
-                }
-                continue;
-            } else {
-                content.append(singleProperty.getName() + ",");
-            }
-        }
-        content.append("orderBy,isAscending,startPos,resultSize, rowProcessor);\n");
+        generateIndexPropertiesListForMethodCall(content,indexProperties);
+        content.append("rowProcessor);\n");
         content.append("return rowProcessor.getResults();\n");
         content.append("}\n");
 
@@ -861,69 +735,30 @@ public class PersistorMethodGenerator {
         content.append(",RowProcessor rowProcessor) {\n");
 
         content.append("List<String> params=new ArrayList<>();\n");
-        for (SingleProperty property : indexProperties) {
-            if (TypeUtils.isRangeTypeProperty(property)) {
-                content.append(String.format("if (%s!=null && %s!=null) {\n",
-                        "min" + StringUtils.capitalize(property.getName()),
-                        "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s between ? and ? )\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append(String.format("} else if (%s != null) {\n",
-                        "min" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s >= ? )\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append(String.format("} else if (%s != null) {\n",
-                        "max" + StringUtils.capitalize(property.getName())));
-                content.append(String.format("params.add(\"(%s%s%s <= ? )\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append("}\n");
-            } else if (property.getColumn().isUnique()) {
-                if (TypeUtils.isStringType(property.getType())) {
-                    content.append(String.format("if (%s!=null) {\n", property.getName()));
-                    content.append(String.format("params.add(\"%s%s%s like ?\");\n",
-                            sqlGenerator.getQuote(),
-                            property.getColumnName(),
-                            sqlGenerator.getQuote()));
-                    content.append("}\n");
-                }
-                continue;
-            } else {
-                content.append(String.format("if (%s!=null) {\n", property.getName()));
-                content.append(String.format("params.add(\"%s%s%s=?\");\n",
-                        sqlGenerator.getQuote(),
-                        property.getColumnName(),
-                        sqlGenerator.getQuote()));
-                content.append("}\n");
-            }
-        }
+        generateIndexPropretiesQueryCriteria(content, indexProperties);
 
-        content.append("String sql,orderClause;\n");
-        content.append("String orderByColumn=getColumnNameByPropertyNameFor" + entity.getClassInfo().getName() + "(orderBy);\n");
-        content.append("if (orderByColumn==null) {\n");
-        content.append("orderClause=\"\";\n");
-        content.append("}else{\n");
-        content.append(" String sortSql=isAscending?\" asc \":\" desc \";\n");
-        content.append("orderClause=\" order by \"+orderByColumn+sortSql;\n");
-        content.append("}\n");
-        content.append("String limitClause=\" ");
-        content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
-        content.append(";\n");
+        content.append("String sql;\n");
         content.append("if (params.size()!=0) {\n");
         content.append("sql=\"select * from " + sqlGenerator.getQuote()
                 + entity.getTableName()
-                + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params)+orderClause+limitClause;\n");
+                + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params);\n");
         content.append("} else {\n");
         content.append("sql=\"select * from " + sqlGenerator.getQuote()
-                + entity.getTableName() + sqlGenerator.getQuote() + "\"+orderClause+limitClause;\n");
+                + entity.getTableName() + sqlGenerator.getQuote() + "\";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
+        generateQueryParameterIndexedProperties(content, indexProperties);
+        content.append("ResultSet resultSet=stmt.executeQuery();\n");
+        content.append("int _i_row=0;\n");
+        content.append("while(resultSet.next()){\n");
+        content.append("rowProcessor.processRow(resultSet,_i_row++);\n");
+        content.append("}\n");
+        generateExceptionHandleStatements(content);
+        content.append("}\n");
+    }
+
+    private void generateQueryParameterIndexedProperties(StringBuilder content, List<SingleProperty> indexProperties) {
         content.append("int i=1;\n");
         for (SingleProperty property : indexProperties) {
             if (TypeUtils.isRangeTypeProperty(property)) {
@@ -956,6 +791,73 @@ public class PersistorMethodGenerator {
                 content.append("}\n");
             }
         }
+    }
+
+    private void addIndexPropertiesToParameterList(List<SingleProperty> indexProperties, List<String> parameterList) {
+        for (SingleProperty singleProperty : indexProperties) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "min" + StringUtils.capitalize(singleProperty.getName()));
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + "max" + StringUtils.capitalize(singleProperty.getName()));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    parameterList.add("String " + singleProperty.getName());
+                }
+            } else {
+                parameterList.add(TypeUtils.getShortTypeName(TypeUtils.getObjectType(singleProperty.getType()))
+                        + " " + singleProperty.getName());
+            }
+        }
+    }
+
+    public void createFindAllWithSortMethod(Entity entity, StringBuilder content) {
+        List<SingleProperty> indexProperties = CodeUtils.getAllIndexedProperties(entity);
+        content.append("public List<" + entity.getClassInfo().getName() + "> findAll(");
+        List<String> parameterList = new ArrayList<>();
+        addIndexPropertiesToParameterList(indexProperties, parameterList);
+        parameterList.add("String orderBy");
+        parameterList.add("boolean isAscending");
+        parameterList.add("int startPos");
+        parameterList.add("int resultSize");
+        content.append(String.join(",", parameterList));
+        content.append(") {\n");
+        content.append("DefaultRowProcessor rowProcessor=new DefaultRowProcessor();\n");
+        content.append("findAll(");
+        generateIndexPropertiesListForMethodCall(content, indexProperties);
+        content.append("orderBy,isAscending,startPos,resultSize, rowProcessor);\n");
+        content.append("return rowProcessor.getResults();\n");
+        content.append("}\n");
+
+        content.append("public void findAll(");
+        content.append(String.join(",", parameterList));
+        content.append(",RowProcessor rowProcessor) {\n");
+
+        content.append("List<String> params=new ArrayList<>();\n");
+        generateIndexPropretiesQueryCriteria(content, indexProperties);
+
+        content.append("String sql,orderClause;\n");
+        content.append("String orderByColumn=getColumnNameByPropertyNameFor" + entity.getClassInfo().getName() + "(orderBy);\n");
+        content.append("if (orderByColumn==null) {\n");
+        content.append("orderClause=\"\";\n");
+        content.append("}else{\n");
+        content.append(" String sortSql=isAscending?\" asc \":\" desc \";\n");
+        content.append("orderClause=\" order by \"+orderByColumn+sortSql;\n");
+        content.append("}\n");
+        content.append("String limitClause=\" ");
+        content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
+        content.append(";\n");
+        content.append("if (params.size()!=0) {\n");
+        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+                + entity.getTableName()
+                + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params)+orderClause+limitClause;\n");
+        content.append("} else {\n");
+        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+                + entity.getTableName() + sqlGenerator.getQuote() + "\"+orderClause+limitClause;\n");
+        content.append("}\n");
+        content.append("logger.debug(sql);\n");
+        createPreparedStatementStatments(content);
+        generateQueryParameterIndexedProperties(content, indexProperties);
         content.append("ResultSet resultSet=stmt.executeQuery();\n");
         content.append("int _i_row=0;\n");
         content.append("while(resultSet.next()){\n");
@@ -963,6 +865,66 @@ public class PersistorMethodGenerator {
         content.append("}\n");
         generateExceptionHandleStatements(content);
         content.append("}\n");
+    }
+
+    private void generateIndexPropretiesQueryCriteria(StringBuilder content, List<SingleProperty> indexProperties) {
+        for (SingleProperty property : indexProperties) {
+            if (TypeUtils.isRangeTypeProperty(property)) {
+                content.append(String.format("if (%s!=null && %s!=null) {\n",
+                        "min" + StringUtils.capitalize(property.getName()),
+                        "max" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s between ? and ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
+                content.append(String.format("} else if (%s != null) {\n",
+                        "min" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s >= ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
+                content.append(String.format("} else if (%s != null) {\n",
+                        "max" + StringUtils.capitalize(property.getName())));
+                content.append(String.format("params.add(\"(%s%s%s <= ? )\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
+                content.append("}\n");
+            } else if (property.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(property.getType())) {
+                    content.append(String.format("if (%s!=null) {\n", property.getName()));
+                    content.append(String.format("params.add(\"%s%s%s like ?\");\n",
+                            sqlGenerator.getQuote(),
+                            property.getColumnName(),
+                            sqlGenerator.getQuote()));
+                    content.append("}\n");
+                }
+                continue;
+            } else {
+                content.append(String.format("if (%s!=null) {\n", property.getName()));
+                content.append(String.format("params.add(\"%s%s%s=?\");\n",
+                        sqlGenerator.getQuote(),
+                        property.getColumnName(),
+                        sqlGenerator.getQuote()));
+                content.append("}\n");
+            }
+        }
+    }
+
+    private void generateIndexPropertiesListForMethodCall(StringBuilder content, List<SingleProperty> indexProperties) {
+        for (SingleProperty singleProperty : indexProperties) {
+            if (TypeUtils.isRangeTypeProperty(singleProperty)) {
+                content.append("min" + StringUtils.capitalize(singleProperty.getName() + ","));
+                content.append("max" + StringUtils.capitalize(singleProperty.getName() + ","));
+            } else if (singleProperty.getColumn().isUnique()) {
+                if (TypeUtils.isStringType(singleProperty.getType())) {
+                    content.append(singleProperty.getName() + ",");
+                }
+                continue;
+            } else {
+                content.append(singleProperty.getName() + ",");
+            }
+        }
     }
 
     protected void createStatementStatments(StringBuilder content) {
@@ -1051,7 +1013,7 @@ public class PersistorMethodGenerator {
         dataModel.put("indexProperties", CodeUtils.getAllIndexedProperties(mapEntity));
         dataModel.put("templateUtils", TemplateUtils.templateUtils);
         dataModel.put("quote", sqlGenerator.getQuote());
-        CodeUtils.generateContent(content, CreateFindXXXMappingForAddTemplate, dataModel);
+        CodeUtils.generateContent(content, FindXXXMappingForAddTemplate, dataModel);
     }
 
     public void createFindXXXMappingMethod(Entity entity, MapRelationInfo relationInfo, StringBuilder content) {

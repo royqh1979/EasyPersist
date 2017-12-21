@@ -1,3 +1,4 @@
+<#compress>
 import ${entity.classInfo.qualifiedName};
 import cn.edu.bjfu.smartforestry.view.ProcessingResultType;
 import cn.edu.bjfu.smartforestry.view.utils.Result;
@@ -347,3 +348,4 @@ public class ${entity.classInfo.name}Controller {
     <#include "controller/fulledit-mapEntity.ftl" >
 </#list>
 }
+</#compress>

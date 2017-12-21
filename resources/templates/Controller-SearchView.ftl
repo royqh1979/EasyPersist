@@ -1,3 +1,4 @@
+<#compress>
 import ${entity.classInfo.qualifiedName};
 import cn.edu.bjfu.smartforestry.view.ProcessingResultType;
 import cn.edu.bjfu.smartforestry.view.utils.Result;
@@ -154,3 +155,4 @@ public class ${entity.classInfo.name}ViewController {
     <#include "controller/refEntity.ftl" >
 </#list>
 }
+</#compress>

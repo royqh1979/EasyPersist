@@ -18,7 +18,7 @@ public class TemplateLoader {
         configuration.setTemplateLoader(new ClassTemplateLoader(TemplateLoader.class, "/templates"));
         configuration.setDefaultEncoding("UTF-8");
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-
+        configuration.setWhitespaceStripping(true);
     }
 
     public static Template loadTemplate(String templateFileName) {

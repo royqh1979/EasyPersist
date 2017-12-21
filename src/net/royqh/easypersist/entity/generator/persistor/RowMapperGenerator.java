@@ -90,14 +90,14 @@ public class RowMapperGenerator {
                     content.append(String.format("%s.%s(null);\n", entity.getName(),
                             singleProperty.getSetter()));
                     content.append("} else {\n");
-                } else {
-                    content.append("{\n");
                 }
                 content.append(String.format("%s.%s(val);\n",
                         entity.getName(),
                         singleProperty.getSetter()
                 ));
-                content.append("}\n");
+                if (singleProperty.getColumn().isNullable()) {
+                    content.append("}\n");
+                }
                 content.append("}\n");
             }
             /*

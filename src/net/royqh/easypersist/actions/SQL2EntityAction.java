@@ -21,6 +21,8 @@ import net.royqh.easypersist.sql.parser.sql2entity.MySQLModelParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+
 /**
  * Created by Roy on 2017/2/12.
  */
@@ -83,8 +85,8 @@ public class SQL2EntityAction extends AnAction {
                         indicator.setFraction(1);
                         Notification notification = new Notification(
                                 "Easy Persist",
-                                "Success",
-                                "Entities for "+sqlFile.getName()+" generation finished.",
+                                "成功",
+                                "SQL文件"+sqlFile.getName()+"对应的实体类已成功生成",
                                 NotificationType.INFORMATION
                         );
                         Notifications.Bus.notify(notification, getProject());
@@ -93,12 +95,13 @@ public class SQL2EntityAction extends AnAction {
                         Logger.getInstance(SQL2EntityTask.class).error(e);
                         Notification notification = new Notification(
                                 "Easy Persist",
-                                "Error",
-                                "Generation failed :" + e.getMessage(),
+                                "失败",
+                                "生成失败:" + e.getMessage(),
                                 NotificationType.ERROR
                         );
                         Notifications.Bus.notify(notification);
-                        throw new RuntimeException(e);
+                        JOptionPane.showMessageDialog(null,e.getMessage(),"处理失败",JOptionPane.ERROR_MESSAGE);
+
                     }
                 }
             });

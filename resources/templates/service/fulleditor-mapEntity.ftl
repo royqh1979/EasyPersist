@@ -1,4 +1,5 @@
-<#assign mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.mappingEntityFullClassName) >
+<#compress >
+    <#assign mapEntity=entity.getMappingRepository().findEntityByClass(relationInfo.mappingEntityFullClassName) >
 public int count${mapEntity.classInfo.name}(${entity.idProperty.type} id){
     return persistor.count${mapEntity.classInfo.name}(id);
 }
@@ -37,3 +38,4 @@ public List<${mapEntity.classInfo.name}> find${mapEntity.classInfo.name}ForAdd(
         ${indexProperty.name},
         </#if></#list>mappingId);
 }
+</#compress>
