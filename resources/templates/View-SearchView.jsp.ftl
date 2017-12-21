@@ -93,7 +93,7 @@
         <div class="left">
             <div class="right">
                 <div class="padding_top5 padding_left10">
-                    <a href="javascript:;"  onclick="exportData()"><span class="icon_export">全部导出到Excel</span></a>
+                    <a href="javascript:;"  onclick="exportData()"><span class="icon_export">导出为Excel</span></a>
                 </div>
             </div>
         </div>
@@ -104,8 +104,10 @@
 <div >
     <table class="tableStyle" mode="list" useCheckBox="false" sortMode="true">
         <tr>
+            <#assign colCount=0>
              <#list entity.properties as property>
                  <#if ! (property.name == entity.idProperty.name) >
+                     <#assign colCount=colCount+1>
             <th><span onclick="sortHandler('${property.name}')" id="span_${property.name}">${property.chineseAlias}</span></th>
                  </#if>
              </#list>
@@ -132,7 +134,7 @@
         </c:if>
         <c:if test="${"$"}{${entity.name}List.size()<=0}">
             <tr>
-                <td colspan="7">找不到相关记录</td>
+                <td colspan="${colCount}">找不到相关记录</td>
             </tr>
         </c:if>
     </table>

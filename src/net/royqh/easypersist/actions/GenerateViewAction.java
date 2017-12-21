@@ -30,6 +30,7 @@ import net.royqh.easypersist.entity.generator.view.FactTableControllerGenerator;
 import net.royqh.easypersist.entity.generator.view.FactTableViewGenerator;
 import net.royqh.easypersist.entity.generator.view.ViewGenerator;
 import net.royqh.easypersist.entity.model.Entity;
+import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.parser.jpa.ClassParser;
 import net.royqh.easypersist.ui.EditorTypeChooseDialog;
 import net.royqh.easypersist.ui.ViewType;
@@ -101,7 +102,6 @@ public class GenerateViewAction extends AnAction {
                                 if (viewType == ViewType.FactTableEditorOnly) {
                                     generateFactTableView(entity,module,psiOutputDir, psiFileFactory, facade, codeStyleManager, persistorsGenerator, indicator);
                                 } else {
-
                                     generateViewFiles(entity,module,psiOutputDir, psiFileFactory, facade, codeStyleManager, persistorsGenerator, indicator, viewType, importSelected, exportSelected);
                                 }
 
@@ -145,6 +145,12 @@ public class GenerateViewAction extends AnAction {
         indicator.setFraction(0.2);
         persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
         persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, entity, psiOutputDir);
+        if (viewType.containsFullFunctionEditor() || viewType.containsSearchView()) {
+            for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                persistorsGenerator.generatePersistor(psiFileFactory, facade, codeStyleManager, subEntityInfo.getSubEntity(), psiOutputDir);
+                persistorsGenerator.generatePersistorCompositor(psiFileFactory, facade, codeStyleManager, subEntityInfo.getSubEntity(), psiOutputDir);
+            }
+        }
         indicator.setText(String.format("Generating service for %s ", entity.getClassInfo().getQualifiedName()));
         indicator.setFraction(0.4);
         ServiceGenerator.generateService(viewType, psiFileFactory, codeStyleManager, entity, psiOutputDir, module, importEnabled, exportEnabled);

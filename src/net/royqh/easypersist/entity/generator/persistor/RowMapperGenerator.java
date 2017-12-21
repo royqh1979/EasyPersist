@@ -86,7 +86,7 @@ public class RowMapperGenerator {
                 content.append("{\n");
                 generateGetColumnValueStatement(content,singleProperty);
                 if (singleProperty.getColumn().isNullable()) {
-                    content.append("if (rs.wasNull(\""+singleProperty.getColumnName()+"\")) {\n");
+                    content.append("if (rs.wasNull()) {\n");
                     content.append(String.format("%s.%s(null);\n", entity.getName(),
                             singleProperty.getSetter()));
                     content.append("} else {\n");

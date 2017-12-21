@@ -198,6 +198,10 @@ public class MethodParser {
             property.setLob(true);
         }
 
+        if (TypeUtils.isPrimitiveType(type)) {
+            property.getColumn().setNullable(false);
+        }
+
         PsiClass retunTypeClass = PsiTypesUtil.getPsiClass(psiMethod.getReturnType());
         if (retunTypeClass != null && retunTypeClass.isEnum()) {
             EnumType enumType = AnnotationParser.parseEnumerated(psiMethod);

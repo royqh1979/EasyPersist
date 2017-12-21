@@ -20,7 +20,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import javax.servlet.http.HttpServletResponse;
 </#if>
-
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Date;
 import java.util.Map;
@@ -34,13 +34,13 @@ import ${type};
 public class ${entity.classInfo.name}ViewController {
     @Autowired
     private ${entity.classInfo.name}Service ${entity.name}Service;
-    <#list refEntities as refEntity>
-        <#if templateUtils.isDepartmentInfoType(refEntity)>
+    <#list serviceEntities as servEntity>
+        <#if templateUtils.isDepartmentInfoType(servEntity)>
     @Autowired
-    private DepartmentService ${refEntity.name}Service;
+    private DepartmentService ${servEntity.name}Service;
         <#else >
     @Autowired
-    private ${refEntity.classInfo.name}Service ${refEntity.name}Service;
+    private ${servEntity.classInfo.name}Service ${servEntity.name}Service;
         </#if>
     </#list>
     private Logger logger = LoggerFactory.getLogger(${entity.classInfo.name}ViewController.class);
@@ -62,7 +62,10 @@ public class ${entity.classInfo.name}ViewController {
         }
         try {
             Pager pager = new Pager();
-            pager.setTotalRows(productService.countAll(null, null, null, null));
+            pager.setTotalRows(${entity.name}Service.countAll(<#list indexedProperties as indexProperty>
+    <#if templateUtils.isDateProperty(indexProperty) >
+                null,null
+    <#else >null</#if><#sep>,</#sep></#list>));
             List<Map<String, Object>> ${entity.name}List = ${entity.name}Service.findAllForView(
             <#list indexedProperties as indexProperty>
                 <#if templateUtils.isDateProperty(indexProperty) >
@@ -77,7 +80,7 @@ public class ${entity.classInfo.name}ViewController {
             model.addAttribute("start${indexProperty.name?cap_first}", "");
             model.addAttribute("end${indexProperty.name?cap_first}", "");
     <#else >model.addAttribute("${indexProperty.name}", "");</#if></#list>
-            model.addAttribute("${entity.name}List", productList);
+            model.addAttribute("${entity.name}List", ${entity.name}List);
             model.addAttribute("ctrlUrl", CONTROLLER_URL);
             return jspPrefix + "${entity.name}-view";
         }  catch (RuntimeException e) {
@@ -132,7 +135,7 @@ public class ${entity.classInfo.name}ViewController {
             model.addAttribute("start${indexProperty.name?cap_first}", start${indexProperty.name?cap_first}Var);
             model.addAttribute("end${indexProperty.name?cap_first}", end${indexProperty.name?cap_first}Var);
     <#else >model.addAttribute("${indexProperty.name}", ${indexProperty.name}Var);</#if></#list>
-            model.addAttribute("${entity.name}List", productList);
+            model.addAttribute("${entity.name}List", ${entity.name}List);
             model.addAttribute("ctrlUrl", CONTROLLER_URL);
             return jspPrefix + "${entity.name}-view";
         } catch (RuntimeException e) {
@@ -207,6 +210,12 @@ public class ${entity.classInfo.name}ViewController {
                 return TaskRedirector.errorExit(model, "找不到id为" + idVal + "的${entity.classInfo.name}对象");
             }
             model.addAttribute("${entity.name}",${entity.name});
+    <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
+        <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
+            List<Map<String,Object>> ${subEntity.name}List = ${subEntity.name}Service.findBy${subRefProperty.name?cap_first}ForView(idVal);
+            model.addAttribute("${subEntity.name}List",${subEntity.name}List);
+    </#list>
             return jspPrefix + "${entity.name}-view-detail";
         } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象失败:", e);
@@ -217,5 +226,6 @@ public class ${entity.classInfo.name}ViewController {
 <#list refEntities as refEntity>
     <#include "controller/refEntity.ftl" >
 </#list>
+
 }
 </#compress>

@@ -7,6 +7,8 @@ import com.qui.base.SortType;
 import java.util.Date;
 
 import java.util.List;
+import java.util.Date;
+import java.util.Map;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataValidation;
@@ -24,14 +26,25 @@ import ${type};
 
 @Service
 public class ${subEntity.classInfo.name}Service {
+<#if forFullEditor>
     <#assign entityToExport=subEntity>
     <#include "service/ExportRowToExcelProcessor.ftl" >
+</#if>
 
     @Autowired
     private ${subEntity.classInfo.name}Persistor persistor;
+<#if forSearchView >
+    <#list subEntity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+    @Autowired
+    private ${refEntity.classInfo.name}Persistor ${refEntity.name}Persistor;
+        </#if>
+    </#list>
+</#if>
 
 <#assign refProperty=subEntityInfo.subEntityReferenceProperty >
-    
+<#if forFullEditor>
     public int countBy${refProperty.name?cap_first}(${refPropertyType} ${refProperty.name}) {
         return persistor.countBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name});
     }
@@ -47,11 +60,11 @@ public class ${subEntity.classInfo.name}Service {
     </#if>
 </#list>HSSFSheet sheet, int startRow, int startCol) {
         ExportRowToExcelProcessor processor=new ExportRowToExcelProcessor(<#list subEntity.properties as property>
-            <#if property.isReferenceProperty()>
-                <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+    <#if property.isReferenceProperty()>
+        <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
             list${refEntity.classInfo.name},
-            </#if>
-        </#list>sheet, startRow, startCol);
+    </#if>
+</#list>sheet, startRow, startCol);
         persistor.findBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name},processor);
     }
 
@@ -70,6 +83,24 @@ public class ${subEntity.classInfo.name}Service {
     public void update(${subEntity.classInfo.name} ${subEntity.name}) {
         persistor.update(${subEntity.name});
     }
+</#if>
+
+<#if forSearchView >
+    public  List<Map<String, Object>> findBy${refProperty.name?cap_first}ForView(${refPropertyType} ${refProperty.name}) {
+        __${subEntity.classInfo.name}Persistor.MappedRowProcessor rowProcessor = new __${subEntity.classInfo.name}Persistor.MappedRowProcessor();
+        persistor.findBy${refProperty.name?cap_first}(${refProperty.name},${refProperty.name},rowProcessor);
+         List<Map<String,Object>> ${subEntity.name}List=rowProcessor.getResults();
+        for (Map<String,Object> ${subEntity.name}:${subEntity.name}List) {
+    <#list subEntity.properties as property>
+        <#if property.isReferenceProperty()>
+            <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+            ${subEntity.name}.put("${refEntity.name}",${refEntity.name}Persistor.retrieve((${property.type})${subEntity.name}.get("${property.name}")));
+        </#if>
+    </#list>
+        }
+        return ${subEntity.name}List;
+    }
+</#if>
 
 }
 </#compress>

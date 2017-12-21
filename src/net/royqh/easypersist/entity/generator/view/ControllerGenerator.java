@@ -100,7 +100,7 @@ public class ControllerGenerator {
         dataModel.put("indexedProperties", CodeUtils.getAllIndexedProperties(entity));
 
         try {
-            if (viewType==ViewType.FullFunctionEditorOnly) {
+            if (viewType==ViewType.FullFunctionEditorOnly ) {
                 Set<Entity> serviceEntities=new HashSet<>();
                 for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
                     //add entities referenced by subEntity
@@ -132,6 +132,19 @@ public class ControllerGenerator {
                 ControllerForCodeEditorTemplate.process(dataModel, writer);
             }
             if (viewType==ViewType.SearchViewOnly){
+                Set<Entity> serviceEntities=new HashSet<>();
+                for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                    //add import types used by subEntity
+                    String subServiceType=CodeUtils.getServiceType(subEntityInfo.getSubEntity(),module);
+                    if (subServiceType!=null) {
+                        typeList.add(subServiceType);
+                    }
+                    serviceEntities.add(subEntityInfo.getSubEntity());
+                    typeList.add(subEntityInfo.getSubEntity().getClassInfo().getQualifiedName());
+                }
+                refEntities.remove(entity);
+                serviceEntities.addAll(refEntities);
+                dataModel.put("serviceEntities",serviceEntities);
                 ControllerForSearchViewTemplate.process(dataModel, writer);
             }
             dataModel.clear();

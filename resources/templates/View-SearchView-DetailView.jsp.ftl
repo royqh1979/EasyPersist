@@ -50,5 +50,53 @@
     </tr>
     </#if>
 </table>
+    <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
+        <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
+<div class="box2" panelTitle="${subEntity.chineseAlias}">
+    <table class="tableStyle" mode="list" useCheckBox="false" sortMode="false">
+        <tr>
+            <#assign colCount=0>
+             <#list subEntity.properties as property>
+                 <#if ! (property.name == subEntity.idProperty.name) >
+                     <#assign colCount=colCount+1>
+            <th>${property.chineseAlias}</th>
+                 </#if>
+             </#list>
+        </tr>
+        <c:if test="${"$"}{${subEntity.name}List.size()>0}" >
+            <c:forEach items="${"$"}{${subEntity.name}List}" var="${subEntity.name}" >
+                <tr>
+         <#list subEntity.properties as property>
+             <#if !(property.name == subEntity.idProperty.name) >
+                 <#if property.isReferenceProperty()>
+                     <#assign refEntity=subEntity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                    <td><#if refEntity.listHeaderProperty?? >
+                        ${"$"}{${subEntity.name}.${refEntity.name}.${refEntity.listHeaderProperty.name}}
+                            <#else>
+                        ${"$"}{${subEntity.name}.${refEntity.name}.${refEntity.idProperty.name}}
+                    </#if></td>
+                 <#elseif templateUtils.isBooleanProperty(property) >
+                    <td>${"$"}{${subEntity.name}.${property.name}?"是":"否"}</td>
+                 <#elseif templateUtils.isDateProperty(property) >
+                    <td><fmt:formatDate value="${"$"}{${subEntity.name}.${property.name}}" pattern="yyyy年MM月dd日" /></td>
+                 <#else>
+                    <td>${"$"}{${subEntity.name}.${property.name}}</td>
+                 </#if>
+             </#if>
+         </#list>
+                </tr>
+            </c:forEach>
+        </c:if>
+        <c:if test="${"$"}{${subEntity.name}List.size()<=0}">
+            <tr>
+                <td colspan="${colCount}">找不到相关记录</td>
+            </tr>
+        </c:if>
+    </table>
+</div>
+    </#list>
+
+</div>
 </body>
 </html>
