@@ -70,6 +70,10 @@ public class ${entity.classInfo.name}Service {
         }
     }
 
+    <#if includeSearchView>
+        <#include "service/SearchAndExportToExcelMethod.ftl">
+    </#if>
+
     <#assign entityToExport=entity>
     <#include "service/ExportRowToExcelProcessor.ftl" >
 </#if>

@@ -1,3 +1,4 @@
+<#compress>
 public String getColumnNameByPropertyNameFor${entity.classInfo.name}(String propertyName)
 {
     if (StringUtils.isEmpty(propertyName)) {
@@ -12,3 +13,4 @@ public String getColumnNameByPropertyNameFor${entity.classInfo.name}(String prop
     </#list>
     throw new RuntimeException("Can't find property "+propertyName);
 }
+</#compress>

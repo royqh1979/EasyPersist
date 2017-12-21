@@ -51,6 +51,11 @@ public class ${entity.classInfo.name}Controller {
     public static final String CONTROLLER_URL = "codes/${entity.name}";
 
     private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
+    <#if exportEnabled>
+    private static final int EXCEL_START_ROW=0;
+    private static final int EXCEL_START_COL=0;
+    </#if>
+
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {
@@ -116,8 +121,6 @@ public class ${entity.classInfo.name}Controller {
         <#if templateUtils.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
         @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
         <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
-    @RequestParam("sort") String orderBy,
-    @RequestParam("direction") SortType sortType,
     HttpServletResponse response) {
         if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
             response.setStatus(401);
@@ -140,7 +143,6 @@ public class ${entity.classInfo.name}Controller {
             }
             </#if>
         </#list>
-            Pager pager = new Pager(100000000, 1);
             String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}", "UTF-8");
             response.setContentType("application/vnd.ms-excel");
             response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
@@ -156,7 +158,7 @@ public class ${entity.classInfo.name}Controller {
             ${refEntity.name}Service.listAll(false),
                 </#if>
             </#list>
-            orderBy, sortType, pager, sheet,0,0);
+            sheet,EXCEL_START_ROW,EXCEL_START_COL);
             workbook.write(response.getOutputStream());
         } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象列表失败:", e);

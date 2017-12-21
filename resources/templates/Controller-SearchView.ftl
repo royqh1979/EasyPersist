@@ -15,6 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+<#if exportEnabled>
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import javax.servlet.http.HttpServletResponse;
+</#if>
 
 import java.util.List;
 import java.util.Date;
@@ -42,6 +47,12 @@ public class ${entity.classInfo.name}ViewController {
     public static final String jspPrefix= "";
     public static final String CONTROLLER_URL = "codes/${entity.name}-view";
     private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
+<#if exportEnabled>
+    private static final int EXCEL_START_ROW=0;
+    private static final int EXCEL_START_COL=0;
+</#if>
+
+
 
     @RequestMapping(value = "/view-list", method = RequestMethod.GET)
     public String viewList(Model model) {
@@ -129,6 +140,58 @@ public class ${entity.classInfo.name}ViewController {
             return TaskRedirector.errorExit(model,"访问失败:"+e.getMessage());
         }
     }
+
+<#if exportEnabled >
+    @RequestMapping(value = "/exportList", method = RequestMethod.POST)
+    public void exportList(<#list indexedProperties as indexProperty>
+        <#if templateUtils.isDateProperty(indexProperty) >@RequestParam("start${indexProperty.name?cap_first}") String start${indexProperty.name?cap_first}Val,
+        @RequestParam("end${indexProperty.name?cap_first}") String end${indexProperty.name?cap_first}Val,
+        <#else>@RequestParam("${indexProperty.name}")String ${indexProperty.name}Val,</#if></#list>
+    HttpServletResponse response) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            response.setStatus(401);
+            return;
+        }
+        try {<#list indexedProperties as indexProperty>
+        <#if templateUtils.isDateProperty(indexProperty) >
+            Date start${indexProperty.name?cap_first}Var=null;
+            if (!StringUtils.isEmpty(start${indexProperty.name?cap_first}Val)){
+            start${indexProperty.name?cap_first}Var = DateTools.parseDate(start${indexProperty.name?cap_first}Val);
+            }
+            Date end${indexProperty.name?cap_first}Var=null;
+            if (!StringUtils.isEmpty(end${indexProperty.name?cap_first}Val)){
+            end${indexProperty.name?cap_first}Var = DateTools.parseDate(end${indexProperty.name?cap_first}Val);
+            }
+        <#else >
+            ${templateUtils.getObjectType(indexProperty.type)} ${indexProperty.name}Var=null;
+            if (!StringUtils.isEmpty(${indexProperty.name}Val)){
+            ${indexProperty.name}Var = ${templateUtils.getConvertParameterStatement(indexProperty)};
+            }
+        </#if>
+    </#list>
+            String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}", "UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            HSSFSheet sheet = workbook.createSheet();
+        ${entity.name}Service.exportToExcel(<#list indexedProperties as indexProperty>
+        <#if templateUtils.isDateProperty(indexProperty) >
+            start${indexProperty.name?cap_first}Var,end${indexProperty.name?cap_first}Var
+        <#else >${indexProperty.name}Var</#if>,</#list>
+        <#list entity.properties as property>
+            <#if property.isReferenceProperty()>
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
+                ${refEntity.name}Service.listAll(false),
+            </#if>
+        </#list>
+            sheet,EXCEL_START_ROW,EXCEL_START_COL);
+            workbook.write(response.getOutputStream());
+        } catch (Exception e) {
+            logger.error("获取${entity.classInfo.name}对象列表失败:", e);
+            e.printStackTrace();
+        }
+    }
+</#if>
 
     @RequestMapping(value = "/view-detail/{id}", method = RequestMethod.GET)
     public String retrieve(@PathVariable("id") int idVal,Model model) {

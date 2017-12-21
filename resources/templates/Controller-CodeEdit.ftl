@@ -53,8 +53,10 @@ public class ${entity.classInfo.name}Controller {
     public static final String jspPrefix= "";
     public static final String CONTROLLER_URL = "codes/${entity.name}";
     private static final String[] VALID_ROLES={"ROLE_UNKNOWN1"};
+<#if exportEnabled>
     private static final int EXCEL_START_ROW=0;
     private static final int EXCEL_START_COL=0;
+</#if>
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String main(Model model) {

@@ -314,14 +314,6 @@
         form.append(input);
         </#if>
     </#list>
-        input= $('<input type="text" />');
-        input.attr('name', "sort");
-        input.attr('value', grid.options.sortName);
-        form.append(input);
-        input= $('<input type="text" />');
-        input.attr('name', "direction");
-        input.attr('value', grid.options.sortOrder);
-        form.append(input);
         form.appendTo('body');
         iframe.appendTo('body');
         form.submit();

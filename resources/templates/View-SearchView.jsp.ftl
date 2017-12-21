@@ -48,29 +48,29 @@
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
                             <#if templateUtils.isDepartmentInfoType(refEntity)>
-                                <td colspan="4">
+                                <td class="left" colspan="4">
                                     <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${indexProperty.name}" name="${indexProperty.name}" relValue=""></div>
                                 </td>
                             <#else>
-                                <td colspan="4">
+                                <td class="left" colspan="4">
                                     <select prompt="请选择${refEntity.chineseAlias}" id="${indexProperty.name}" name="${indexProperty.name}"></select>
                                 </td>
                             </#if>
                         <#elseif templateUtils.isIntProperty(indexProperty) >
-                            <td colspan="4">
+                            <td class="left" colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly" />
                             </td>
                         <#elseif templateUtils.isNumberProperty(indexProperty) >
-                            <td colspan="4">
+                            <td class="left" colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"/>
                             </td>
                         <#elseif templateUtils.isDateProperty(indexProperty) >
-                            <td>开始日期</td>
-                            <td><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
-                            <td>结束日期</td>
-                            <td><input type="text" id="end${indexProperty.name?cap_first}" name="end${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
+                            <td >开始日期</td>
+                            <td class="left"><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
+                            <td >结束日期</td>
+                            <td class="left"><input type="text" id="end${indexProperty.name?cap_first}" name="end${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
                         <#else>
-                            <td colspan="4">
+                            <td class="left" colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" />
                             </td>
                         </#if>
@@ -87,7 +87,21 @@
     </form>
 </div>
 
-<div id="scrollContent">
+    <#if exportEnabled>
+<div class="box_tool_min padding_top2 padding_bottom2 padding_right5">
+    <div class="center">
+        <div class="left">
+            <div class="right">
+                <div class="padding_top5 padding_left10">
+                    <a href="javascript:;"  onclick="exportData()"><span class="icon_export">全部导出到Excel</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+    </#if>
+<div >
     <table class="tableStyle" mode="list" useCheckBox="false" sortMode="true">
         <tr>
              <#list entity.properties as property>
@@ -278,6 +292,48 @@
     function customHeightSet(contentHeight){
         $("#scrollContent").height(contentHeight-fixObjHeight);
     }
+
+    <#if exportEnabled>
+    function exportData() {
+        var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportList";
+        var iframe = $('<iframe id="down-file-iframe" ></iframe>');
+        var form = $('<form target="down-file-iframe"></form>');
+        form.attr('action', url + "?rand=" + Math.random());
+        form.attr('method', 'post');
+        var input;
+    <#list indexedProperties as indexProperty>
+        <#if templateUtils.isDateProperty(indexProperty) >
+        input= $('<input type="text" />');
+        input.attr('name', "start${indexProperty.name?cap_first}");
+        input.attr('value', $('#start${indexProperty.name?cap_first}').val());
+        form.append(input);
+        input= $('<input type="text" />');
+        input.attr('name', "end${indexProperty.name?cap_first}");
+        input.attr('value', $('#end${indexProperty.name?cap_first}').val());
+        form.append(input);
+        <#else>
+        input= $('<input type="text" />');
+        input.attr('name', "${indexProperty.name}");
+            <#if indexProperty.isReferenceProperty() >
+                <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
+                <#if templateUtils.isDepartmentInfoType(refEntity)>
+        input.attr('value', $('#${indexProperty.name}').attr('relValue'));
+                <#else>
+        input.attr('value', $('#${indexProperty.name}').val());
+                </#if>
+            <#else>
+        input.attr('value', $('#${indexProperty.name}').val());
+            </#if>
+        form.append(input);
+        </#if>
+    </#list>
+        form.appendTo('body');
+        iframe.appendTo('body');
+        form.submit();
+        iframe.remove();
+        form.remove();
+    }
+    </#if>
 </script>
 </body>
 </html>
