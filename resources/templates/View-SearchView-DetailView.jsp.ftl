@@ -19,7 +19,7 @@
 
 </head>
 <body>
-<h2>${entity.chineseAlias}察看 <button onclick="exportData()"><span class="icon_export">导出为Excel</span></button></h2>
+<h2>${entity.chineseAlias}察看 <#if exportEnabled ><button onclick="exportData()"><span class="icon_export">导出为Excel</span></button></#if></h2>
 <table class="tableStyle" formMode="view">
     <#assign i=0>
     <#list entity.properties as property>
@@ -100,6 +100,7 @@
 </div>
 </body>
 <script type="text/javascript">
+    <#if exportEnabled >
     function exportData() {
         var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportDetail";
         var iframe = $('<iframe id="down-file-iframe" ></iframe>');
@@ -117,5 +118,6 @@
         iframe.remove();
         form.remove();
     }
+    </#if>
 </script>
 </html>
