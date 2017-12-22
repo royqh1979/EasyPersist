@@ -101,7 +101,7 @@
     <div class="clear"></div>
 </div>
     </#if>
-<div >
+<div  id="scrollContent" class="border_gray">
     <table class="tableStyle" mode="list" useCheckBox="false" sortMode="true">
         <tr>
             <#assign colCount=0>
