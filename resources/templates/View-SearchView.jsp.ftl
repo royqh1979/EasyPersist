@@ -48,29 +48,29 @@
                         <#if indexProperty.isReferenceProperty() >
                             <#assign refEntity=entity.mappingRepository.findEntityByClass(indexProperty.refEntityFullClassName)>
                             <#if templateUtils.isDepartmentInfoType(refEntity)>
-                                <td class="left" colspan="4">
+                                <td class="ali01" colspan="4">
                                     <div class="selectTree" url="${"$"}{baseDir}/${"$"}{ctrlUrl}/listDepartmentInfoTree"  id="${indexProperty.name}" name="${indexProperty.name}" relValue=""></div>
                                 </td>
                             <#else>
-                                <td class="left" colspan="4">
+                                <td class="ali01" colspan="4">
                                     <select prompt="请选择${refEntity.chineseAlias}" id="${indexProperty.name}" name="${indexProperty.name}"></select>
                                 </td>
                             </#if>
                         <#elseif templateUtils.isIntProperty(indexProperty) >
-                            <td class="left" colspan="4">
+                            <td class="ali01" colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="numberOnly" />
                             </td>
                         <#elseif templateUtils.isNumberProperty(indexProperty) >
-                            <td class="left" colspan="4">
+                            <td class="ali01" colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" inputMode="positiveDecimal"/>
                             </td>
                         <#elseif templateUtils.isDateProperty(indexProperty) >
                             <td >开始日期</td>
-                            <td class="left"><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
+                            <td class="ali01"><input type="text" id="start${indexProperty.name?cap_first}" name="start${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
                             <td >结束日期</td>
-                            <td class="left"><input type="text" id="end${indexProperty.name?cap_first}" name="end${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
+                            <td class="ali01"><input type="text" id="end${indexProperty.name?cap_first}" name="end${indexProperty.name?cap_first}" class="date" style="width:200px;" dateFmt="yyyy-MM-dd"/></td>
                         <#else>
-                            <td class="left" colspan="4">
+                            <td class="ali01" colspan="4">
                                 <input type="text" id="${indexProperty.name}" name="${indexProperty.name}" style="width:200px;" />
                             </td>
                         </#if>
@@ -90,7 +90,7 @@
     <#if exportEnabled>
 <div class="box_tool_min padding_top2 padding_bottom2 padding_right5">
     <div class="center">
-        <div class="left">
+        <div class="ali01">
             <div class="right">
                 <div class="padding_top5 padding_left10">
                     <a href="javascript:;"  onclick="exportData()"><span class="icon_export">导出为Excel</span></a>
@@ -268,7 +268,7 @@
     function onView(id){
         top.Dialog.open({
             URL:"${"$"}{baseDir}/${"$"}{ctrlUrl}/view-detail/" + id,
-            Title:"查看${entity.chineseAlias}",Width:1000,Height:650});
+            Title:"查看${entity.chineseAlias}",Width:4000,Height:3000});
     }
 
     //查询

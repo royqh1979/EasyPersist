@@ -20,7 +20,7 @@
 </head>
 <body>
 <h2>${entity.chineseAlias}察看</h2>
-<table width="100%">
+<table class="tableStyle" formMode="view">
     <#assign i=0>
     <#list entity.properties as property>
         <#if ! (property == entity.idProperty) >
@@ -28,7 +28,7 @@
             <#if i%2==1 >
     <tr>
             </#if>
-        <td>${property.chineseAlias}</td>
+        <td width="120">${property.chineseAlias}</td>
             <#if property.isReferenceProperty()>
                 <#assign refEntity=entity.mappingRepository.findEntityByClass(property.refEntityFullClassName)>
         <td>${"$"}{${entity.name}.${refEntity.name}.${refEntity.listHeaderProperty.name}}</td>
