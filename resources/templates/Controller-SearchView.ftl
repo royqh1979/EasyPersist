@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 </#if>
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -194,6 +195,35 @@ public class ${entity.classInfo.name}ViewController {
             e.printStackTrace();
         }
     }
+
+    @RequestMapping(value = "/exportDetail", method = RequestMethod.POST)
+    public void exportDetail(@RequestParam("id") int idVal, HttpServletResponse response) {
+        if (!SpringSecurityHelper.currentUserHasAnyRoles(VALID_ROLES)) {
+            response.setStatus(401);
+            return;
+        }
+        try {
+            Map<String,Object> resultSet=new HashMap<>();
+            Map<String,Object> ${entity.name} = ${entity.name}Service.retrieveForView(idVal);
+            resultSet.put("${entity.name}",${entity.name});
+    <#list entity.subEntities as subEntityInfo>
+        <#assign subEntity=subEntityInfo.subEntity >
+        <#assign subRefProperty= subEntityInfo.subEntityReferenceProperty >
+            List<Map<String,Object>> ${subEntity.name}List = ${subEntity.name}Service.findBy${subRefProperty.name?cap_first}ForView(idVal);
+            resultSet.put("${subEntity.name}List",${subEntity.name}List);
+    </#list>
+            String codedFileName = java.net.URLEncoder.encode("${entity.chineseAlias}详情", "UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("content-disposition", "attachment;filename=" + codedFileName + ".xls");
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            HSSFSheet sheet = workbook.createSheet();
+            fyApplyworkService.exportDetailToExcel(sheet,resultSet);
+            workbook.write(response.getOutputStream());
+        } catch (Exception e) {
+            logger.error("获取FyApplywork对象列表失败:", e);
+            e.printStackTrace();
+        }
+    }
 </#if>
 
     @RequestMapping(value = "/view-detail/{id}", method = RequestMethod.GET)
@@ -203,12 +233,6 @@ public class ${entity.classInfo.name}ViewController {
         }
         try {
             Map<String,Object> ${entity.name} = ${entity.name}Service.retrieveForView(idVal);
-            if (${entity.name} == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("找不到id为" + idVal + "的${entity.classInfo.name}对象");
-                }
-                return TaskRedirector.errorExit(model, "找不到id为" + idVal + "的${entity.classInfo.name}对象");
-            }
             model.addAttribute("${entity.name}",${entity.name});
     <#list entity.subEntities as subEntityInfo>
         <#assign subEntity=subEntityInfo.subEntity >
@@ -216,6 +240,7 @@ public class ${entity.classInfo.name}ViewController {
             List<Map<String,Object>> ${subEntity.name}List = ${subEntity.name}Service.findBy${subRefProperty.name?cap_first}ForView(idVal);
             model.addAttribute("${subEntity.name}List",${subEntity.name}List);
     </#list>
+            model.addAttribute("ctrlUrl", CONTROLLER_URL);
             return jspPrefix + "${entity.name}-view-detail";
         } catch (Exception e) {
             logger.error("获取${entity.classInfo.name}对象失败:", e);

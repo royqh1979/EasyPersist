@@ -19,7 +19,7 @@
 
 </head>
 <body>
-<h2>${entity.chineseAlias}察看</h2>
+<h2>${entity.chineseAlias}察看 <button onclick="exportData()"><span class="icon_export">导出为Excel</span></button></h2>
 <table class="tableStyle" formMode="view">
     <#assign i=0>
     <#list entity.properties as property>
@@ -99,4 +99,23 @@
 
 </div>
 </body>
+<script type="text/javascript">
+    function exportData() {
+        var url="${"$"}{baseDir}/${"$"}{ctrlUrl}/exportDetail";
+        var iframe = $('<iframe id="down-file-iframe" ></iframe>');
+        var form = $('<form target="down-file-iframe"></form>');
+        form.attr('action', url + "?rand=" + Math.random());
+        form.attr('method', 'post');
+        var input;
+        input= $('<input type="text" />');
+        input.attr('name', 'id');
+        input.attr('value', '${"$"}{${entity.name}.${entity.idProperty.name}}');
+        form.append(input);
+        form.appendTo('body');
+        iframe.appendTo('body');
+        form.submit();
+        iframe.remove();
+        form.remove();
+    }
+</script>
 </html>

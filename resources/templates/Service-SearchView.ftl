@@ -18,6 +18,7 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.math.BigDecimal;
 </#if>
 
 <#list typeList as type>

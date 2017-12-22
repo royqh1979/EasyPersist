@@ -135,18 +135,23 @@ public class ServiceGenerator {
         typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
         dataModel.put("indexedProperties",CodeUtils.getAllIndexedProperties(entity));
         try {
+            if (viewType.containsSearchView()) {
+                for (SubEntityInfo subEntityInfo:entity.getSubEntities()) {
+                    //add entities referenced by subEntity
+                    typeList.addAll(CodeUtils.getRefencedTypes(subEntityInfo.getSubEntity()));
+                }
+                dataModel.put("includeSearchView",true);
+                typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
+            }
             if (viewType.containsFullFunctionEditor()) {
                 typeList.addAll(CodeUtils.getMappedTypeList(entity));
                 typeList.addAll(CodeUtils.getMappedTypePersistorList(entity,module));
-                dataModel.put("includeSearchView",viewType.containsSearchView());
                 ServiceForFullEditorTemplate.process(dataModel,writer);
             }
             if (viewType.containsExcelStyleEditor()) {
-                dataModel.put("includeSearchView",viewType.containsSearchView());
                 ServiceForCodeEditorTemplate.process(dataModel, writer);
             }
             if (viewType==ViewType.SearchViewOnly) {
-                typeList.addAll(CodeUtils.getReferencedPersistCompositorTypes(entity,module));
                 ServiceForSearchViewTemplate.process(dataModel, writer);
             }
             dataModel.clear();

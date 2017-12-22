@@ -110,7 +110,7 @@ public static class ${(processorName)!"ExportRowToExcelProcessor"} implements ${
                     }
                 }
                 <#elseif templateUtils.isBooleanProperty(property) >
-                cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+                cell.setCellType(Cell.CELL_TYPE_STRING);
                 cell.setCellValue(${entityToExport.name}.${property.getter}()?"是":"否");
                 <#elseif property.isTemporal() >
                 cell.setCellStyle(dateCellStyle);
