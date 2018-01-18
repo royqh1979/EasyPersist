@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>net.roy.codegenerator.orm</id>
   <name>EasyPersist</name>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <vendor email="royqh1979@gmail.com" url="http://www.royqh.net">Roy Qu</vendor>
 
   <description><![CDATA[
@@ -97,6 +97,7 @@
               add: create persistor's retrieve methods with custom row mapper <br />
       * 1.2.0 add: View Generation Config UI <br />
       * 1.2.1 add execl export in search view - detail view  <br />
+      * 1.2.2 add: mysql/postgresql selection in sql2entity <br />
     ]]>
   </change-notes>
 

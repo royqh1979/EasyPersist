@@ -32,8 +32,8 @@ import net.royqh.easypersist.entity.generator.view.ViewGenerator;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
 import net.royqh.easypersist.entity.parser.jpa.ClassParser;
-import net.royqh.easypersist.ui.EditorTypeChooseDialog;
-import net.royqh.easypersist.ui.ViewType;
+import net.royqh.easypersist.ui.editor.EditorTypeChooseDialog;
+import net.royqh.easypersist.ui.editor.ViewType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

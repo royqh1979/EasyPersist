@@ -589,7 +589,7 @@ table_name
    ;
 
   schema_name:
-    identifier;
+    identifier | keyword;
 
   column_name
    :  identifier  | keyword |  '*'  | identifier ('[' expr (':' expr )? ']')+
@@ -2248,10 +2248,10 @@ UNICODE_ESCAPED_STRING:
   ;
 
 QUOTED_IDENTIFIER:
-  '"' (~'"' | '""' | '\\\"')* '"' ;
+  '"' (~'"' | '""' | '\\"')* '"' ;
 
 UNICODE_ESCAPED_IDENTIFIER:
-  U '&' '"' (~'"' | '""' | '\\\"')* '"' ;
+  U '&' '"' (~'"' | '""' | '\\"')* '"' ;
   
 
 UNDERLINE_STARTED_IDENTIFIER:

@@ -1,4 +1,4 @@
-package net.royqh.easypersist.ui;
+package net.royqh.easypersist.ui.editor;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;

@@ -1,4 +1,4 @@
-package net.royqh.easypersist.ui;
+package net.royqh.easypersist.ui.editor;
 
 public enum ViewType {
     ExcelStyleEditorOnly {

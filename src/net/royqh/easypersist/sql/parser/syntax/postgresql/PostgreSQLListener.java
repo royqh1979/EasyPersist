@@ -1,4 +1,4 @@
-package net.royqh.easypersist.sql.parser.syntax.postgresql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\PostgreSQL.g4 by ANTLR 4.6
+package net.royqh.easypersist.sql.parser.syntax.postgresql;// Generated from E:/Workspace/EasyPersist/grammar\PostgreSQL.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**

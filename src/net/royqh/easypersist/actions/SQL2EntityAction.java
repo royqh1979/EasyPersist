@@ -18,6 +18,9 @@ import net.royqh.easypersist.sql.model.Model;
 import net.royqh.easypersist.sql.generator.EntitiesGenerator;
 import net.royqh.easypersist.sql.parser.sql2entity.ModelParser;
 import net.royqh.easypersist.sql.parser.sql2entity.MySQLModelParser;
+import net.royqh.easypersist.sql.parser.sql2entity.PostgreSQLModelParser;
+import net.royqh.easypersist.ui.editor.EditorTypeChooseDialog;
+import net.royqh.easypersist.ui.entity.SQL2EntityDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,10 +65,28 @@ public class SQL2EntityAction extends AnAction {
             WriteCommandAction.runWriteCommandAction(getProject(), new Runnable() {
                 @Override
                 public void run() {
+                    SQL2EntityDialog dialog = new SQL2EntityDialog();
+                    dialog.setTitle("SQL to Entity Generation...");
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(null);
+                    dialog.setVisible(true);
+
+                    if (!dialog.isGoOn()) {
+                        return;
+                    }
                     try {
                         indicator.setFraction(0.1);
                         sqlFile.refresh(false,false);
-                        ModelParser modelParser=new MySQLModelParser();
+                        ModelParser modelParser=null;
+                        switch(dialog.getSQLDialectType()) {
+                            case MySQL:
+                                modelParser=new MySQLModelParser();
+                                break;
+                            case PostgreSQL:
+                                modelParser=new PostgreSQLModelParser();
+                                break;
+                        }
+                        System.out.println("haha");
                         Model model=modelParser.parse(sqlFile);
 
                         VirtualFile root=  ProjectRootManager.getInstance(getProject())

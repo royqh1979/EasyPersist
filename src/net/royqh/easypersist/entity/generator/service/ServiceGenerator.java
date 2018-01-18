@@ -11,7 +11,7 @@ import freemarker.template.Template;
 import net.royqh.easypersist.entity.generator.TemplateLoader;
 import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.SubEntityInfo;
-import net.royqh.easypersist.ui.ViewType;
+import net.royqh.easypersist.ui.editor.ViewType;
 import net.royqh.easypersist.utils.CodeUtils;
 import net.royqh.easypersist.utils.TemplateUtils;
 import net.royqh.easypersist.utils.TypeUtils;

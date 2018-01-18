@@ -50,14 +50,16 @@ public class EntitiesGenerator {
             if (entityModel.isMappingTable(table)) {
                 continue;
             }
+            boolean hasGISType=false;
             StringBuilder entityBuilder = new StringBuilder();
             Entity entity = entityModel.getEntityByTableName(table.getName());
-            entityBuilder.append("package dummy;\n\n");
-            entityBuilder.append("import net.royqh.easypersist.annotations.Reference;\n");
-            entityBuilder.append("import java.io.Serializable;\n");
-            entityBuilder.append("import java.util.Date;\n");
-            entityBuilder.append("import java.math.BigDecimal;\n");
-            entityBuilder.append("import javax.persistence.*;\n");
+            StringBuilder importBuilder=new StringBuilder();
+            importBuilder.append("package dummy;\n\n");
+            importBuilder.append("import net.royqh.easypersist.annotations.Reference;\n");
+            importBuilder.append("import java.io.Serializable;\n");
+            importBuilder.append("import java.util.Date;\n");
+            importBuilder.append("import java.math.BigDecimal;\n");
+            importBuilder.append("import javax.persistence.*;\n");
 
             entityBuilder.append("@Entity\n");
             StringBuilder indexBuilder = new StringBuilder();
@@ -123,6 +125,9 @@ public class EntitiesGenerator {
                 //生成column对应的getter
                 String propertyName = entity.getPropertyByColumnName(column.getName());
                 String propertyType = getType(column.getName(), column.getType(), column.isNotNull());
+                if (!hasGISType) {
+                    hasGISType=testHasGISType(propertyType);
+                }
 
                 if (column.isPrimaryKey()) {
                     entityBuilder.append("@Id\n");
@@ -208,6 +213,11 @@ public class EntitiesGenerator {
             }
             entityBuilder.append("}\n");
 
+            if (hasGISType) {
+                importBuilder.append("import org.postgis.*;\n");
+            }
+            entityBuilder.insert(0,importBuilder);
+
             PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
 
             PsiFile file = psiFileFactory.createFileFromText(entity.getName() + ".java", JavaLanguage.INSTANCE, entityBuilder);
@@ -221,6 +231,13 @@ public class EntitiesGenerator {
 
             directory.add(file);
         }
+    }
+
+    private static boolean testHasGISType(String propertyType) {
+        if ("PGgeometry".equals(propertyType)) {
+            return true;
+        }
+        return false;
     }
 
     private static void generateMappingInfo(EntityModel model, ManyToManyMapping mapping, MappingColumn mappingColumn, MappingColumn refMappingColumn, Table table, StringBuilder builder) {
@@ -410,6 +427,8 @@ public class EntitiesGenerator {
             case "numeric":
             case "decimal":
                 return "BigDecimal";
+            case "geometry" :
+                return "PGgeometry";
         }
         throw new RuntimeException("字段 " + name + ":　不支持的数据类型:" + type);
     }

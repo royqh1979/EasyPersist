@@ -34,7 +34,7 @@ public class PostgreSQL2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
     private Table table;
     @Override
     public Void visitCreateTableStatement(PostgreSQLParser.CreateTableStatementContext ctx) {
-        String tableName= PostgreSQLParseTool.parseIdentifier(ctx.table_name());
+        String tableName= PostgreSQLParseTool.parseIdentifier(ctx.table_name().identifier());
         table=new Table(tableName);
         super.visitCreateTableStatement(ctx);
         model.addTable(table);
@@ -43,7 +43,7 @@ public class PostgreSQL2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
 
     @Override
     public Void visitCreate_index_stmt(PostgreSQLParser.Create_index_stmtContext ctx) {
-        String tableName= PostgreSQLParseTool.parseIdentifier(ctx.table_name());
+        String tableName= PostgreSQLParseTool.parseIdentifier(ctx.table_name().identifier());
         Table table=model.getTable(tableName);
         if (table==null) {
             Token startToken=ctx.getStart();
@@ -51,7 +51,7 @@ public class PostgreSQL2ModelVisitor extends PostgreSQLBaseVisitor<Void> {
                     tableName,startToken.getLine(),startToken.getCharPositionInLine()));
         }
         Index index=new Index(Index.Type.Index);
-        index.setName(PostgreSQLParseTool.parseIdentifier(ctx.index_name()));
+        index.setName(PostgreSQLParseTool.parseIdentifier(ctx.index_name().identifier()));
         for (PostgreSQLParser.Index_itemContext indexItemCtx: ctx.index_item()) {
             if (indexItemCtx.column_name()==null) {
                 Token startToken=ctx.getStart();
