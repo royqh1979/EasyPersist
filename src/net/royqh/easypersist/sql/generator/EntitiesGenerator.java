@@ -126,7 +126,7 @@ public class EntitiesGenerator {
                 String propertyName = entity.getPropertyByColumnName(column.getName());
                 String propertyType = getType(column.getName(), column.getType(), column.isNotNull());
                 if (!hasGISType) {
-                    hasGISType=testHasGISType(propertyType);
+                    hasGISType= isGISType(propertyType);
                 }
 
                 if (column.isPrimaryKey()) {
@@ -214,7 +214,7 @@ public class EntitiesGenerator {
             entityBuilder.append("}\n");
 
             if (hasGISType) {
-                importBuilder.append("import org.postgis.*;\n");
+                importBuilder.append("import org.locationtech.jts.geom.*;\n");
             }
             entityBuilder.insert(0,importBuilder);
 
@@ -233,8 +233,26 @@ public class EntitiesGenerator {
         }
     }
 
-    private static boolean testHasGISType(String propertyType) {
-        if ("PGgeometry".equals(propertyType)) {
+    private static boolean isGISType(String propertyType) {
+        if ("Geometry".equals(propertyType)) {
+            return true;
+        }
+        if ("LineString".equals(propertyType)) {
+            return true;
+        }
+        if ("Polygon".equals(propertyType)) {
+            return true;
+        }
+        if ("MultiPoint".equals(propertyType)) {
+            return true;
+        }
+        if ("MultiLineString".equals(propertyType)) {
+            return true;
+        }
+        if ("MultiPolygon".equals(propertyType)) {
+            return true;
+        }
+        if ("GeometryCollection".equals(propertyType)) {
             return true;
         }
         return false;
@@ -428,7 +446,19 @@ public class EntitiesGenerator {
             case "decimal":
                 return "BigDecimal";
             case "geometry" :
-                return "PGgeometry";
+                return "Geometry";
+            case "linestring":
+                return "LineString";
+            case "polygon":
+                return "Polygon";
+            case "multipoint":
+                return "MultiPoint";
+            case "multilinestring":
+                return "MultiLineString";
+            case  "multipolygon":
+                return "MultiPolygon";
+            case "geometrycollection":
+                return "GeometryCollection";
         }
         throw new RuntimeException("字段 " + name + ":　不支持的数据类型:" + type);
     }
