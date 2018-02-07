@@ -1,4 +1,4 @@
-package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
+package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspace/EasyPersist/grammar\MySQL.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -499,7 +499,7 @@ public class MySQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements 
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -759,6 +759,27 @@ public class MySQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements 
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitSetType(MySQLParser.SetTypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitJsonType(MySQLParser.JsonTypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitSpatialType(MySQLParser.SpatialTypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitSpatial_type(MySQLParser.Spatial_typeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

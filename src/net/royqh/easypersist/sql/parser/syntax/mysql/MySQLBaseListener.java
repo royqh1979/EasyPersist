@@ -1,4 +1,4 @@
-package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
+package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspace/EasyPersist/grammar\MySQL.g4 by ANTLR 4.7
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -843,13 +843,13 @@ public class MySQLBaseListener implements MySQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx) { }
+	@Override public void enterSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx) { }
+	@Override public void exitSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1294,6 +1294,42 @@ public class MySQLBaseListener implements MySQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSetType(MySQLParser.SetTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJsonType(MySQLParser.JsonTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJsonType(MySQLParser.JsonTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSpatialType(MySQLParser.SpatialTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSpatialType(MySQLParser.SpatialTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSpatial_type(MySQLParser.Spatial_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSpatial_type(MySQLParser.Spatial_typeContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

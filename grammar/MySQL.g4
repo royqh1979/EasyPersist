@@ -393,7 +393,7 @@ create_definition
    | K_FULLTEXT ( K_INDEX | K_KEY)? (index_name)?
            '(' index_col_name (',' index_col_name)* ')' (index_option)*   # FullTextIndexDef
    | K_SPATIAL  ( K_INDEX | K_KEY)? (index_name)?
-           '(' index_col_name (',' index_col_name)* ')' (index_option)*   # SpacialIndexDef
+           '(' index_col_name (',' index_col_name)* ')' (index_option)*   # SpatialIndexDef
    | ((K_CONSTRAINT)? symbol)? K_FOREIGN K_KEY (index_name)?
                '(' index_col_name (',' index_col_name)* ')' reference_definition   # ForeignKeyDef
    | K_CHECK '(' expr ')'  # CheckDef
@@ -461,11 +461,17 @@ data_type:
     (K_CHARACTER K_SET charset_name)?                                              #EnumType
   | K_SET '(' string_literal (',' string_literal )? ')'
     (K_CHARACTER K_SET charset_name)?                                                  #SetType
-    /*  | spatial_type */
+  | K_JSON                                                                             #JsonType
+  | spatial_type                                                                      #SpatialType
   ;
 
+spatial_type:
+    K_POLYGON | K_GEOMETRY | K_POINT | K_LINESTRING
+    | K_MULTIPOINT | K_MULTILINESTRING | K_MULTIPOLYGON | K_GEOMETRYCOLLECTION
+    ;
+
 index_col_name:
-  column_name ('(' length ')')? ( K_ASC | K_DESC )?
+  column_name ('(' length ')')? (K_ASC | K_DESC )?
   ;
 index_type:
   K_USING ( K_BTREE | K_HASH )
@@ -949,6 +955,7 @@ keyword
 | K_ISSUER
 | K_ITERATE
 | K_JOIN
+| K_JSON
 | K_KEY
 | K_KEYS
 | K_KEY_BLOCK_SIZE
@@ -1559,6 +1566,7 @@ K_IS  : I S  ;
 K_ISOLATION : I S O L A T I O N ;
 K_ISSUER : I S S U E R ;
 K_ITERATE  : I T E R A T E  ;
+K_JSON : J S O N ;
 K_JOIN  : J O I N  ;
 K_KEY  : K E Y  ;
 K_KEYS  : K E Y S  ;
@@ -1931,7 +1939,7 @@ INTEGER_VALUE :
    ;
 
 DOUBLE_QUOTED_STRING:
-   '"' (~'"' | '""' | '\\\"')* '"' ;
+   '"' (~'"' | '""' | '\\"')* '"' ;
 
 SINGLE_QUOTED_STRING:
   '\'' ( ~'\'' | '\'\'' | '\\\'' )* '\''

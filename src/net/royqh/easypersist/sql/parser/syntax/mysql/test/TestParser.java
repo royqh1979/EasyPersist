@@ -2,7 +2,8 @@ package net.royqh.easypersist.sql.parser.syntax.mysql.test;
 
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLLexer;
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLParser;
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -17,7 +18,7 @@ public class TestParser {
         // create a CharStream that reads from standard input
         String sql="select  *  from  /* hehehe */  ttt;";
         ByteArrayInputStream is=new ByteArrayInputStream(sql.getBytes("utf8"));
-        ANTLRInputStream input = new ANTLRInputStream(sql);
+        CharStream input = CharStreams.fromStream(is);
 // create a lexer that feeds off of input CharStream
         MySQLLexer lexer = new MySQLLexer(input);
 // create a buffer of tokens pulled from the lexer

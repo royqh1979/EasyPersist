@@ -151,6 +151,19 @@ public class JdbcUtils {
                 builder.append("}\n");
                 return builder.toString();
             }
+            if (TypeUtils.isWrapperType(property.getType())){
+                builder.append(String.format("if (null != %s) {\n",
+                        paramVar));
+                builder.append("WKTWriter wktWriter=new WKTWriter();\n");
+                builder.append(String.format("String wktStr=wktWriter.write(%s);\n",paramVar));
+                builder.append(String.format("stmt.%s(%s,wktStr);\n",
+                        JdbcUtils.getColumnSetter(property),
+                        paramIndex));
+                builder.append("} else {\n");
+                builder.append(String.format("stmt.setNull(%s,%s);\n", paramIndex, JdbcUtils.getWrapperType(property.getType())));
+                builder.append("}\n");
+                return builder.toString();
+            }
             return String.format("stmt.%s(%s,%s);\n",
                     JdbcUtils.getColumnSetter(property),
                     paramIndex,

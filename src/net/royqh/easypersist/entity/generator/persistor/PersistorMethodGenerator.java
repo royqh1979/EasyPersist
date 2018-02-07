@@ -95,7 +95,6 @@ public class PersistorMethodGenerator {
     }
 
     public void createUpdateMethod(StringBuilder content, Entity entity) {
-        List<String> updateColumns = new ArrayList<>();
         List<SingleProperty> updateProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
         for (Property property : entity.getProperties()) {
@@ -103,12 +102,10 @@ public class PersistorMethodGenerator {
                 continue;
             if (property.getPropertyType() == PropertyType.Column) {
                 SingleProperty singleProperty = (SingleProperty) property;
-                updateColumns.add(sqlGenerator.getQuote() + singleProperty.getColumnName() +
-                        sqlGenerator.getQuote() + "=?");
                 updateProperties.add(singleProperty);
             }
         }
-        content.append(sqlGenerator.generateUpdateSQL(entity.getTableName(), updateColumns, idProperty.getColumnName()));
+        content.append(sqlGenerator.generateUpdateSQL(entity.getTableName(), updateProperties, idProperty.getColumnName()));
 
         if (!entity.isAutoGenerateId()) {
             content.append("public void update(");
@@ -154,7 +151,6 @@ public class PersistorMethodGenerator {
     }
 
     public void createCreateMethods(StringBuilder content, Entity entity) {
-        List<String> insertFields = new ArrayList<>();
         List<SingleProperty> insertProperties = new ArrayList<>();
         SingleProperty idProperty = entity.getIdProperty();
         for (Property property : entity.getProperties()) {
@@ -162,11 +158,10 @@ public class PersistorMethodGenerator {
                 continue;
             if (property.getPropertyType() == PropertyType.Column) {
                 SingleProperty singleProperty = (SingleProperty) property;
-                insertFields.add(singleProperty.getColumnName());
                 insertProperties.add(singleProperty);
             }
         }
-        content.append(sqlGenerator.generateInsertSQL(entity.getTableName(), insertFields));
+        content.append(sqlGenerator.generateInsertSQL(entity.getTableName(), insertProperties));
 
         if (entity.isAutoGenerateId()) {
             createCreateWithAutoGenerateIdMethod(content, entity, insertProperties);

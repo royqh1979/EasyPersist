@@ -3,7 +3,8 @@ package net.royqh.easypersist.sql.parser.sql2entity;
 import net.royqh.easypersist.sql.model.Model;
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLLexer;
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLParser;
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -19,7 +20,7 @@ public class MySQLModelParser extends ModelParser {
     public Model parse(InputStream inputStream, Charset charset) {
         try {
             InputStreamReader reader = new InputStreamReader(inputStream, charset);
-            ANTLRInputStream input = new ANTLRInputStream(reader);
+            CharStream input = CharStreams.fromReader(reader);
             MySQLLexer lexer = new MySQLLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             MySQLParser parser = new MySQLParser(tokenStream);

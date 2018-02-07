@@ -1,4 +1,4 @@
-package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
+package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspace/EasyPersist/grammar\MySQL.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -435,12 +435,12 @@ public interface MySQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFullTextIndexDef(MySQLParser.FullTextIndexDefContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code SpacialIndexDef}
+	 * Visit a parse tree produced by the {@code SpatialIndexDef}
 	 * labeled alternative in {@link MySQLParser#create_definition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx);
+	T visitSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code ForeignKeyDef}
 	 * labeled alternative in {@link MySQLParser#create_definition}.
@@ -698,6 +698,26 @@ public interface MySQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitSetType(MySQLParser.SetTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code JsonType}
+	 * labeled alternative in {@link MySQLParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJsonType(MySQLParser.JsonTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code SpatialType}
+	 * labeled alternative in {@link MySQLParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSpatialType(MySQLParser.SpatialTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MySQLParser#spatial_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSpatial_type(MySQLParser.Spatial_typeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MySQLParser#index_col_name}.
 	 * @param ctx the parse tree

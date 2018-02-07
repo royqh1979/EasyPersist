@@ -1,4 +1,4 @@
-package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspaces/Tools/EasyPersist/grammar\MySQL.g4 by ANTLR 4.6
+package net.royqh.easypersist.sql.parser.syntax.mysql;// Generated from E:/Workspace/EasyPersist/grammar\MySQL.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -719,17 +719,17 @@ public interface MySQLListener extends ParseTreeListener {
 	 */
 	void exitFullTextIndexDef(MySQLParser.FullTextIndexDefContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code SpacialIndexDef}
+	 * Enter a parse tree produced by the {@code SpatialIndexDef}
 	 * labeled alternative in {@link MySQLParser#create_definition}.
 	 * @param ctx the parse tree
 	 */
-	void enterSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx);
+	void enterSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code SpacialIndexDef}
+	 * Exit a parse tree produced by the {@code SpatialIndexDef}
 	 * labeled alternative in {@link MySQLParser#create_definition}.
 	 * @param ctx the parse tree
 	 */
-	void exitSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx);
+	void exitSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code ForeignKeyDef}
 	 * labeled alternative in {@link MySQLParser#create_definition}.
@@ -1170,6 +1170,40 @@ public interface MySQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSetType(MySQLParser.SetTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code JsonType}
+	 * labeled alternative in {@link MySQLParser#data_type}.
+	 * @param ctx the parse tree
+	 */
+	void enterJsonType(MySQLParser.JsonTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code JsonType}
+	 * labeled alternative in {@link MySQLParser#data_type}.
+	 * @param ctx the parse tree
+	 */
+	void exitJsonType(MySQLParser.JsonTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code SpatialType}
+	 * labeled alternative in {@link MySQLParser#data_type}.
+	 * @param ctx the parse tree
+	 */
+	void enterSpatialType(MySQLParser.SpatialTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code SpatialType}
+	 * labeled alternative in {@link MySQLParser#data_type}.
+	 * @param ctx the parse tree
+	 */
+	void exitSpatialType(MySQLParser.SpatialTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MySQLParser#spatial_type}.
+	 * @param ctx the parse tree
+	 */
+	void enterSpatial_type(MySQLParser.Spatial_typeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MySQLParser#spatial_type}.
+	 * @param ctx the parse tree
+	 */
+	void exitSpatial_type(MySQLParser.Spatial_typeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MySQLParser#index_col_name}.
 	 * @param ctx the parse tree

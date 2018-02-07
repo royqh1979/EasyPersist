@@ -139,7 +139,7 @@ class TableDefinitionVisitor extends MySQLBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx) {
+    public Void visitSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx) {
         Index spatial=new Index(Index.Type.Spatial);
         for (MySQLParser.Index_col_nameContext indexColNameContext:ctx.index_col_name()) {
             spatial.addColumn(MySQLParseTool.parseIdentifier(indexColNameContext));

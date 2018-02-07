@@ -153,7 +153,9 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitSpacialIndexDef(MySQLParser.SpacialIndexDefContext ctx) {
+    public Void visitSpatialIndexDef(MySQLParser.SpatialIndexDefContext ctx) {
+        // We can't generate Spatial index
+        /*
         String indexName=null;
         if (ctx.index_name()!=null) {
             indexName=MySQLParseTool.parseIdentifier(ctx.index_name());
@@ -164,6 +166,7 @@ public class MySQL2ModelVisitor extends MySQLBaseVisitor<Void> {
             index.addColumn(MySQLParseTool.parseIdentifier(colNameCtx.column_name()));
         }
         table.addIndex(index);
+        */
         return null;
     }
 

@@ -2,7 +2,8 @@ package net.royqh.easypersist.sql.parser.mysql2postgresql;
 
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLLexer;
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLParser;
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -16,9 +17,9 @@ public class TestConverter {
         // create a CharStream that reads from standard input
         InputStream is=TestConverter.class.getResourceAsStream("/sql/forestTending.sql");
         InputStreamReader reader=new InputStreamReader(is,"UTF-8");
-        ANTLRInputStream input = new ANTLRInputStream(reader);
+        CharStream charStream= CharStreams.fromReader(reader);
 // create a lexer that feeds off of input CharStream
-        MySQLLexer lexer = new MySQLLexer(input);
+        MySQLLexer lexer = new MySQLLexer(charStream);
 // create a buffer of tokens pulled from the lexer
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 // create a parser that feeds off the tokens buffer

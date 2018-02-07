@@ -1,6 +1,8 @@
 package net.royqh.easypersist.actions;
 
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -17,10 +19,11 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.sql.dialects.SqlLanguageDialect;
+import net.royqh.easypersist.sql.parser.mysql2postgresql.Mysql2PostgresqlVisitor;
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLLexer;
 import net.royqh.easypersist.sql.parser.syntax.mysql.MySQLParser;
-import net.royqh.easypersist.sql.parser.mysql2postgresql.Mysql2PostgresqlVisitor;
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.jetbrains.annotations.NotNull;
@@ -72,7 +75,7 @@ public class MySQL2PostgreSQLAction extends AnAction {
                         
                         InputStream is=mysqlFile.getInputStream();
                         InputStreamReader reader=new InputStreamReader(is, mysqlFile.getCharset());
-                        ANTLRInputStream input = new ANTLRInputStream(reader);
+                        CharStream input = CharStreams.fromReader(reader);
                         MySQLLexer lexer = new MySQLLexer(input);
 // create a buffer of tokens pulled from the lexer
                         CommonTokenStream tokens = new CommonTokenStream(lexer);

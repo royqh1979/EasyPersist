@@ -11,6 +11,7 @@ import net.royqh.easypersist.sql.parser.sql2entity.model.Entity;
 import net.royqh.easypersist.sql.parser.sql2entity.model.EntityModel;
 import net.royqh.easypersist.sql.parser.sql2entity.model.ManyToManyMapping;
 import net.royqh.easypersist.sql.parser.sql2entity.model.MappingColumn;
+import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -50,10 +51,10 @@ public class EntitiesGenerator {
             if (entityModel.isMappingTable(table)) {
                 continue;
             }
-            boolean hasGISType=false;
+            boolean hasGISType = false;
             StringBuilder entityBuilder = new StringBuilder();
             Entity entity = entityModel.getEntityByTableName(table.getName());
-            StringBuilder importBuilder=new StringBuilder();
+            StringBuilder importBuilder = new StringBuilder();
             importBuilder.append("package dummy;\n\n");
             importBuilder.append("import net.royqh.easypersist.annotations.Reference;\n");
             importBuilder.append("import java.io.Serializable;\n");
@@ -126,7 +127,7 @@ public class EntitiesGenerator {
                 String propertyName = entity.getPropertyByColumnName(column.getName());
                 String propertyType = getType(column.getName(), column.getType(), column.isNotNull());
                 if (!hasGISType) {
-                    hasGISType= isGISType(propertyType);
+                    hasGISType = TypeUtils.isGISType(propertyType);
                 }
 
                 if (column.isPrimaryKey()) {
@@ -216,7 +217,7 @@ public class EntitiesGenerator {
             if (hasGISType) {
                 importBuilder.append("import org.locationtech.jts.geom.*;\n");
             }
-            entityBuilder.insert(0,importBuilder);
+            entityBuilder.insert(0, importBuilder);
 
             PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
 
@@ -231,31 +232,6 @@ public class EntitiesGenerator {
 
             directory.add(file);
         }
-    }
-
-    private static boolean isGISType(String propertyType) {
-        if ("Geometry".equals(propertyType)) {
-            return true;
-        }
-        if ("LineString".equals(propertyType)) {
-            return true;
-        }
-        if ("Polygon".equals(propertyType)) {
-            return true;
-        }
-        if ("MultiPoint".equals(propertyType)) {
-            return true;
-        }
-        if ("MultiLineString".equals(propertyType)) {
-            return true;
-        }
-        if ("MultiPolygon".equals(propertyType)) {
-            return true;
-        }
-        if ("GeometryCollection".equals(propertyType)) {
-            return true;
-        }
-        return false;
     }
 
     private static void generateMappingInfo(EntityModel model, ManyToManyMapping mapping, MappingColumn mappingColumn, MappingColumn refMappingColumn, Table table, StringBuilder builder) {

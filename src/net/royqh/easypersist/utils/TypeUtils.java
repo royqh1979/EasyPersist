@@ -171,6 +171,34 @@ public abstract class TypeUtils {
         return PrimitiveTypeMapper.containsKey(type);
     }
 
+    public static boolean isGISType(SingleProperty property) {
+        return isGISType(getShortTypeName(property.getType()));
+    }
+    public static boolean isGISType(String propertyType) {
+            if ("Geometry".equals(propertyType)) {
+                return true;
+            }
+            if ("LineString".equals(propertyType)) {
+                return true;
+            }
+            if ("Polygon".equals(propertyType)) {
+                return true;
+            }
+            if ("MultiPoint".equals(propertyType)) {
+                return true;
+            }
+            if ("MultiLineString".equals(propertyType)) {
+                return true;
+            }
+            if ("MultiPolygon".equals(propertyType)) {
+                return true;
+            }
+            if ("GeometryCollection".equals(propertyType)) {
+                return true;
+            }
+            return false;
+    }
+
     public static Object getPrimitiveType(String type) {
         String shortTypeName= TypeUtils.getShortTypeName(type);
         if (PrimitiveTypeMapper.containsKey(type)){

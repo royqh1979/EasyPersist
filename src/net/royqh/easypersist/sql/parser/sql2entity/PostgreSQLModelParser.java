@@ -3,7 +3,8 @@ package net.royqh.easypersist.sql.parser.sql2entity;
 import net.royqh.easypersist.sql.model.Model;
 import net.royqh.easypersist.sql.parser.syntax.postgresql.PostgreSQLLexer;
 import net.royqh.easypersist.sql.parser.syntax.postgresql.PostgreSQLParser;
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -19,8 +20,8 @@ public class PostgreSQLModelParser extends ModelParser {
     public Model parse(InputStream inputStream, Charset charset) {
         try {
             InputStreamReader reader = new InputStreamReader(inputStream, charset);
-            ANTLRInputStream input = new ANTLRInputStream(reader);
-            PostgreSQLLexer lexer = new PostgreSQLLexer(input);
+            CharStream charStream=CharStreams.fromReader(reader);
+            PostgreSQLLexer lexer = new PostgreSQLLexer(charStream);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             PostgreSQLParser parser = new PostgreSQLParser(tokenStream);
             ParseTree tree = parser.prog();

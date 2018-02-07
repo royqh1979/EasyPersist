@@ -62,18 +62,18 @@ public class SQL2EntityAction extends AnAction {
 
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
+            SQL2EntityDialog dialog = new SQL2EntityDialog();
+            dialog.setTitle("SQL to Entity Generation...");
+            dialog.pack();
+            dialog.setLocationRelativeTo(null);
+            dialog.setVisible(true);
+            if (!dialog.isGoOn()) {
+                return;
+            }
+
             WriteCommandAction.runWriteCommandAction(getProject(), new Runnable() {
                 @Override
                 public void run() {
-                    SQL2EntityDialog dialog = new SQL2EntityDialog();
-                    dialog.setTitle("SQL to Entity Generation...");
-                    dialog.pack();
-                    dialog.setLocationRelativeTo(null);
-                    dialog.setVisible(true);
-
-                    if (!dialog.isGoOn()) {
-                        return;
-                    }
                     try {
                         indicator.setFraction(0.1);
                         sqlFile.refresh(false,false);
@@ -122,7 +122,6 @@ public class SQL2EntityAction extends AnAction {
                         );
                         Notifications.Bus.notify(notification);
                         JOptionPane.showMessageDialog(null,e.getMessage(),"处理失败",JOptionPane.ERROR_MESSAGE);
-
                     }
                 }
             });

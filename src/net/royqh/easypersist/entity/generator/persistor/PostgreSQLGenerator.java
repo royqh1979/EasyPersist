@@ -100,19 +100,33 @@ public class PostgreSQLGenerator extends SQLGenerator {
      * 生成Insert语句
      *
      * @param tableName
-     * @param insertFields
+     * @param insertProperties
      * @return
      */
     @Override
-    public StringBuilder generateInsertSQL(String tableName, List<String> insertFields) {
+    public StringBuilder generateInsertSQL(String tableName, List<SingleProperty> insertProperties) {
         StringBuilder content = new StringBuilder();
         content.append("public final static String INSERT_SQL=\"insert into \\\"");
         content.append(tableName);
-        content.append("\\\" (\\\"");
-        content.append(String.join("\\\",\\\"", insertFields));
-        content.append("\\\") values (?");
-        for (int i = 1; i < insertFields.size(); i++) {
-            content.append(",?");
+        content.append("\\\" (");
+        String sep="";
+        for (SingleProperty property:insertProperties) {
+            content.append(sep);
+            sep=",";
+            content.append("\\\"");
+            content.append(property.getColumnName());
+            content.append("\\\"");
+        }
+        content.append(") values (");
+        sep="";
+        for (SingleProperty property:insertProperties) {
+            content.append(sep);
+            sep=",";
+            if (TypeUtils.isGISType(property)) {
+                content.append("ST_GeomFromText(?)");
+            } else {
+                content.append("?");
+            }
         }
         content.append(")\";\n");
         return content;
@@ -123,17 +137,29 @@ public class PostgreSQLGenerator extends SQLGenerator {
      * 生成Update语句
      *
      * @param tableName
-     * @param updateColumns
+     * @param updateProperties
      * @param idColumnName
      * @return
      */
     @Override
-    public StringBuilder generateUpdateSQL(String tableName, List<String> updateColumns, String idColumnName) {
+    public StringBuilder generateUpdateSQL(String tableName, List<SingleProperty> updateProperties, String idColumnName) {
         StringBuilder content = new StringBuilder();
         content.append("public final static String UPDATE_SQL=\"update \\\"");
         content.append(tableName);
         content.append("\\\" set ");
-        content.append(String.join(",", updateColumns));
+        String sep="";
+        for (SingleProperty property:updateProperties) {
+            content.append(sep);
+            sep=",";
+            content.append("\\\"");
+            content.append(property.getColumnName());
+            content.append("\\\"=");
+            if (TypeUtils.isGISType(property)) {
+                content.append("ST_GeomFromText(?)");
+            } else {
+                content.append("?");
+            }
+        }
         content.append(" where \\\"");
         content.append(idColumnName);
         content.append("\\\"=?\";\n");
