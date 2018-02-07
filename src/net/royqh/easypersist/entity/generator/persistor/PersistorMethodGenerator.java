@@ -725,9 +725,13 @@ public class PersistorMethodGenerator {
         content.append("return rowProcessor.getResults();\n");
         content.append("}\n");
 
-        content.append("public void findAll(");
-        content.append(String.join(",", parameterList));
-        content.append(",RowProcessor rowProcessor) {\n");
+        if (parameterList.size()>0) {
+            content.append("public void findAll(");
+            content.append(String.join(",", parameterList));
+            content.append(",RowProcessor rowProcessor) {\n");
+        } else {
+            content.append("public void findAll(RowProcessor rowProcessor) {\n");
+        }
 
         content.append("List<String> params=new ArrayList<>();\n");
         generateIndexPropretiesQueryCriteria(content, indexProperties);
@@ -946,16 +950,18 @@ public class PersistorMethodGenerator {
     protected void generateExceptionHandleStatements(StringBuilder content) {
         content.append("}\n");
         content.append("catch (SQLException ex) {\n");
-        content.append("JdbcUtils.closeStatement(stmt);\n");
-        content.append("stmt = null;\n");
-        content.append("DataSourceUtils.releaseConnection(con, getDataSource());\n");
-        content.append("con = null;\n");
+//        content.append("JdbcUtils.closeStatement(stmt);\n");
+//        content.append("stmt = null;\n");
+//        content.append("DataSourceUtils.releaseConnection(con, getDataSource());\n");
+//        content.append("con = null;\n");
         //content.append("throw getExceptionTranslator().translate(\"JDBC \", sql, ex);\n");
         content.append("throw new RuntimeException(ex);\n");
         content.append("}\n");
         content.append("finally {\n");
         content.append("JdbcUtils.closeStatement(stmt);\n");
+        content.append("stmt = null;\n");
         content.append("DataSourceUtils.releaseConnection(con, getDataSource());\n");
+        content.append("con = null;\n");
         content.append("}\n");
     }
 

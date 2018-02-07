@@ -73,6 +73,9 @@ public class JdbcUtils {
     }
 
     public static String getColumnSetter(SingleProperty property) {
+        if (TypeUtils.isGISType(property)) {
+            return "setString";
+        }
         if (property.getType().equals("java.util.Date")) {
             switch (property.getTemporalType()) {
                 case DATE:
@@ -147,20 +150,19 @@ public class JdbcUtils {
                         paramIndex,
                         paramVar));
                 builder.append("} else {\n");
-                builder.append(String.format("stmt.setNull(%s,%s);\n", paramIndex, JdbcUtils.getWrapperType(property.getType())));
+                builder.append(String.format("stmt.setNull(%s,%s);\n", paramIndex, JdbcUtils.getSQLDataType(property.getType())));
                 builder.append("}\n");
                 return builder.toString();
             }
-            if (TypeUtils.isWrapperType(property.getType())){
+            if (TypeUtils.isGISType(property)){
                 builder.append(String.format("if (null != %s) {\n",
                         paramVar));
                 builder.append("WKTWriter wktWriter=new WKTWriter();\n");
                 builder.append(String.format("String wktStr=wktWriter.write(%s);\n",paramVar));
-                builder.append(String.format("stmt.%s(%s,wktStr);\n",
-                        JdbcUtils.getColumnSetter(property),
+                builder.append(String.format("stmt.setString(%s,wktStr);\n",
                         paramIndex));
                 builder.append("} else {\n");
-                builder.append(String.format("stmt.setNull(%s,%s);\n", paramIndex, JdbcUtils.getWrapperType(property.getType())));
+                builder.append(String.format("stmt.setString(%s,null);\n", paramIndex));
                 builder.append("}\n");
                 return builder.toString();
             }
@@ -169,6 +171,22 @@ public class JdbcUtils {
                     paramIndex,
                     paramVar);
         }
+    }
+
+    private static Object getSQLDataType(String type) {
+        switch(type) {
+            case "Integer":
+            case "Boolean":
+            case "Byte":
+            case "Long":
+            case "Short":
+                return "java.sql.Types.INTEGER";
+            case "Float":
+                return "java.sql.Types.FLOAT";
+            case "Double":
+                return "java.sql.Types.DOUBLE";
+        }
+        return "java.sql.Types.NULL";
     }
 
     private static String getWrapperType(String type) {

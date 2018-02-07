@@ -329,11 +329,25 @@ public class PersistorsGenerator {
         content.append("import javax.sql.rowset.serial.SerialClob;\n");
         content.append("import org.apache.commons.lang3.SerializationUtils;\n");
         content.append("import " + entity.getClassInfo().getQualifiedName() + ";\n");
+
         Set<String> types = CodeUtils.getPropertyTypes(entity);
         for (String type : types) {
             content.append("import ");
             content.append(type);
             content.append(";\n");
+        }
+
+        boolean hasGISType=false;
+        for (Property property:entity.getProperties()) {
+            if (property instanceof SingleProperty) {
+                if (TypeUtils.isGISType((SingleProperty)property)) {
+                    hasGISType=true;
+                    break;
+                }
+            }
+        }
+        if (hasGISType) {
+            content.append("import org.locationtech.jts.io.WKTWriter;\n");
         }
 
 
