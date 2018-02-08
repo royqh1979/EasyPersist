@@ -98,6 +98,7 @@
       * 1.2.0 add: View Generation Config UI <br />
       * 1.2.1 add execl export in search view - detail view  <br />
       * 1.2.2 add: mysql/postgresql selection in sql2entity <br />
+      * 1.3.0 add: spatial types support <br />
     ]]>
   </change-notes>
 

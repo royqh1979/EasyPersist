@@ -24,7 +24,9 @@ public class PostgreSQLGenerator extends SQLGenerator {
         SingleProperty idProperty = entity.getIdProperty();
         StringBuilder content = new StringBuilder();
         content.append("public static final String SIMPLE_SELECT_SQL=");
-        content.append("\"select * from \\\"" + tableName + "\\\"\";\n");
+        content.append("\"select ");
+        generateSelectColumns(content,entity);
+        content.append(" from \\\"" + tableName + "\\\"\";\n");
         return content;
     }
 
@@ -34,10 +36,35 @@ public class PostgreSQLGenerator extends SQLGenerator {
         SingleProperty idProperty = entity.getIdProperty();
         StringBuilder content = new StringBuilder();
         content.append("public static final String SELECT_ALL_SQL=");
-        content.append("\"select * from \\\"" + tableName + "\\\" order by \\\"");
+        content.append("\"select ");
+        generateSelectColumns(content,entity);
+        content.append(" from \\\"" + tableName + "\\\" order by \\\"");
         content.append(idProperty.getColumnName());
         content.append("\\\" asc\";\n");
         return content;
+    }
+
+    public void generateSelectColumns(StringBuilder content,Entity entity) {
+        if (entity.hasGISProperty()) {
+            String sep="";
+            for (Property property : entity.getProperties()) {
+                if (property instanceof  SingleProperty) {
+                    SingleProperty singleProperty=(SingleProperty)property;
+                    content.append(sep);
+                    sep=",";
+                    if (TypeUtils.isGISType(singleProperty)) {
+                        content.append(String.format("ST_AsWKT(\\\"%s\\\") as \\\"wkt_%s\\\" ",
+                                singleProperty.getColumnName(), singleProperty.getColumnName()));
+                    } else {
+                        content.append("\\\"");
+                        content.append(singleProperty.getColumnName());
+                        content.append("\\\"");
+                    }
+                }
+            }
+        } else {
+            content.append(" * ");
+        }
     }
 
     /**

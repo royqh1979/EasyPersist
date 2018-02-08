@@ -1,5 +1,6 @@
 package net.royqh.easypersist.entity.model;
 
+import com.google.common.base.Preconditions;
 import com.intellij.psi.PsiClass;
 import net.royqh.easypersist.entity.MappingRepository;
 import net.royqh.easypersist.entity.model.jpa.ModelError;
@@ -32,6 +33,7 @@ public class Entity {
     private String persistorPackageName;
     private Set<SubEntityInfo> subEntities=Collections.EMPTY_SET;
     private FactTableInfo factTable=null;
+    private List<SingleProperty> GISProperties=Collections.EMPTY_LIST;
 
     public FactTableInfo getFactTableInfo() {
         return factTable;
@@ -236,5 +238,18 @@ public class Entity {
 
     public void setSubEntities(Set<SubEntityInfo> subEntities) {
         this.subEntities = subEntities;
+    }
+
+    public List<SingleProperty> getGISProperties() {
+        return GISProperties;
+    }
+
+    public void setGISProperties(List<SingleProperty> GISProperties) {
+        Preconditions.checkNotNull(GISProperties);
+        this.GISProperties = GISProperties;
+    }
+
+    public boolean hasGISProperty() {
+        return GISProperties.size()>0;
     }
 }

@@ -8,11 +8,14 @@ import net.royqh.easypersist.entity.model.*;
 import net.royqh.easypersist.entity.model.jpa.*;
 import net.royqh.easypersist.entity.parser.FactTableParser;
 import net.royqh.easypersist.entity.parser.ParseError;
+import net.royqh.easypersist.utils.TypeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.AccessType;
 import java.beans.Introspector;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,7 +30,7 @@ public class ClassParser {
         checkClassFields(psiClass, entity);
         parseClassProperties(psiClass, entity);
         processIndexInfo(entity);
-
+        processGISProperties(entity);
 
         checkIdExist(psiClass, entity);
         if (!entity.isAutoGenerateId() && entity.hasSubEntity()) {
@@ -60,6 +63,24 @@ public class ClassParser {
         System.out.println("--------");
         */
         return entity;
+    }
+
+    private static void processGISProperties(Entity entity) {
+        List<SingleProperty> gisProperties=null;
+        for (Property property:entity.getProperties()) {
+            if (property instanceof SingleProperty) {
+                SingleProperty singleProperty=(SingleProperty)property;
+                if (TypeUtils.isGISType(singleProperty)) {
+                    if (gisProperties==null) {
+                        gisProperties=new ArrayList<>();
+                    }
+                    gisProperties.add(singleProperty);
+                }
+            }
+        }
+        if (gisProperties!=null) {
+            entity.setGISProperties(gisProperties);
+        }
     }
 
     private static void doCheckChineseAlias(Entity entity) {

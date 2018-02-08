@@ -8,6 +8,7 @@ import net.royqh.easypersist.entity.model.Entity;
 import net.royqh.easypersist.entity.model.Property;
 import net.royqh.easypersist.entity.model.PropertyType;
 import net.royqh.easypersist.entity.model.SingleProperty;
+import net.royqh.easypersist.utils.TypeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,10 +67,18 @@ public class RowMapperGenerator {
                     singleProperty.getType(),
                     JdbcUtils.getLobColumnGetter(singleProperty,singleProperty.getColumnName())
             ));
-        }  else {
+        }  else if (TypeUtils.isGISType(singleProperty)) {
+            content.append("Polygon val=null;\n");
+            content.append("try {\n");
+            content.append(String.format("val = (%s)wktReader.read(rs.getString(\"wkt_%s\"));\n",
+                singleProperty.getType(),singleProperty.getColumnName()));
+            content.append("} catch (ParseException e) {\n");
+            content.append("throw new RuntimeException(e);\n");
+            content.append("}\n");
+        } else {
             content.append(String.format("%s val=rs.%s(\"%s\");\n",singleProperty.getType(),
-                        JdbcUtils.getColumnGetter(singleProperty),
-                        singleProperty.getColumnName()));
+                    JdbcUtils.getColumnGetter(singleProperty),
+                    singleProperty.getColumnName()));
         }
     }
 
@@ -77,6 +86,9 @@ public class RowMapperGenerator {
         content.append("public final static RowMapper<");
         content.append(entity.getClassInfo().getName());
         content.append("> SIMPLE_ROW_MAPPER = new RowMapper<" + entity.getClassInfo().getName() + ">() {\n");
+        if (entity.hasGISProperty()) {
+            content.append("WKTReader wktReader=new WKTReader();\n");
+        }
         content.append("@Override\n");
         content.append("public "+entity.getClassInfo().getName()+" mapRow(ResultSet rs, int rowNum) throws SQLException {\n");
         content.append(getNewEntityVarStatement(entity));

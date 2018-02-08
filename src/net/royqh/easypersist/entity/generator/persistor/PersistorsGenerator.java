@@ -337,17 +337,10 @@ public class PersistorsGenerator {
             content.append(";\n");
         }
 
-        boolean hasGISType=false;
-        for (Property property:entity.getProperties()) {
-            if (property instanceof SingleProperty) {
-                if (TypeUtils.isGISType((SingleProperty)property)) {
-                    hasGISType=true;
-                    break;
-                }
-            }
-        }
-        if (hasGISType) {
+        if (entity.hasGISProperty()) {
             content.append("import org.locationtech.jts.io.WKTWriter;\n");
+            content.append("import org.locationtech.jts.io.WKTReader;\n");
+            content.append("import org.locationtech.jts.io.ParseException;\n");
         }
 
 

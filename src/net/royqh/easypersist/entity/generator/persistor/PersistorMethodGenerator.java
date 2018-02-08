@@ -129,6 +129,9 @@ public class PersistorMethodGenerator {
             content.append(entity.getIdProperty().getName());
         }
         content.append(") {\n");
+        if (entity.hasGISProperty()) {
+            content.append("WKTWriter wktWriter=new WKTWriter();\n");
+        }
         content.append("String sql=UPDATE_SQL;\n");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -178,6 +181,9 @@ public class PersistorMethodGenerator {
         content.append("> lst");
         content.append(entity.getClassInfo().getName());
         content.append(") {\n");
+        if (entity.hasGISProperty()) {
+            content.append("WKTWriter wktWriter=new WKTWriter();\n");
+        }
         if (entity.isAutoGenerateId()) {
             content.append(String.format("String sql=\"insert into %s%s%s(",
                     sqlGenerator.getQuote(), entity.getTableName(), sqlGenerator.getQuote()));
@@ -196,7 +202,11 @@ public class PersistorMethodGenerator {
                 if (idProperty == property)
                     continue;
                 if (property.getPropertyType() == PropertyType.Column) {
-                    content.append(String.format(",?"));
+                    if (TypeUtils.isGISType((SingleProperty)property) ) {
+                        content.append(",ST_GeomFromText(?)");
+                    } else {
+                        content.append(String.format(",?"));
+                    }
                 }
             }
             content.append(")\";\n");
@@ -247,6 +257,9 @@ public class PersistorMethodGenerator {
         content.append(" ");
         content.append(entity.getName());
         content.append(") {\n");
+        if (entity.hasGISProperty()) {
+            content.append("WKTWriter wktWriter=new WKTWriter();\n");
+        }
         content.append("String sql=INSERT_SQL;");
         content.append("logger.debug(sql);\n");
         createPreparedStatementStatments(content);
@@ -270,6 +283,9 @@ public class PersistorMethodGenerator {
         content.append(" ");
         content.append(entity.getName());
         content.append(") {\n");
+        if (entity.hasGISProperty()) {
+            content.append("WKTWriter wktWriter=new WKTWriter();\n");
+        }
         content.append("String sql=INSERT_SQL;");
         content.append("logger.debug(sql);\n");
         createPreparedStatementWithGeneratedKeyStatments(content);

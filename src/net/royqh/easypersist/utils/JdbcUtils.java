@@ -157,7 +157,6 @@ public class JdbcUtils {
             if (TypeUtils.isGISType(property)){
                 builder.append(String.format("if (null != %s) {\n",
                         paramVar));
-                builder.append("WKTWriter wktWriter=new WKTWriter();\n");
                 builder.append(String.format("String wktStr=wktWriter.write(%s);\n",paramVar));
                 builder.append(String.format("stmt.setString(%s,wktStr);\n",
                         paramIndex));
