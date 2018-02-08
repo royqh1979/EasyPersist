@@ -754,11 +754,15 @@ public class PersistorMethodGenerator {
 
         content.append("String sql;\n");
         content.append("if (params.size()!=0) {\n");
-        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+        content.append("sql=\"select ");
+        sqlGenerator.generateSelectColumns(content,entity);
+        content.append(" from " + sqlGenerator.getQuote()
                 + entity.getTableName()
                 + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params);\n");
         content.append("} else {\n");
-        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+        content.append("sql=\"select ");
+        sqlGenerator.generateSelectColumns(content,entity);
+        content.append(" from " + sqlGenerator.getQuote()
                 + entity.getTableName() + sqlGenerator.getQuote() + "\";\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");
@@ -863,11 +867,15 @@ public class PersistorMethodGenerator {
         content.append(sqlGenerator.generateLimitClause("startPos", "resultSize"));
         content.append(";\n");
         content.append("if (params.size()!=0) {\n");
-        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+        content.append("sql=\"select ");
+        sqlGenerator.generateSelectColumns(content,entity);
+        content.append(" from " + sqlGenerator.getQuote()
                 + entity.getTableName()
                 + sqlGenerator.getQuote() + " where \"+String.join(\" and \",params)+orderClause+limitClause;\n");
         content.append("} else {\n");
-        content.append("sql=\"select * from " + sqlGenerator.getQuote()
+        content.append("sql=\"select ");
+        sqlGenerator.generateSelectColumns(content,entity);
+        content.append(" from " + sqlGenerator.getQuote()
                 + entity.getTableName() + sqlGenerator.getQuote() + "\"+orderClause+limitClause;\n");
         content.append("}\n");
         content.append("logger.debug(sql);\n");

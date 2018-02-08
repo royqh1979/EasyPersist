@@ -14,6 +14,8 @@ public abstract class SQLGenerator {
 
     public abstract StringBuilder generateSelectAllSQL(Entity entity);
 
+    public abstract void generateSelectColumns(StringBuilder content,Entity entity);
+
     public abstract StringBuilder  generateFullJoinSelectSQL(Entity entity);
 
     public abstract StringBuilder generateInsertSQL(String tableName, List<SingleProperty> insertProperties);
